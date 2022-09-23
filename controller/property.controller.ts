@@ -1,0 +1,53 @@
+import { Request, Response } from "express";
+import Property from "../models/property.model";
+
+class PropertyController {
+
+    public async getAll(req: Request, res: Response) {
+
+        const properties = await Property.findAll();
+        res.json(properties);
+
+    }
+
+    public async getByID(req: Request, res: Response) {
+
+        const { id } = req.params;
+
+        const property = await Property.findByPk(id);
+
+        if (property) {
+            return res.json(property);
+        }
+
+        res.status(404).json({
+            msg: `No existe la propiedad con el id ${id}`,
+        });
+
+    }
+
+    public async create(req: Request, res: Response) {
+
+        const { body } = req;
+
+        try {
+
+            const property = new Property(body);
+            await property.save();
+            
+            res.json({
+                msg: "La propiedad se creo con exito",
+                property
+            })
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                msg: "No se pudo crear la propiedad, intente de nuevo."
+            })
+        }
+    }
+
+}
+
+export default PropertyController;

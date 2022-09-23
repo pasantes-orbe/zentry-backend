@@ -1,5 +1,7 @@
 import User from "./user.model";
 import Role from "./roles.model";
+import Property from "./property.model";
+import Recurrent from "./recurrent.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -11,14 +13,16 @@ User.belongsTo(Role, {
     targetKey: 'id'
 });
 
-// Role.sync({force: true});
-// User.sync({force: true});
 
+Property.hasMany(Recurrent, {
+    foreignKey: 'id_property',
+    sourceKey: 'id'
+});
 
-// Role.hasOne(User);
-// User.belongsTo(Role, {
-//     foreignKey: {
-//         name: 'roleid',
-//         allowNull: false
-//     }
-// });
+Recurrent.belongsTo(Property, {
+    foreignKey: 'id_property',
+    targetKey: 'id'
+})
+
+Property.sync({alter: true});
+Recurrent.sync({alter: true});

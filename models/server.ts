@@ -3,6 +3,8 @@ import cors from "cors";
 
 import userRoutes from "../routes/user.routes";
 import roleRoutes from "../routes/role.routes";
+import propertyRoutes from "../routes/property.routes";
+import recurrentRoutes from "../routes/recurrent.routes";
 import db from "../DB/connection";
 
 class Server{
@@ -11,7 +13,9 @@ class Server{
     private port: string;
     private apiPaths = {
         users: '/api/users',
-        roles: '/api/roles'
+        roles: '/api/roles',
+        properties: '/api/properties',
+        recurrents: '/api/recurrents'
     }
 
     constructor(){
@@ -53,6 +57,8 @@ class Server{
     routes(){
         this.app.use( this.apiPaths.users, userRoutes );
         this.app.use( this.apiPaths.roles, roleRoutes );
+        this.app.use( this.apiPaths.properties, propertyRoutes );
+        this.app.use( this.apiPaths.recurrents, recurrentRoutes );
     }
 
     listen(){
