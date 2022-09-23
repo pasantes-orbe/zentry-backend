@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("./user.model"));
 const roles_model_1 = __importDefault(require("./roles.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
-    foreignKey: 'user_id',
+    foreignKey: 'role_id',
     sourceKey: 'id'
 });
 user_model_1.default.belongsTo(roles_model_1.default, {
-    foreignKey: 'user_id',
+    foreignKey: 'role_id',
     targetKey: 'id'
 });
 // Role.sync({force: true});

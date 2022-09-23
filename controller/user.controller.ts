@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
-import bcrypt from "bcrypt";
 import Role from "../models/roles.model";
+import PasswordHelper from "../helpers/password.helper";
 
 class UserController {
 
@@ -28,8 +28,7 @@ class UserController {
         }
 
         res.status(404).json({
-            msg: `No existe usuario con el id ${id}`,
-            user
+            msg: `No existe usuario con el id ${id}`
         });
 
     }
@@ -40,31 +39,14 @@ class UserController {
 
         try {
 
-            // Compare if the user already exists by email.
-            const exists = await User.findOne({
-                where: {
-                    email: body.email
-                }
-            });
-
-            if(exists){
-                return res.status(302).json({
-                    msg: `Ya existe un usuario con el email`,
-                    email: body.email
-                })
-            }
-
             // Cifrar password
-
-            const password: string = bcrypt.hashSync(body.password, 10);
+            body.password = new PasswordHelper().hash(body.password);
             
-
-
             const user = new User(body);
             await user.save();
             
             res.json({
-                msg: "req.body",
+                msg: "El usuario se creo con exito",
                 user
             })
 

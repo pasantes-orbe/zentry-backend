@@ -12,53 +12,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_model_1 = __importDefault(require("../models/user.model"));
 const roles_model_1 = __importDefault(require("../models/roles.model"));
-const password_helper_1 = __importDefault(require("../helpers/password.helper"));
-class UserController {
-    getAllUsers(req, res) {
+class RoleController {
+    getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const users = yield user_model_1.default.findAll({
-                include: {
-                    model: roles_model_1.default
-                }
-            });
-            res.json(users);
+            const roles = yield roles_model_1.default.findAll();
+            res.json(roles);
         });
     }
-    getUser(req, res) {
+    getByID(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const user = yield user_model_1.default.findByPk(id);
-            if (user) {
-                return res.json(user);
+            const role = yield roles_model_1.default.findByPk(id);
+            if (role) {
+                return res.json(role);
             }
             res.status(404).json({
-                msg: `No existe usuario con el id ${id}`
+                msg: `No existe rol con el id ${id}`,
             });
         });
     }
-    register(req, res) {
+    create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
+            body.name = body.name.toLowerCase();
             try {
-                // Cifrar password
-                body.password = new password_helper_1.default().hash(body.password);
-                const user = new user_model_1.default(body);
-                yield user.save();
+                const role = new roles_model_1.default(body);
+                yield role.save();
                 res.json({
-                    msg: "El usuario se creo con exito",
-                    user
+                    msg: "El rol se creo con exito",
+                    role
                 });
             }
             catch (error) {
                 console.log(error);
                 res.status(500).json({
-                    msg: "No se pudo registrar al usuario, intente de nuevo."
+                    msg: "No se pudo crear el rol, intente de nuevo."
                 });
             }
         });
     }
 }
-exports.default = UserController;
-//# sourceMappingURL=user.controller.js.map
+exports.default = RoleController;
+//# sourceMappingURL=role.controller.js.map
