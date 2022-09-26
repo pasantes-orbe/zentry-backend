@@ -12,20 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_model_1 = __importDefault(require("../models/user.model"));
-<<<<<<< HEAD
-function emailAlreadyExists(req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const exists = yield user_model_1.default.findOne({
-            where: {
-                email: req.body.email
-            }
-        });
-        if (exists) {
-            throw new Error(`El email ya existe`);
-        }
-        next();
-=======
+const user_model_1 = __importDefault(require("../../models/user.model"));
 function emailAlreadyExists(email = "") {
     return __awaiter(this, void 0, void 0, function* () {
         const exists = yield user_model_1.default.findOne({
@@ -36,7 +23,6 @@ function emailAlreadyExists(email = "") {
         if (exists) {
             throw new Error(`El email ${email} ya existe`);
         }
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
     });
 }
 exports.default = emailAlreadyExists;

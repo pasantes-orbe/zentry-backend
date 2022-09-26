@@ -5,12 +5,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("./user.model"));
 const roles_model_1 = __importDefault(require("./roles.model"));
+const property_model_1 = __importDefault(require("./property.model"));
+const recurrent_model_1 = __importDefault(require("./recurrent.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
-    foreignKey: 'user_id',
+    foreignKey: 'role_id',
     sourceKey: 'id'
 });
 user_model_1.default.belongsTo(roles_model_1.default, {
-    foreignKey: 'user_id',
+    foreignKey: 'role_id',
     targetKey: 'id'
 });
+<<<<<<< HEAD
+=======
+property_model_1.default.hasMany(recurrent_model_1.default, {
+    foreignKey: 'id_property',
+    sourceKey: 'id'
+});
+recurrent_model_1.default.belongsTo(property_model_1.default, {
+    foreignKey: 'id_property',
+    targetKey: 'id'
+});
+property_model_1.default.sync({ alter: true });
+recurrent_model_1.default.sync({ alter: true });
+>>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
 //# sourceMappingURL=associations.js.map

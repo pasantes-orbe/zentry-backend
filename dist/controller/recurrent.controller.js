@@ -1,6 +1,4 @@
 "use strict";
-<<<<<<< HEAD
-=======
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,47 +12,52 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const roles_model_1 = __importDefault(require("../models/roles.model"));
-class RoleController {
+const property_model_1 = __importDefault(require("../models/property.model"));
+const recurrent_model_1 = __importDefault(require("../models/recurrent.model"));
+class RecurrentController {
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const roles = yield roles_model_1.default.findAll();
-            res.json(roles);
+            const recurrents = yield recurrent_model_1.default.findAll({
+                include: property_model_1.default,
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+            });
+            res.json(recurrents);
         });
     }
     getByID(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const role = yield roles_model_1.default.findByPk(id);
-            if (role) {
-                return res.json(role);
+            const recurrent = yield recurrent_model_1.default.findByPk(id, {
+                include: property_model_1.default,
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+            });
+            if (recurrent) {
+                return res.json(recurrent);
             }
             res.status(404).json({
-                msg: `No existe rol con el id ${id}`,
+                msg: `No existe el invitado recurrente con el id ${id}`,
             });
         });
     }
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
-            body.name = body.name.toLowerCase();
             try {
-                const role = new roles_model_1.default(body);
-                yield role.save();
+                const recurrent = new recurrent_model_1.default(body);
+                yield recurrent.save();
                 res.json({
-                    msg: "El rol se creo con exito",
-                    role
+                    msg: "El invitado recurrente se cargo con exito",
+                    recurrent
                 });
             }
             catch (error) {
                 console.log(error);
                 res.status(500).json({
-                    msg: "No se pudo crear el rol, intente de nuevo."
+                    msg: "No se pudo insertar el invitado recurrente, intente de nuevo."
                 });
             }
         });
     }
 }
-exports.default = RoleController;
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
-//# sourceMappingURL=role.controller.js.map
+exports.default = RecurrentController;
+//# sourceMappingURL=recurrent.controller.js.map
