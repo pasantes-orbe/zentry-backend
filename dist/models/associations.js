@@ -13,13 +13,4 @@ user_model_1.default.belongsTo(roles_model_1.default, {
     foreignKey: 'user_id',
     targetKey: 'id'
 });
-// Role.sync({force: true});
-// User.sync({force: true});
-// Role.hasOne(User);
-// User.belongsTo(Role, {
-//     foreignKey: {
-//         name: 'roleid',
-//         allowNull: false
-//     }
-// });
 //# sourceMappingURL=associations.js.map

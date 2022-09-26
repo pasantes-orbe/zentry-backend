@@ -44,19 +44,20 @@ class UserController {
             const { body } = req;
             try {
                 // Compare if the user already exists by email.
-                const exists = yield user_model_1.default.findOne({
-                    where: {
-                        email: body.email
-                    }
-                });
-                if (exists) {
-                    return res.status(302).json({
-                        msg: `Ya existe un usuario con el email`,
-                        email: body.email
-                    });
-                }
+                // const exists = await User.findOne({
+                //     where: {
+                //         email: body.email
+                //     }
+                // });
+                // if(exists){
+                //     return res.status(302).json({
+                //         msg: `Ya existe un usuario con el email`,
+                //         email: body.email
+                //     })
+                // }
                 // Cifrar password
                 const password = bcrypt_1.default.hashSync(body.password, 10);
+                body.password = password;
                 const user = new user_model_1.default(body);
                 yield user.save();
                 res.json({

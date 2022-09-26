@@ -10,15 +10,3 @@ User.belongsTo(Role, {
     foreignKey: 'user_id',
     targetKey: 'id'
 });
-
-// Role.sync({force: true});
-// User.sync({force: true});
-
-
-// Role.hasOne(User);
-// User.belongsTo(Role, {
-//     foreignKey: {
-//         name: 'roleid',
-//         allowNull: false
-//     }
-// });
