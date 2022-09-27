@@ -15,8 +15,6 @@ user_model_1.default.belongsTo(roles_model_1.default, {
     foreignKey: 'role_id',
     targetKey: 'id'
 });
-<<<<<<< HEAD
-=======
 property_model_1.default.hasMany(recurrent_model_1.default, {
     foreignKey: 'id_property',
     sourceKey: 'id'
@@ -27,5 +25,4 @@ recurrent_model_1.default.belongsTo(property_model_1.default, {
 });
 property_model_1.default.sync({ alter: true });
 recurrent_model_1.default.sync({ alter: true });
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
 //# sourceMappingURL=associations.js.map

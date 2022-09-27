@@ -1,6 +1,4 @@
 "use strict";
-<<<<<<< HEAD
-=======
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -56,5 +54,4 @@ class RoleController {
     }
 }
 exports.default = RoleController;
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
 //# sourceMappingURL=role.controller.js.map

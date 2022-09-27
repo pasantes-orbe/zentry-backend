@@ -42,26 +42,8 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
             try {
-<<<<<<< HEAD
-                // Compare if the user already exists by email.
-                // const exists = await User.findOne({
-                //     where: {
-                //         email: body.email
-                //     }
-                // });
-                // if(exists){
-                //     return res.status(302).json({
-                //         msg: `Ya existe un usuario con el email`,
-                //         email: body.email
-                //     })
-                // }
-                // Cifrar password
-                const password = bcrypt_1.default.hashSync(body.password, 10);
-                body.password = password;
-=======
                 // Cifrar password
                 body.password = new password_helper_1.default().hash(body.password);
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
                 const user = new user_model_1.default(body);
                 yield user.save();
                 res.json({

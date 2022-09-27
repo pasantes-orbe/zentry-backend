@@ -16,23 +16,18 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const user_routes_1 = __importDefault(require("../routes/user.routes"));
 const role_routes_1 = __importDefault(require("../routes/role.routes"));
-<<<<<<< HEAD
-=======
 const property_routes_1 = __importDefault(require("../routes/property.routes"));
 const recurrent_routes_1 = __importDefault(require("../routes/recurrent.routes"));
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
+const auth_routes_1 = __importDefault(require("../routes/auth.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 class Server {
     constructor() {
         this.apiPaths = {
             users: '/api/users',
-<<<<<<< HEAD
-            roles: '/api/roles'
-=======
             roles: '/api/roles',
             properties: '/api/properties',
-            recurrents: '/api/recurrents'
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
+            recurrents: '/api/recurrents',
+            auth: '/api/auth'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -66,11 +61,9 @@ class Server {
     routes() {
         this.app.use(this.apiPaths.users, user_routes_1.default);
         this.app.use(this.apiPaths.roles, role_routes_1.default);
-<<<<<<< HEAD
-=======
         this.app.use(this.apiPaths.properties, property_routes_1.default);
         this.app.use(this.apiPaths.recurrents, recurrent_routes_1.default);
->>>>>>> eb20a8dd88e987cfaa6b9827a6e66fcab6e18a90
+        this.app.use(this.apiPaths.auth, auth_routes_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {
