@@ -7,6 +7,10 @@ const router = Router();
 const auth: AuthController = new AuthController();
 
 //TODO: ADMIN only
-router.post('/login', auth.login);
+router.post('/login', [
+    check('email', "Introduce un email").notEmpty(),
+    check('password', "Introduce una contraseña").notEmpty(),
+    noErrors
+] , auth.login);
 
 export default router;
