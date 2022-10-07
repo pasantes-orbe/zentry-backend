@@ -41,8 +41,10 @@ class Server{
     async dbConnection(){
 
         try {
+            
             await db.authenticate();
             console.log("Database Online");
+            
         } catch (error: any) {
             throw new Error( error );
         }
