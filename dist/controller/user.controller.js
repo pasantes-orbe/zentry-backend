@@ -18,12 +18,17 @@ const password_helper_1 = __importDefault(require("../helpers/password.helper"))
 class UserController {
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const users = yield user_model_1.default.findAll({
-                include: {
-                    model: roles_model_1.default
-                }
-            });
-            res.json(users);
+            try {
+                const users = yield user_model_1.default.findAll({
+                    include: {
+                        model: roles_model_1.default
+                    }
+                });
+                res.json(users);
+            }
+            catch (error) {
+                res.status(500).send(error);
+            }
         });
     }
     getUser(req, res) {

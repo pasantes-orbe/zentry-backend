@@ -7,13 +7,21 @@ class UserController {
 
     public async getAllUsers(req: Request, res: Response) {
 
-        const users = await User.findAll({
-            include: {
-                model: Role
-            }
-        });
+        try {
 
-        res.json(users);
+            const users = await User.findAll({
+                include: {
+                    model: Role
+                }
+            });
+    
+            res.json(users);
+
+        } catch (error) {
+            res.status(500).send(error);
+        }
+
+        
 
     }
 
