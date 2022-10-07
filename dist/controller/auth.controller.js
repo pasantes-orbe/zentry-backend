@@ -25,7 +25,8 @@ class AuthController {
             const user = yield user_model_1.default.findOne({
                 where: {
                     email
-                }
+                },
+                include: roles_model_1.default
             });
             if (!user) {
                 return res.status(404).json({

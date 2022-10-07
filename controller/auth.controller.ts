@@ -17,7 +17,8 @@ class AuthController {
             const user = await User.findOne({
                 where:{
                     email
-                }
+                },
+                include: Role
             });
             
             if(!user){
