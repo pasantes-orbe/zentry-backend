@@ -7,7 +7,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const generateToken = (uid = '') => {
     return new Promise((resolve, reject) => {
         const payload = { uid };
-        jsonwebtoken_1.default.sign(payload, "SUPER_SECRET_PASSWORD", { expiresIn: '1h' }, (err, token) => {
+        jsonwebtoken_1.default.sign(payload, "SUPER_SECRET_PASSWORD", { expiresIn: '7d' }, (err, token) => {
             if (err)
                 reject('No se pudo generar el token');
             resolve(token);

@@ -55,7 +55,11 @@ class Server {
     }
     middlewares() {
         // Cors
-        this.app.use((0, cors_1.default)());
+        const corsOptions = {
+            credentials: true,
+            origin: '*'
+        };
+        this.app.use((0, cors_1.default)(corsOptions));
         this.app.use(express_1.default.json());
     }
     routes() {

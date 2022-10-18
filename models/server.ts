@@ -8,7 +8,7 @@ import recurrentRoutes from "../routes/recurrent.routes";
 import authRoutes from "../routes/auth.routes";
 import db from "../DB/connection";
 
-class Server{
+class Server {
 
     private app: Application;
     private port: string;
@@ -20,56 +20,60 @@ class Server{
         auth: '/api/auth'
     }
 
-    constructor(){
-        this.app    = express();
-        this.port   = process.env.PORT || "3000";
+    constructor() {
+        this.app = express();
+        this.port = process.env.PORT || "3000";
 
-        
+
         // App routes
         this.dbConnection();
         this.middlewares();
         this.sync();
         this.routes();
-        
+
 
     }
 
-    async sync(){
-        await db.sync({alter: true});
+    async sync() {
+        await db.sync({ alter: true });
     }
 
-    async dbConnection(){
+    async dbConnection() {
 
         try {
-            
+
             await db.authenticate();
             console.log("Database Online");
-            
+
         } catch (error: any) {
-            throw new Error( error );
+            throw new Error(error);
         }
 
     }
 
     middlewares() {
         // Cors
-        this.app.use( cors() );
+        const corsOptions = {
+            credentials: true,
+            origin: '*'
+        }
+        this.app.use(cors(corsOptions));
 
-        this.app.use( express.json() );
+        this.app.use(express.json());
     }
 
-    routes(){
-        this.app.use( this.apiPaths.users, userRoutes );
-        this.app.use( this.apiPaths.roles, roleRoutes );
-        this.app.use( this.apiPaths.properties, propertyRoutes );
-        this.app.use( this.apiPaths.recurrents, recurrentRoutes );
-        this.app.use( this.apiPaths.auth, authRoutes );
+    routes() {
+        this.app.use(this.apiPaths.users, userRoutes);
+        this.app.use(this.apiPaths.roles, roleRoutes);
+        this.app.use(this.apiPaths.properties, propertyRoutes);
+        this.app.use(this.apiPaths.recurrents, recurrentRoutes);
+        this.app.use(this.apiPaths.auth, authRoutes);
     }
 
-    listen(){
-        this.app.listen( this.port, () => {
+    listen() {
+        this.app.listen(this.port, () => {
             console.log("Servidor corriendo", this.port);
-        } )
+        })
     }
 
 }
