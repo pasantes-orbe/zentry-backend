@@ -2,6 +2,7 @@ import User from "./user.model";
 import Role from "./roles.model";
 import Property from "./property.model";
 import Recurrent from "./recurrent.model";
+import Country from "./country.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -26,3 +27,4 @@ Recurrent.belongsTo(Property, {
 
 Property.sync({alter: true});
 Recurrent.sync({alter: true});
+Country.sync({alter: true});

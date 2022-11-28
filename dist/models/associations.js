@@ -7,6 +7,7 @@ const user_model_1 = __importDefault(require("./user.model"));
 const roles_model_1 = __importDefault(require("./roles.model"));
 const property_model_1 = __importDefault(require("./property.model"));
 const recurrent_model_1 = __importDefault(require("./recurrent.model"));
+const country_model_1 = __importDefault(require("./country.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -25,4 +26,5 @@ recurrent_model_1.default.belongsTo(property_model_1.default, {
 });
 property_model_1.default.sync({ alter: true });
 recurrent_model_1.default.sync({ alter: true });
+country_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map

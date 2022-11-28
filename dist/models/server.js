@@ -18,6 +18,7 @@ const user_routes_1 = __importDefault(require("../routes/user.routes"));
 const role_routes_1 = __importDefault(require("../routes/role.routes"));
 const property_routes_1 = __importDefault(require("../routes/property.routes"));
 const recurrent_routes_1 = __importDefault(require("../routes/recurrent.routes"));
+const country_routes_1 = __importDefault(require("../routes/country.routes"));
 const auth_routes_1 = __importDefault(require("../routes/auth.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 class Server {
@@ -27,7 +28,8 @@ class Server {
             roles: '/api/roles',
             properties: '/api/properties',
             recurrents: '/api/recurrents',
-            auth: '/api/auth'
+            auth: '/api/auth',
+            countries: '/api/countries'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -68,6 +70,7 @@ class Server {
         this.app.use(this.apiPaths.properties, property_routes_1.default);
         this.app.use(this.apiPaths.recurrents, recurrent_routes_1.default);
         this.app.use(this.apiPaths.auth, auth_routes_1.default);
+        this.app.use(this.apiPaths.countries, country_routes_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {

@@ -5,6 +5,7 @@ import userRoutes from "../routes/user.routes";
 import roleRoutes from "../routes/role.routes";
 import propertyRoutes from "../routes/property.routes";
 import recurrentRoutes from "../routes/recurrent.routes";
+import countriesRoutes from "../routes/country.routes";
 import authRoutes from "../routes/auth.routes";
 import db from "../DB/connection";
 
@@ -17,7 +18,8 @@ class Server {
         roles: '/api/roles',
         properties: '/api/properties',
         recurrents: '/api/recurrents',
-        auth: '/api/auth'
+        auth: '/api/auth',
+        countries: '/api/countries'
     }
 
     constructor() {
@@ -68,6 +70,7 @@ class Server {
         this.app.use(this.apiPaths.properties, propertyRoutes);
         this.app.use(this.apiPaths.recurrents, recurrentRoutes);
         this.app.use(this.apiPaths.auth, authRoutes);
+        this.app.use(this.apiPaths.countries, countriesRoutes);
     }
 
     listen() {
