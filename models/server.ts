@@ -9,6 +9,8 @@ import countriesRoutes from "../routes/country.routes";
 import authRoutes from "../routes/auth.routes";
 import db from "../DB/connection";
 
+import fileUpload from "express-fileupload";
+
 class Server {
 
     private app: Application;
@@ -62,6 +64,11 @@ class Server {
         this.app.use(cors(corsOptions));
 
         this.app.use(express.json());
+
+        this.app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : '/tmp/'
+        }));
     }
 
     routes() {

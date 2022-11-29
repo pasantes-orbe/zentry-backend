@@ -11,13 +11,12 @@ class Country {
     private properties: [];
     private recurrents: [];
 
-    
-
-    constructor(name: string, latitude: number, longitude: number){
+    constructor(name: string, latitude: number, longitude: number, image=""){
         this.setId(0);
         this.setName(name);
         this.setLatitude(latitude);
         this.setLongitude(longitude);
+        this.setImage(image);
     }   
 
     public save(): boolean{
@@ -26,11 +25,12 @@ class Country {
 
             const countryToSave = new CountryModel({
                 name: this.getName(),
-                image: this.getImage(),
+                avatar: this.getImage(),
                 latitude: this.getLatitude(),
                 longitude: this.getLongitude()
             });
 
+            countryToSave.save();
             return true;
             
         } catch (error) {

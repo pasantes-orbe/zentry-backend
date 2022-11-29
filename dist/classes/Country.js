@@ -5,20 +5,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const country_model_1 = __importDefault(require("../models/country.model"));
 class Country {
-    constructor(name, latitude, longitude) {
+    constructor(name, latitude, longitude, image = "") {
         this.setId(0);
         this.setName(name);
         this.setLatitude(latitude);
         this.setLongitude(longitude);
+        this.setImage(image);
     }
     save() {
         try {
             const countryToSave = new country_model_1.default({
                 name: this.getName(),
-                image: this.getImage(),
+                avatar: this.getImage(),
                 latitude: this.getLatitude(),
                 longitude: this.getLongitude()
             });
+            countryToSave.save();
             return true;
         }
         catch (error) {

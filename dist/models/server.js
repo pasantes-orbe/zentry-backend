@@ -21,6 +21,7 @@ const recurrent_routes_1 = __importDefault(require("../routes/recurrent.routes")
 const country_routes_1 = __importDefault(require("../routes/country.routes"));
 const auth_routes_1 = __importDefault(require("../routes/auth.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
+const express_fileupload_1 = __importDefault(require("express-fileupload"));
 class Server {
     constructor() {
         this.apiPaths = {
@@ -63,6 +64,10 @@ class Server {
         };
         this.app.use((0, cors_1.default)(corsOptions));
         this.app.use(express_1.default.json());
+        this.app.use((0, express_fileupload_1.default)({
+            useTempFiles: true,
+            tempFileDir: '/tmp/'
+        }));
     }
     routes() {
         this.app.use(this.apiPaths.users, user_routes_1.default);
