@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const country_model_1 = __importDefault(require("../models/country.model"));
+const Country_1 = __importDefault(require("./Country"));
 class Countries {
     getAll() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -27,9 +28,16 @@ class Countries {
     getOne(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield country_model_1.default.findByPk(id);
+                const c = yield country_model_1.default.findByPk(id);
+                const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
+                const country = new Country_1.default(name, latitude, longitude, avatar, countryId);
+                return country;
             }
             catch (error) {
+                console.log(error);
+                return new Promise((resolve, reject) => {
+                    reject(false);
+                });
             }
         });
     }

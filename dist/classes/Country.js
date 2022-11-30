@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const country_model_1 = __importDefault(require("../models/country.model"));
 class Country {
-    constructor(name, latitude, longitude, image = "") {
-        this.setId(0);
+    constructor(name, latitude, longitude, image = "", id = 0) {
+        this.setId(id);
         this.setName(name);
         this.setLatitude(latitude);
         this.setLongitude(longitude);

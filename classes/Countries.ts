@@ -1,4 +1,5 @@
 import CountryModel from '../models/country.model';
+import Country from './Country';
 
 class Countries {
 
@@ -12,14 +13,22 @@ class Countries {
         }
     }
 
-    public async getOne(id: number){
+    public async getOne(id: number): Promise<Country>{
 
         try {
-            
-            return await CountryModel.findByPk(id);
+            const c = await CountryModel.findByPk(id);
+
+            const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
+
+            const country = new Country(name, latitude, longitude, avatar, countryId);
+
+            return country;
 
         } catch (error) {
-            
+            console.log(error);
+            return new Promise((resolve, reject) => {
+                reject(false)
+            })
         }
 
     }

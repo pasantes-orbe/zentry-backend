@@ -1,0 +1,49 @@
+import { Request, Response, Router } from "express";
+import { check } from "express-validator";
+import Amenity from "../classes/Amenity";
+import Countries from "../classes/Countries";
+import Country from "../classes/Country";
+import Uploader from "../classes/Uploader";
+import countryExists from "../middlewares/customs/countryExists.middleware";
+import noErrors from "../middlewares/noErrors.middleware";
+
+const router = Router();
+
+router.get('/', (req, res) => {
+    res.json("Obtener todos los Amenities")
+});
+
+
+/**
+ * Add New Amenity
+ */
+router.post('/:id',
+    [
+        check('id').notEmpty(),
+        check('id', "Proporciona un ID de Country numérico").isNumeric(),
+        check('id').custom(countryExists),
+        check('name', "Nombre del lugar de reserva obligatorio").notEmpty(),
+        noErrors
+    ]
+ , async (req: Request, res: Response) => {
+    
+    const country: Country = await new Countries().getOne( +req.params.id );
+
+    const { name, address} = req.body;
+
+    //TODO: Verificar que hacer en caso de que no llegue la imagen
+    const { tempFilePath } = req.files?.avatar;
+    const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+    
+    const amenity: Amenity = new Amenity(country, name, secure_url, address);
+
+    const amenitySaved = await amenity.save();
+
+    res.json({
+        msg: "Amenity agregado con éxito!",
+        amenitySaved
+    });
+
+});
+
+export default router;

@@ -20,6 +20,7 @@ const property_routes_1 = __importDefault(require("../routes/property.routes"));
 const recurrent_routes_1 = __importDefault(require("../routes/recurrent.routes"));
 const country_routes_1 = __importDefault(require("../routes/country.routes"));
 const auth_routes_1 = __importDefault(require("../routes/auth.routes"));
+const amenity_routes_1 = __importDefault(require("../routes/amenity.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 class Server {
@@ -30,7 +31,8 @@ class Server {
             properties: '/api/properties',
             recurrents: '/api/recurrents',
             auth: '/api/auth',
-            countries: '/api/countries'
+            countries: '/api/countries',
+            amenities: '/api/amenities'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -76,6 +78,7 @@ class Server {
         this.app.use(this.apiPaths.recurrents, recurrent_routes_1.default);
         this.app.use(this.apiPaths.auth, auth_routes_1.default);
         this.app.use(this.apiPaths.countries, country_routes_1.default);
+        this.app.use(this.apiPaths.amenities, amenity_routes_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {

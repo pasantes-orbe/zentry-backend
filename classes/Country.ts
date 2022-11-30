@@ -11,13 +11,13 @@ class Country {
     private properties: [];
     private recurrents: [];
 
-    constructor(name: string, latitude: number, longitude: number, image=""){
-        this.setId(0);
+    constructor(name: string, latitude: number, longitude: number, image: string="", id: number = 0){
+        this.setId(id);
         this.setName(name);
         this.setLatitude(latitude);
         this.setLongitude(longitude);
         this.setImage(image);
-    }   
+    }
 
     public save(): boolean{
 

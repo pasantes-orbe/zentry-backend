@@ -37,10 +37,16 @@ router.post('/', [
     
     // Get String Data
     const { name, latitude, longitude} = req.body;
+
+    //TODO: Verificar que hacer en caso de que no llegue la imagen
+
     // Get Image from request
     const { tempFilePath } = req.files?.avatar;
     // Upload to cloudinary
     const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+
+
+    
     // Save to DB
     const country: Country = new Country(name, latitude, longitude, secure_url);
     const result = country.save();

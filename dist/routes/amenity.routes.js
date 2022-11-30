@@ -13,49 +13,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const Country_1 = __importDefault(require("../classes/Country"));
-const isAdmin_middleware_1 = __importDefault(require("../middlewares/jwt/isAdmin.middleware"));
-const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
+const express_validator_1 = require("express-validator");
+const Amenity_1 = __importDefault(require("../classes/Amenity"));
 const Countries_1 = __importDefault(require("../classes/Countries"));
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
+const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
+const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const router = (0, express_1.Router)();
-router.get('/', [], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const countries = yield new Countries_1.default().getAll();
-    res.json(countries);
-}));
-router.get('/:id', [
-    isAdmin_middleware_1.default,
+router.get('/', (req, res) => {
+    res.json("Obtener todos los Amenities");
+});
+/**
+ * Add New Amenity
+ */
+router.post('/:id', [
+    (0, express_validator_1.check)('id').notEmpty(),
+    (0, express_validator_1.check)('id', "Proporciona un ID de Country numérico").isNumeric(),
+    (0, express_validator_1.check)('id').custom(countryExists_middleware_1.default),
+    (0, express_validator_1.check)('name', "Nombre del lugar de reserva obligatorio").notEmpty(),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const country = yield new Countries_1.default().getOne(Number(req.params.id));
-    res.json(country);
-}));
-router.post('/', [
-// isAdmin,
-// noErrors
-], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    // Get String Data
-    const { name, latitude, longitude } = req.body;
+    const country = yield new Countries_1.default().getOne(+req.params.id);
+    const { name, address } = req.body;
     //TODO: Verificar que hacer en caso de que no llegue la imagen
-    // Get Image from request
     const { tempFilePath } = (_a = req.files) === null || _a === void 0 ? void 0 : _a.avatar;
-    // Upload to cloudinary
     const { secure_url } = yield new Uploader_1.default().uploadImage(tempFilePath);
-    // Save to DB
-    const country = new Country_1.default(name, latitude, longitude, secure_url);
-    const result = country.save();
-    // Response
-    if (result) {
-        res.json({
-            msg: "Se registró el country con éxito"
-        });
-    }
-    else {
-        res.status(500).send({
-            msg: "ERROR"
-        });
-    }
+    const amenity = new Amenity_1.default(country, name, secure_url, address);
+    const amenitySaved = yield amenity.save();
+    res.json({
+        msg: "Amenity agregado con éxito!",
+        amenitySaved
+    });
 }));
 exports.default = router;
-//# sourceMappingURL=country.routes.js.map
+//# sourceMappingURL=amenity.routes.js.map
