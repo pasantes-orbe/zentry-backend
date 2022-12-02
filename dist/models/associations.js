@@ -17,6 +17,14 @@ user_model_1.default.belongsTo(roles_model_1.default, {
     foreignKey: 'role_id',
     targetKey: 'id'
 });
+property_model_1.default.belongsTo(country_model_1.default, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+});
+country_model_1.default.hasMany(property_model_1.default, {
+    foreignKey: 'id_country',
+    sourceKey: 'id'
+});
 property_model_1.default.hasMany(recurrent_model_1.default, {
     foreignKey: 'id_property',
     sourceKey: 'id'
@@ -34,7 +42,7 @@ amenity_model_1.default.belongsTo(country_model_1.default, {
     targetKey: 'id'
 });
 property_model_1.default.sync({ alter: true });
-recurrent_model_1.default.sync({ alter: true });
 country_model_1.default.sync({ alter: true });
+recurrent_model_1.default.sync({ alter: true });
 amenity_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map

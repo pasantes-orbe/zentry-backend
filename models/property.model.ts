@@ -7,6 +7,8 @@ const Property = db.define('property', {
         primaryKey: true,
         autoIncrement: true
     },
+    name: {type: DataTypes.STRING},
+    number: {type: DataTypes.INTEGER},
     address: {type: DataTypes.STRING},
     avatar: {type: DataTypes.STRING}
 

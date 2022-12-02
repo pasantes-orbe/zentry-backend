@@ -11,6 +11,8 @@ const Property = connection_1.default.define('property', {
         primaryKey: true,
         autoIncrement: true
     },
+    name: { type: sequelize_1.DataTypes.STRING },
+    number: { type: sequelize_1.DataTypes.INTEGER },
     address: { type: sequelize_1.DataTypes.STRING },
     avatar: { type: sequelize_1.DataTypes.STRING }
 }, {

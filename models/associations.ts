@@ -16,6 +16,20 @@ User.belongsTo(Role, {
 });
 
 
+
+Property.belongsTo(Country, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+})
+
+Country.hasMany(Property, {
+    foreignKey: 'id_country',
+    sourceKey: 'id'
+})
+
+
+
+
 Property.hasMany(Recurrent, {
     foreignKey: 'id_property',
     sourceKey: 'id'
@@ -40,6 +54,6 @@ AmenityModel.belongsTo(Country, {
 
 
 Property.sync({alter: true});
-Recurrent.sync({alter: true});
 Country.sync({alter: true});
+Recurrent.sync({alter: true});
 AmenityModel.sync({alter: true});

@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const country_model_1 = __importDefault(require("../../models/country.model"));
 function countryExists(id) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(id);
         const exists = yield country_model_1.default.findByPk(id);
         if (!exists) {
             throw new Error(`El country con ID ${id} no existe`);

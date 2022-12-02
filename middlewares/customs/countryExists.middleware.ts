@@ -3,8 +3,6 @@ import CountryModel from "../../models/country.model";
 
 async function countryExists(id: number){
 
-    console.log(id);
-
     const exists = await CountryModel.findByPk(id);
 
     if(!exists){

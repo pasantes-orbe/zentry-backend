@@ -30,6 +30,20 @@ class PropertyController {
 
         const { body } = req;
 
+
+        const propertyNumber = await Property.findOne({
+            where: {
+                "number": body.number,
+                "id_country": body.id_country
+            }
+        })
+
+        if(propertyNumber){
+            return res.status(400).send({
+                msg: `Ya existe una propiedad con el N° ${body.number}`
+            })
+        }
+
         try {
 
             const property = new Property(body);

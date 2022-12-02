@@ -45,7 +45,6 @@ router.post('/', [
     // Upload to cloudinary
     const { secure_url } = await new Uploader().uploadImage(tempFilePath);
 
-
     
     // Save to DB
     const country: Country = new Country(name, latitude, longitude, secure_url);

@@ -35,6 +35,17 @@ class PropertyController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
+            const propertyNumber = yield property_model_1.default.findOne({
+                where: {
+                    "number": body.number,
+                    "id_country": body.id_country
+                }
+            });
+            if (propertyNumber) {
+                return res.status(400).send({
+                    msg: `Ya existe una propiedad con el N° ${body.number}`
+                });
+            }
             try {
                 const property = new property_model_1.default(body);
                 yield property.save();
