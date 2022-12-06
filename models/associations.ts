@@ -4,6 +4,7 @@ import Property from "./property.model";
 import Recurrent from "./recurrent.model";
 import Country from "./country.model";
 import AmenityModel from "./amenity.model";
+import UserProperties from "./user_properties.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -53,7 +54,40 @@ AmenityModel.belongsTo(Country, {
 
 
 
-Property.sync({alter: true});
-Country.sync({alter: true});
-Recurrent.sync({alter: true});
-AmenityModel.sync({alter: true});
+// UserProperties.hasOne(User, {
+//     foreignKey: 'id_user',
+//     sourceKey: 'id'
+// })
+
+// UserProperties.hasOne(Property, {
+//     foreignKey: 'id_property',
+//     sourceKey: 'id'
+// })
+
+User.hasOne(UserProperties, {
+    foreignKey: 'id_user',
+    sourceKey: 'id'
+});
+
+UserProperties.belongsTo(User, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+})
+
+
+Property.hasOne(UserProperties, {
+    foreignKey: 'id_property',
+    sourceKey: 'id'
+});
+
+UserProperties.belongsTo(Property, {
+    foreignKey: 'id_property',
+    targetKey: 'id'
+})
+
+
+UserProperties.sync({ alter: false });
+Property.sync({ alter: true });
+Country.sync({ alter: true });
+Recurrent.sync({ alter: true });
+AmenityModel.sync({ alter: true });

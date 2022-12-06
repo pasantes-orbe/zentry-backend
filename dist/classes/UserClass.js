@@ -40,6 +40,17 @@ class UserClass {
             return users;
         });
     }
+    is(role, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findByPk(id, {
+                attributes: { exclude: ['password', 'role_id'] },
+                include: {
+                    model: roles_model_1.default
+                },
+            });
+            return user.role.name == role;
+        });
+    }
 }
 exports.default = UserClass;
 //# sourceMappingURL=UserClass.js.map

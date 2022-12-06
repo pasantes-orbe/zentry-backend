@@ -8,6 +8,7 @@ import recurrentRoutes from "../routes/recurrent.routes";
 import countriesRoutes from "../routes/country.routes";
 import authRoutes from "../routes/auth.routes";
 import amenityRoutes from "../routes/amenity.routes";
+import ownersRoutes from "../routes/owner.routes";
 import db from "../DB/connection";
 
 import fileUpload from "express-fileupload";
@@ -23,7 +24,8 @@ class Server {
         recurrents: '/api/recurrents',
         auth: '/api/auth',
         countries: '/api/countries',
-        amenities: '/api/amenities'
+        amenities: '/api/amenities',
+        owners: '/api/owners'
     }
 
     constructor() {
@@ -81,6 +83,7 @@ class Server {
         this.app.use(this.apiPaths.auth, authRoutes);
         this.app.use(this.apiPaths.countries, countriesRoutes);
         this.app.use(this.apiPaths.amenities, amenityRoutes);
+        this.app.use(this.apiPaths.owners, ownersRoutes);
     }
 
     listen() {
