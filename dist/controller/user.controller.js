@@ -15,26 +15,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("../models/user.model"));
 const roles_model_1 = __importDefault(require("../models/roles.model"));
 const password_helper_1 = __importDefault(require("../helpers/password.helper"));
+const UserClass_1 = __importDefault(require("../classes/UserClass"));
 class UserController {
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (req.query.role) {
+                try {
+                    const users = yield new UserClass_1.default().getAllByRole(String(req.query.role));
+                    return res.json(users);
+                }
+                catch (error) {
+                    return res.status(500).send(error);
+                }
+            }
             try {
-                const users = yield user_model_1.default.findAll({
-                    include: {
-                        model: roles_model_1.default
-                    }
-                });
-                res.json(users);
+                const users = yield new UserClass_1.default().getAll();
+                return res.json(users);
             }
             catch (error) {
-                res.status(500).send(error);
+                return res.status(500).send(error);
             }
         });
     }
     getUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const user = yield user_model_1.default.findByPk(id);
+            const user = yield user_model_1.default.findByPk(id, {
+                attributes: { exclude: ['password', 'role_id'] },
+                include: {
+                    model: roles_model_1.default
+                },
+            });
             if (user) {
                 return res.json(user);
             }

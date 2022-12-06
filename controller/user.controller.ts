@@ -2,26 +2,27 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import Role from "../models/roles.model";
 import PasswordHelper from "../helpers/password.helper";
+import UserClass from "../classes/UserClass";
 
 class UserController {
 
     public async getAllUsers(req: Request, res: Response) {
 
-        try {
-
-            const users = await User.findAll({
-                include: {
-                    model: Role
-                }
-            });
-    
-            res.json(users);
-
-        } catch (error) {
-            res.status(500).send(error);
+        if(req.query.role){
+            try {
+                const users = await new UserClass().getAllByRole( String(req.query.role) );
+                return res.json(users);
+            } catch (error) {
+                return res.status(500).send(error);
+            }
         }
 
-        
+        try {
+            const users = await new UserClass().getAll();
+            return res.json(users);
+        } catch (error) {
+            return res.status(500).send(error);
+        }
 
     }
 
@@ -29,7 +30,12 @@ class UserController {
 
         const { id } = req.params;
 
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            attributes: {exclude: ['password', 'role_id']},
+            include: {
+                model: Role
+            },
+        });
 
         if (user) {
             return res.json(user);
@@ -40,6 +46,8 @@ class UserController {
         });
 
     }
+
+    
 
     public async register(req: Request, res: Response) {
 
