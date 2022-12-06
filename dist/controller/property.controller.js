@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Uploader_1 = __importDefault(require("../classes/Uploader"));
 const property_model_1 = __importDefault(require("../models/property.model"));
 class PropertyController {
     getAll(req, res) {
@@ -33,6 +34,7 @@ class PropertyController {
         });
     }
     create(req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
             const propertyNumber = yield property_model_1.default.findOne({
@@ -47,6 +49,9 @@ class PropertyController {
                 });
             }
             try {
+                const { tempFilePath } = (_a = req.files) === null || _a === void 0 ? void 0 : _a.avatar;
+                const { secure_url } = yield new Uploader_1.default().uploadImage(tempFilePath);
+                body['avatar'] = secure_url;
                 const property = new property_model_1.default(body);
                 yield property.save();
                 res.json({

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import Uploader from "../classes/Uploader";
 import Property from "../models/property.model";
 
 class PropertyController {
@@ -30,7 +31,6 @@ class PropertyController {
 
         const { body } = req;
 
-
         const propertyNumber = await Property.findOne({
             where: {
                 "number": body.number,
@@ -45,6 +45,11 @@ class PropertyController {
         }
 
         try {
+
+            const { tempFilePath } = req.files?.avatar;
+            const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+
+            body['avatar'] = secure_url;
 
             const property = new Property(body);
             await property.save();
