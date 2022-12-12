@@ -3,6 +3,7 @@ import User from "../models/user.model";
 import Role from "../models/roles.model";
 import PasswordHelper from "../helpers/password.helper";
 import UserClass from "../classes/UserClass";
+import passwordChangeRequest from "../models/passwordChangeRequest.model";
 
 class UserController {
 
@@ -73,6 +74,102 @@ class UserController {
             })
         }
     }
+
+
+    public async RequestChangePassword(req: Request, res: Response) {
+
+        const { email } = req.body;
+
+        const exists = await User.findOne({
+            where: {email}
+        })
+
+        if(!exists){
+            return res.status(404).send({
+                msg: "No existe el user"
+            });
+        }
+
+
+        
+        const requestBody = {
+            id_user: exists.id,
+            date: Date.now(),
+            changed: false
+        }
+
+        const request = await new passwordChangeRequest(requestBody);
+        request.save();
+
+        return res.json({
+            msg: "El administrador recibió la solicitud de reestablecimiento de contraseña",
+            request
+        });
+
+
+
+    }
+
+    public async allPasswordChangeRequests(req: Request, res: Response){
+
+        const { pendient } = req.query;
+        
+        if(pendient){
+            const requests = await passwordChangeRequest.findAll({
+                where: {
+                    changed: false
+                }
+            })
+            return res.json(requests);
+        }
+
+        const requests = await passwordChangeRequest.findAll();
+        return res.json(requests);
+    }
+
+    public async changePassword(req: Request, res: Response) {
+
+        const { id_request } = req.params;
+        const { password }   = req.body;
+
+        const request = await passwordChangeRequest.findByPk(id_request);
+
+        if(!request){
+            return res.status(404).send({
+                msg: `No existe ninguna solicitud con id ${id_request}`
+            });
+        }
+
+        if(request.dataValues.changed){
+            return res.status(403).send({
+                msg: `Ya se reestableció la contraseña para esta solicitud`
+            });
+        }
+
+        const new_password = new PasswordHelper().hash(password);
+        
+        const user_update = await User.update({ 
+            password: new_password
+         }, {
+            where: {
+                id: request.id_user
+            }
+        });
+
+        const request_update = await passwordChangeRequest.update({
+            changed: true
+        }, {
+            where: {
+                id: id_request
+            }
+        })
+
+        return res.json({msg: "Reestablecimiento de contraseña exitoso"});
+
+        
+
+    }
+
 
 }
 

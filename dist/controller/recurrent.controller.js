@@ -79,11 +79,17 @@ class RecurrentController {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_recurrent: recurrentID } = req.params;
             const { status } = req.body;
-            const changed = yield recurrent_model_1.default.update(status, {
-                where: {
-                    id: recurrentID
-                }
-            });
+            try {
+                const changed = yield recurrent_model_1.default.update({ status }, {
+                    where: {
+                        id: recurrentID
+                    }
+                });
+                return res.json("Estado modificado");
+            }
+            catch (error) {
+                return res.status(500).send(error);
+            }
         });
     }
 }

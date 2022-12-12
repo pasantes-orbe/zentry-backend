@@ -16,6 +16,7 @@ const user_model_1 = __importDefault(require("../models/user.model"));
 const roles_model_1 = __importDefault(require("../models/roles.model"));
 const password_helper_1 = __importDefault(require("../helpers/password.helper"));
 const UserClass_1 = __importDefault(require("../classes/UserClass"));
+const passwordChangeRequest_model_1 = __importDefault(require("../models/passwordChangeRequest.model"));
 class UserController {
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -73,6 +74,78 @@ class UserController {
                     msg: "No se pudo registrar al usuario, intente de nuevo."
                 });
             }
+        });
+    }
+    RequestChangePassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email } = req.body;
+            const exists = yield user_model_1.default.findOne({
+                where: { email }
+            });
+            if (!exists) {
+                return res.status(404).send({
+                    msg: "No existe el user"
+                });
+            }
+            const requestBody = {
+                id_user: exists.id,
+                date: Date.now(),
+                changed: false
+            };
+            const request = yield new passwordChangeRequest_model_1.default(requestBody);
+            request.save();
+            return res.json({
+                msg: "El administrador recibió la solicitud de reestablecimiento de contraseña",
+                request
+            });
+        });
+    }
+    allPasswordChangeRequests(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { pendient } = req.query;
+            if (pendient) {
+                const requests = yield passwordChangeRequest_model_1.default.findAll({
+                    where: {
+                        changed: false
+                    }
+                });
+                return res.json(requests);
+            }
+            const requests = yield passwordChangeRequest_model_1.default.findAll();
+            return res.json(requests);
+        });
+    }
+    changePassword(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_request } = req.params;
+            const { password } = req.body;
+            const request = yield passwordChangeRequest_model_1.default.findByPk(id_request);
+            if (!request) {
+                return res.status(404).send({
+                    msg: `No existe ninguna solicitud con id ${id_request}`
+                });
+            }
+            if (request.dataValues.changed) {
+                return res.status(403).send({
+                    msg: `Ya se reestableció la contraseña para esta solicitud`
+                });
+            }
+            const new_password = new password_helper_1.default().hash(password);
+            const user_update = yield user_model_1.default.update({
+                password: new_password
+            }, {
+                where: {
+                    id: request.id_user
+                }
+            });
+            const request_update = yield passwordChangeRequest_model_1.default.update({
+                changed: true
+            }, {
+                where: {
+                    id: id_request
+                }
+            });
+            return res.json({ msg: "Reestablecimiento de contraseña exitoso" });
         });
     }
 }

@@ -11,7 +11,16 @@ const isAdmin_middleware_1 = __importDefault(require("../middlewares/jwt/isAdmin
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const router = (0, express_1.Router)();
 const property = new property_controller_1.default();
+/**
+ * Get All
+ */
 router.get('/', isAdmin_middleware_1.default, property.getAll);
+router.get('/:id_country/:search', [
+    (0, express_validator_1.check)('id_country', "El campo 'id_country' no debe estar vacío").notEmpty(),
+    (0, express_validator_1.check)('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
+    (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default),
+    noErrors_middleware_1.default
+], property.search);
 router.get('/:id', isAdmin_middleware_1.default, property.getByID);
 router.post('/', [
     isAdmin_middleware_1.default,

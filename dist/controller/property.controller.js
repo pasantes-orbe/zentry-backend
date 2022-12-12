@@ -12,12 +12,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
 const property_model_1 = __importDefault(require("../models/property.model"));
 class PropertyController {
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const properties = yield property_model_1.default.findAll();
+            res.json(properties);
+        });
+    }
+    search(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const properties = yield property_model_1.default.findAll({
+                where: {
+                    id_country: req.params.id_country,
+                    $or: [
+                        {
+                            name: {
+                                // [Op.like]: `%${req.params.search}%`
+                                [sequelize_1.Sequelize.Op.iLike]: `%${req.params.search}%`
+                            }
+                        },
+                        {
+                            number: req.params.search
+                        }
+                    ]
+                }
+            });
             res.json(properties);
         });
     }

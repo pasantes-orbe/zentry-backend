@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Op, Sequelize } from "sequelize";
 import Uploader from "../classes/Uploader";
 import Property from "../models/property.model";
 
@@ -10,6 +11,32 @@ class PropertyController {
         res.json(properties);
 
     }
+
+    public async search(req: Request, res: Response) {
+
+
+
+        const properties = await Property.findAll({
+            where: {
+                id_country: req.params.id_country,
+                $or: [
+                    {
+                        name: {
+                            // [Op.like]: `%${req.params.search}%`
+                            [Sequelize.Op.iLike]: `%${req.params.search}%`
+                        }
+                    },
+                    {
+                        number: req.params.search
+                    }
+
+                ]
+                
+            }
+        });
+        res.json(properties);
+    }
+
 
     public async getByID(req: Request, res: Response) {
 

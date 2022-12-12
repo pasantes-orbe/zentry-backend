@@ -8,8 +8,20 @@ import noErrors from "../middlewares/noErrors.middleware";
 const router = Router();
 const property: PropertyController = new PropertyController();
 
-
+/**
+ * Get All
+ */
 router.get('/', isAdmin, property.getAll);
+
+router.get('/:id_country/:search', [
+    check('id_country', "El campo 'id_country' no debe estar vacío").notEmpty(),
+    check('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
+    check('id_country').custom(countryExists),
+    noErrors
+] , property.search);
+
+
+
 router.get('/:id', isAdmin, property.getByID);
 router.post('/', [
     isAdmin,

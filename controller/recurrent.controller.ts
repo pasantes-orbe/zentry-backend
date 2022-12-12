@@ -82,13 +82,16 @@ class RecurrentController {
         const { id_recurrent: recurrentID } = req.params;
         const { status } = req.body;
 
-        
-
-        const changed = await Recurrent.update(status, {
-            where: {
-                id: recurrentID
-            }
-        });
+        try {
+            const changed = await Recurrent.update({ status }, {
+                where: {
+                    id: recurrentID
+                }
+            });
+            return res.json("Estado modificado");
+        } catch (error) {
+            return res.status(500).send(error);
+        }
 
     }
 
