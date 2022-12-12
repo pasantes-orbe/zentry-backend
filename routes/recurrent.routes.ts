@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { check } from "express-validator";
 import RecurrentController from "../controller/recurrent.controller";
+import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 
 const router = Router();
@@ -17,6 +18,7 @@ router.post('/', [
     check('guest_name', 'El nombre del invitado es obligatorio').notEmpty(),
     check('guest_lastname', 'El apellido del invitado es obligatorio').notEmpty(),
     check('dni', 'El dni del invitado es obligatorio').notEmpty(),
+    check('id_property').custom(propertyExists),
     noErrors
 ], recurrent.create);
 

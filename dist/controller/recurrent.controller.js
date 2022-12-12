@@ -42,7 +42,23 @@ class RecurrentController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
+            // Chequear si no existe el recurrente a la misma propiedad por DNI
+            const exists = yield recurrent_model_1.default.findOne({
+                where: {
+                    dni: body.dni,
+                    id_property: body.id_property
+                },
+                include: property_model_1.default
+            });
+            if (exists) {
+                return res.status(400).send({
+                    msg: `Ya existe un invitado recurrente con el dni ${body.dni} para el country ${exists.property.name}`,
+                    guest: exists
+                });
+            }
+            // Si no existe guardarlo en la BD
             try {
+                body['status'] = true;
                 const recurrent = new recurrent_model_1.default(body);
                 yield recurrent.save();
                 res.json({
@@ -53,7 +69,8 @@ class RecurrentController {
             catch (error) {
                 console.log(error);
                 res.status(500).json({
-                    msg: "No se pudo insertar el invitado recurrente, intente de nuevo."
+                    msg: "No se pudo insertar el invitado recurrente, intente de nuevo.",
+                    error
                 });
             }
         });

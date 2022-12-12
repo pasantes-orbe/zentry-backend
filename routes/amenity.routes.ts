@@ -6,11 +6,13 @@ import Country from "../classes/Country";
 import Uploader from "../classes/Uploader";
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import AmenityModel from "../models/amenity.model";
 
 const router = Router();
 
-router.get('/', (req, res) => {
-    res.json("Obtener todos los Amenities")
+router.get('/', async (req: Request, res: Response) => {
+    const amenities = await AmenityModel.findAll();
+    res.json(amenities);
 });
 
 

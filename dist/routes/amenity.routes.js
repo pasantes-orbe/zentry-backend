@@ -19,10 +19,12 @@ const Countries_1 = __importDefault(require("../classes/Countries"));
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
 const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
+const amenity_model_1 = __importDefault(require("../models/amenity.model"));
 const router = (0, express_1.Router)();
-router.get('/', (req, res) => {
-    res.json("Obtener todos los Amenities");
-});
+router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const amenities = yield amenity_model_1.default.findAll();
+    res.json(amenities);
+}));
 /**
  * Add New Amenity
  */
