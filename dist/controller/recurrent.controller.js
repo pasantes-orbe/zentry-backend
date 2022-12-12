@@ -80,12 +80,15 @@ class RecurrentController {
             const { id_recurrent: recurrentID } = req.params;
             const { status } = req.body;
             try {
+                // const r = await Recurrent.findByPk(recurrentID);
+                // await r?.update({status});
+                // return res.json(r);
                 const changed = yield recurrent_model_1.default.update({ status }, {
                     where: {
                         id: recurrentID
                     }
                 });
-                return res.json("Estado modificado");
+                return res.json(changed);
             }
             catch (error) {
                 return res.status(500).send(error);
