@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { where } from "sequelize";
 import Property from "../models/property.model";
 import Recurrent from "../models/recurrent.model";
 
@@ -75,6 +76,20 @@ class RecurrentController {
                 error
             })
         }
+    }
+
+    public async changeStatus(req: Request, res: Response) {
+        const { id_recurrent: recurrentID } = req.params;
+        const { status } = req.body;
+
+        
+
+        const changed = await Recurrent.update(status, {
+            where: {
+                id: recurrentID
+            }
+        });
+
     }
 
 }

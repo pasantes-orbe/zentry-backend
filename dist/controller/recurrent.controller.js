@@ -75,6 +75,17 @@ class RecurrentController {
             }
         });
     }
+    changeStatus(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_recurrent: recurrentID } = req.params;
+            const { status } = req.body;
+            const changed = yield recurrent_model_1.default.update(status, {
+                where: {
+                    id: recurrentID
+                }
+            });
+        });
+    }
 }
 exports.default = RecurrentController;
 //# sourceMappingURL=recurrent.controller.js.map
