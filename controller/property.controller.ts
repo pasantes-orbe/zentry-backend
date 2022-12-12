@@ -14,27 +14,31 @@ class PropertyController {
 
     public async search(req: Request, res: Response) {
 
+        const { search } = req.params;
 
+        if(!Number.isInteger(+search)){
+
+            const properties = await Property.findAll({
+                where: {
+                    id_country: req.params.id_country,
+                    name: {
+                        [Sequelize.Op.iLike]: `%${String(req.params.search)}%`
+                    }
+                    
+                }
+            });
+            return res.json(properties);
+
+        }
 
         const properties = await Property.findAll({
             where: {
                 id_country: req.params.id_country,
-                $or: [
-                    {
-                        name: {
-                            // [Op.like]: `%${req.params.search}%`
-                            [Sequelize.Op.iLike]: `%${req.params.search}%`
-                        }
-                    },
-                    {
-                        number: req.params.search
-                    }
-
-                ]
-                
+                number: search
             }
         });
-        res.json(properties);
+        
+        return res.json(properties);
     }
 
 

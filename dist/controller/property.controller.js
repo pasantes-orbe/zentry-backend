@@ -24,23 +24,25 @@ class PropertyController {
     }
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const { search } = req.params;
+            if (!Number.isInteger(+search)) {
+                const properties = yield property_model_1.default.findAll({
+                    where: {
+                        id_country: req.params.id_country,
+                        name: {
+                            [sequelize_1.Sequelize.Op.iLike]: `%${String(req.params.search)}%`
+                        }
+                    }
+                });
+                return res.json(properties);
+            }
             const properties = yield property_model_1.default.findAll({
                 where: {
                     id_country: req.params.id_country,
-                    $or: [
-                        {
-                            name: {
-                                // [Op.like]: `%${req.params.search}%`
-                                [sequelize_1.Sequelize.Op.iLike]: `%${req.params.search}%`
-                            }
-                        },
-                        {
-                            number: req.params.search
-                        }
-                    ]
+                    number: search
                 }
             });
-            res.json(properties);
+            return res.json(properties);
         });
     }
     getByID(req, res) {
