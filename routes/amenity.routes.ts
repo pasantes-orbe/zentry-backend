@@ -10,9 +10,68 @@ import AmenityModel from "../models/amenity.model";
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
-    const amenities = await AmenityModel.findAll();
+/**
+ * Get All By Country
+ */
+router.get('/:id_country', [
+    check('id_country', 'El id_country de country no puede estar vacío').notEmpty(),
+    check('id_country', 'El id de country debe ser numérico').isNumeric(),
+    check('id_country').custom(countryExists),
+    noErrors
+] ,async (req: Request, res: Response) => {
+    const amenities = await AmenityModel.findAll({
+        where: {
+            id_country: req.params.id_country
+        }
+    });
     res.json(amenities);
+});
+
+/**
+ * Get One By Country
+ */
+router.get('/:id_country/:id', [
+    check('id_country', 'El id_country de country no puede estar vacío').notEmpty(),
+    check('id_country', 'El id de country debe ser numérico').isNumeric(),
+    check('id_country').custom(countryExists),
+    check('id', 'El id de amenity no puede estar vacío').notEmpty(),
+    check('id', 'El id de amenity debe ser numérico').isNumeric(),
+    noErrors
+] , async (req: Request, res: Response) => {
+    const amenity = await AmenityModel.findByPk(req.params.id);
+    res.json(amenity);
+});
+
+/**
+ * Get One By Country
+ */
+router.get('/:id_country/:id', [
+    check('id_country', 'El id_country de country no puede estar vacío').notEmpty(),
+    check('id_country', 'El id de country debe ser numérico').isNumeric(),
+    check('id_country').custom(countryExists),
+    check('id', 'El id de amenity no puede estar vacío').notEmpty(),
+    check('id', 'El id de amenity debe ser numérico').isNumeric(),
+    noErrors
+] , async (req: Request, res: Response) => {
+    const amenity = await AmenityModel.findOne({
+        where: {
+            id: req.params.id,
+            id_country: req.params.id_country
+        }
+    });
+    res.json(amenity);
+});
+
+/**
+ * Get One
+ */
+router.get('/:id', [
+    check('id', 'El id de amenity no puede estar vacío').notEmpty(),
+    check('id', 'El id de amenity debe ser numérico').isNumeric(),
+    noErrors
+] , async (req: Request, res: Response) => {
+    const amenity = await AmenityModel.findByPk(req.params.id);
+    res.json(amenity);
 });
 
 
