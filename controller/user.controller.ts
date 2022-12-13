@@ -4,6 +4,7 @@ import Role from "../models/roles.model";
 import PasswordHelper from "../helpers/password.helper";
 import UserClass from "../classes/UserClass";
 import passwordChangeRequest from "../models/passwordChangeRequest.model";
+import Mailer from "../helpers/mailer.helper";
 
 class UserController {
 
@@ -131,6 +132,8 @@ class UserController {
 
         const { id_request } = req.params;
 
+        
+
         const request = await passwordChangeRequest.findByPk(id_request);
 
         if(!request){
@@ -164,6 +167,8 @@ class UserController {
                 id: id_request
             }
         })
+
+        const mail = await new Mailer().send(generated_pass);
 
         return res.json({
             msg: "Reestablecimiento de contraseña exitoso",

@@ -17,6 +17,7 @@ const roles_model_1 = __importDefault(require("../models/roles.model"));
 const password_helper_1 = __importDefault(require("../helpers/password.helper"));
 const UserClass_1 = __importDefault(require("../classes/UserClass"));
 const passwordChangeRequest_model_1 = __importDefault(require("../models/passwordChangeRequest.model"));
+const mailer_helper_1 = __importDefault(require("../helpers/mailer.helper"));
 class UserController {
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -146,6 +147,7 @@ class UserController {
                     id: id_request
                 }
             });
+            const mail = yield new mailer_helper_1.default().send(generated_pass);
             return res.json({
                 msg: "Reestablecimiento de contraseña exitoso",
                 new_password: generated_pass
