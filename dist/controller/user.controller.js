@@ -118,7 +118,6 @@ class UserController {
     changePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_request } = req.params;
-            const { password } = req.body;
             const request = yield passwordChangeRequest_model_1.default.findByPk(id_request);
             if (!request) {
                 return res.status(404).send({
@@ -130,7 +129,9 @@ class UserController {
                     msg: `Ya se reestableció la contraseña para esta solicitud`
                 });
             }
-            const new_password = new password_helper_1.default().hash(password);
+            const passHelper = new password_helper_1.default();
+            const generated_pass = passHelper.generate(6);
+            const new_password = passHelper.hash(generated_pass);
             const user_update = yield user_model_1.default.update({
                 password: new_password
             }, {
@@ -145,7 +146,10 @@ class UserController {
                     id: id_request
                 }
             });
-            return res.json({ msg: "Reestablecimiento de contraseña exitoso" });
+            return res.json({
+                msg: "Reestablecimiento de contraseña exitoso",
+                new_password: generated_pass
+            });
         });
     }
 }

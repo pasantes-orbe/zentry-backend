@@ -40,8 +40,6 @@ router.post('/request-change-password', [
  */
 router.patch('/change-password/:id_request', [
     isAdmin,
-    check('password', "El campo 'password' no debe estar vacío").notEmpty(),
-    noErrors
 ], controller.changePassword);
 
 /**

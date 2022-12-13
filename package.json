@@ -27,6 +27,7 @@
     "express": "^4.18.1",
     "express-fileupload": "^1.4.0",
     "express-validator": "^6.14.2",
+    "generate-password": "^1.7.0",
     "jsonwebtoken": "^8.5.1",
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",

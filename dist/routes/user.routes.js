@@ -38,8 +38,6 @@ router.post('/request-change-password', [
  */
 router.patch('/change-password/:id_request', [
     isAdmin_middleware_1.default,
-    (0, express_validator_1.check)('password', "El campo 'password' no debe estar vacío").notEmpty(),
-    noErrors_middleware_1.default
 ], controller.changePassword);
 /**
  * All Password Change Requests

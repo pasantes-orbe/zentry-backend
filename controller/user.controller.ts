@@ -130,7 +130,6 @@ class UserController {
     public async changePassword(req: Request, res: Response) {
 
         const { id_request } = req.params;
-        const { password }   = req.body;
 
         const request = await passwordChangeRequest.findByPk(id_request);
 
@@ -146,7 +145,9 @@ class UserController {
             });
         }
 
-        const new_password = new PasswordHelper().hash(password);
+        const passHelper = new PasswordHelper();
+        const generated_pass = passHelper.generate(6);
+        const new_password = passHelper.hash(generated_pass);
         
         const user_update = await User.update({ 
             password: new_password
@@ -164,7 +165,10 @@ class UserController {
             }
         })
 
-        return res.json({msg: "Reestablecimiento de contraseña exitoso"});
+        return res.json({
+            msg: "Reestablecimiento de contraseña exitoso",
+            new_password: generated_pass
+        });
 
         
 
