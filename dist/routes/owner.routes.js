@@ -24,6 +24,34 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keys = yield user_properties_model_1.default.findAll();
     return res.json(keys);
 }));
+/**
+ * Get Property by Owner ID
+ */
+router.get('/:id_owner', [
+    (0, express_validator_1.check)('id_owner').custom(userExists_middleware_1.default),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const property = yield user_properties_model_1.default.findOne({
+        where: {
+            id_user: req.params.id_owner
+        }
+    });
+    return res.json(property);
+}));
+/**
+ * Get Owners By Property ID
+ */
+router.get('/:id_property', [
+    (0, express_validator_1.check)('id_property').isNumeric(),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //TODO:
+    // const keys = await UserProperties.findAll({
+    //     where: {
+    //         id
+    //     }
+    // })
+}));
 router.post('/', [
     (0, express_validator_1.check)('id_user', "Id de usuario obligatorio").notEmpty(),
     (0, express_validator_1.check)('id_user', "El id de usuario debe ser numerico").isNumeric(),

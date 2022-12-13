@@ -28,7 +28,7 @@ router.post('/', [
 /**
  * Request Change Password
  */
-router.post('/request-change-password/', [
+router.post('/request-change-password', [
     (0, express_validator_1.check)('email', "Campo 'email' obligatorio").notEmpty(),
     (0, express_validator_1.check)('email', "El email no es valido").isEmail(),
     noErrors_middleware_1.default

@@ -21,12 +21,10 @@ class PropertyController {
             const properties = await Property.findAll({
                 where: {
                     id_country: req.params.id_country,
-                    name: {
-                        [Sequelize.Op.iLike]: `%${String(req.params.search)}%`
-                    }
-                    
+                    name: {[Sequelize.Op.iLike]: `%${String(req.params.search)}%`}
                 }
             });
+
             return res.json(properties);
 
         }
@@ -39,6 +37,7 @@ class PropertyController {
         });
         
         return res.json(properties);
+
     }
 
 

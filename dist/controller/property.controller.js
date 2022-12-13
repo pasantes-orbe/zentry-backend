@@ -29,9 +29,7 @@ class PropertyController {
                 const properties = yield property_model_1.default.findAll({
                     where: {
                         id_country: req.params.id_country,
-                        name: {
-                            [sequelize_1.Sequelize.Op.iLike]: `%${String(req.params.search)}%`
-                        }
+                        name: { [sequelize_1.Sequelize.Op.iLike]: `%${String(req.params.search)}%` }
                     }
                 });
                 return res.json(properties);

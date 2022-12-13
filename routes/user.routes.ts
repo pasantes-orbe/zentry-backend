@@ -29,7 +29,7 @@ router.post('/', [
 /**
  * Request Change Password
  */
-router.post('/request-change-password/', [
+router.post('/request-change-password', [
     check('email', "Campo 'email' obligatorio").notEmpty(),
     check('email', "El email no es valido").isEmail(),
     noErrors
