@@ -6,6 +6,7 @@ import Country from "./country.model";
 import AmenityModel from "./amenity.model";
 import UserProperties from "./user_properties.model";
 import passwordChangeRequest from "./passwordChangeRequest.model";
+import Reservation from "./reservation.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -90,9 +91,20 @@ passwordChangeRequest.belongsTo(User, {
 })
 
 
+Reservation.belongsTo(User, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+});
+
+Reservation.belongsTo(AmenityModel, {
+    foreignKey: 'id_amenity',
+    targetKey: 'id'
+});
+
 UserProperties.sync({ alter: false });
 Property.sync({ alter: true });
 Country.sync({ alter: true });
 Recurrent.sync({ alter: true });
 AmenityModel.sync({ alter: true });
 passwordChangeRequest.sync({alter: true});
+Reservation.sync({alter: true});

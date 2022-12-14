@@ -9,6 +9,8 @@ import countriesRoutes from "../routes/country.routes";
 import authRoutes from "../routes/auth.routes";
 import amenityRoutes from "../routes/amenity.routes";
 import ownersRoutes from "../routes/owner.routes";
+import reservationRoutes from "../routes/reservation.routes";
+
 import db from "../DB/connection";
 
 import fileUpload from "express-fileupload";
@@ -25,7 +27,8 @@ class Server {
         auth: '/api/auth',
         countries: '/api/countries',
         amenities: '/api/amenities',
-        owners: '/api/owners'
+        owners: '/api/owners',
+        reservations: '/api/reservations'
     }
 
     constructor() {
@@ -84,6 +87,7 @@ class Server {
         this.app.use(this.apiPaths.countries, countriesRoutes);
         this.app.use(this.apiPaths.amenities, amenityRoutes);
         this.app.use(this.apiPaths.owners, ownersRoutes);
+        this.app.use(this.apiPaths.reservations, reservationRoutes);
     }
 
     listen() {

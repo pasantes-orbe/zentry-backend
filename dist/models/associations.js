@@ -11,6 +11,7 @@ const country_model_1 = __importDefault(require("./country.model"));
 const amenity_model_1 = __importDefault(require("./amenity.model"));
 const user_properties_model_1 = __importDefault(require("./user_properties.model"));
 const passwordChangeRequest_model_1 = __importDefault(require("./passwordChangeRequest.model"));
+const reservation_model_1 = __importDefault(require("./reservation.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -71,10 +72,19 @@ passwordChangeRequest_model_1.default.belongsTo(user_model_1.default, {
     foreignKey: 'id_user',
     targetKey: 'id'
 });
+reservation_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+});
+reservation_model_1.default.belongsTo(amenity_model_1.default, {
+    foreignKey: 'id_amenity',
+    targetKey: 'id'
+});
 user_properties_model_1.default.sync({ alter: false });
 property_model_1.default.sync({ alter: true });
 country_model_1.default.sync({ alter: true });
 recurrent_model_1.default.sync({ alter: true });
 amenity_model_1.default.sync({ alter: true });
 passwordChangeRequest_model_1.default.sync({ alter: true });
+reservation_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map
