@@ -15,6 +15,14 @@ const recurrent = new recurrent_controller_1.default();
 router.get('/', recurrent.getAll);
 //TODO: ADMIN only
 router.get('/:id', recurrent.getByID);
+/**
+ * Get Recurrents by Country
+ */
+router.get('/get-by-country/:id_country', [
+    (0, express_validator_1.check)('id_country').notEmpty(),
+    (0, express_validator_1.check)('id_country').isNumeric(),
+    noErrors_middleware_1.default
+], recurrent.getByCountry);
 router.post('/', [
     (0, express_validator_1.check)('id_property', 'El id de propiedad es obligatorio').notEmpty(),
     (0, express_validator_1.check)('id_property', 'El id de propiedad debe ser numerico').isNumeric(),

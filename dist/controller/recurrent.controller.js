@@ -18,7 +18,7 @@ class RecurrentController {
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const recurrents = yield recurrent_model_1.default.findAll({
-                include: property_model_1.default,
+                include: [property_model_1.default],
                 attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
             });
             res.json(recurrents);
@@ -37,6 +37,18 @@ class RecurrentController {
             res.status(404).json({
                 msg: `No existe el invitado recurrente con el id ${id}`,
             });
+        });
+    }
+    getByCountry(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const country = req.params.id_country;
+            const recurrent = yield recurrent_model_1.default.findAll({
+                include: [property_model_1.default]
+            });
+            const recurrents_by_country = recurrent.filter((rec) => {
+                return rec.property.id_country == country;
+            });
+            return res.json(recurrents_by_country);
         });
     }
     create(req, res) {

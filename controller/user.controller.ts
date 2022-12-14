@@ -119,7 +119,8 @@ class UserController {
             const requests = await passwordChangeRequest.findAll({
                 where: {
                     changed: false
-                }
+                },
+                include: User
             })
             return res.json(requests);
         }

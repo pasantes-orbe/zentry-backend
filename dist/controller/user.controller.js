@@ -108,7 +108,8 @@ class UserController {
                 const requests = yield passwordChangeRequest_model_1.default.findAll({
                     where: {
                         changed: false
-                    }
+                    },
+                    include: user_model_1.default
                 });
                 return res.json(requests);
             }

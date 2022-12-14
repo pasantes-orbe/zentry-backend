@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { where } from "sequelize";
+import CountryModel from "../models/country.model";
 import Property from "../models/property.model";
 import Recurrent from "../models/recurrent.model";
 
@@ -8,7 +9,7 @@ class RecurrentController {
     public async getAll(req: Request, res: Response) {
 
         const recurrents = await Recurrent.findAll({
-            include: Property,
+            include: [Property],
             attributes: ['id','status','guest_name','guest_lastname','dni']
         });
         res.json(recurrents);
@@ -33,6 +34,24 @@ class RecurrentController {
         });
 
     }
+
+    public async getByCountry(req: Request, res: Response) {
+
+        const country = req.params.id_country;
+
+        const recurrent = await Recurrent.findAll({
+            include: [Property]
+        });
+
+        const recurrents_by_country = recurrent.filter( (rec) => {
+            return rec.property.id_country == country;
+        })
+
+        return res.json(recurrents_by_country);
+        
+    }
+
+    
 
     public async create(req: Request, res: Response) {
 

@@ -13,6 +13,14 @@ router.get('/', recurrent.getAll);
 
 //TODO: ADMIN only
 router.get('/:id', recurrent.getByID);
+/**
+ * Get Recurrents by Country
+ */
+router.get('/get-by-country/:id_country', [
+    check('id_country').notEmpty(),
+    check('id_country').isNumeric(),
+    noErrors
+] , recurrent.getByCountry);
 
 router.post('/', [
     check('id_property', 'El id de propiedad es obligatorio').notEmpty(),
