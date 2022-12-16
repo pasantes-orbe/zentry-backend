@@ -12,7 +12,7 @@ import User from "../models/user.model";
 const router = Router();
 
 /**
- * Get All By Country
+ * Get All
  */
 router.get('/', async (req: Request, res: Response) => {
     const guards = await User.findAll({
@@ -20,6 +20,21 @@ router.get('/', async (req: Request, res: Response) => {
             '$role.name$': 'vigilador'
         },
         include: Role
+    });
+    return res.json(guards); 
+});
+
+/**
+ * Get All By Country
+ */
+router.get('/get_by_country/:id_country', [
+    check('id_country').isNumeric(),
+    check('id_country').notEmpty(),
+] , async (req: Request, res: Response) => {
+    const guards = await GuardCountry.findAll({
+        where: {
+            id_country: req.params.id_country
+        }
     });
     return res.json(guards); 
 });

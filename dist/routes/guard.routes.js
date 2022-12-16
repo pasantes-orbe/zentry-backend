@@ -22,7 +22,7 @@ const roles_model_1 = __importDefault(require("../models/roles.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const router = (0, express_1.Router)();
 /**
- * Get All By Country
+ * Get All
  */
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const guards = yield user_model_1.default.findAll({
@@ -30,6 +30,20 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             '$role.name$': 'vigilador'
         },
         include: roles_model_1.default
+    });
+    return res.json(guards);
+}));
+/**
+ * Get All By Country
+ */
+router.get('/get_by_country/:id_country', [
+    (0, express_validator_1.check)('id_country').isNumeric(),
+    (0, express_validator_1.check)('id_country').notEmpty(),
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const guards = yield guard_country_model_1.default.findAll({
+        where: {
+            id_country: req.params.id_country
+        }
     });
     return res.json(guards);
 }));
