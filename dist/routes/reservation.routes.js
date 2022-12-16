@@ -21,6 +21,7 @@ const userExists_middleware_1 = __importDefault(require("../middlewares/customs/
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const amenity_model_1 = __importDefault(require("../models/amenity.model"));
 const reservation_model_1 = __importDefault(require("../models/reservation.model"));
+const user_model_1 = __importDefault(require("../models/user.model"));
 const router = (0, express_1.Router)();
 /**
  * Create Reservation
@@ -136,7 +137,7 @@ router.get('/country/get_by_id/:id_country', [
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_country } = req.params;
     const reservations = yield reservation_model_1.default.findAll({
-        include: amenity_model_1.default
+        include: [user_model_1.default, amenity_model_1.default]
     });
     const reservations_by_country = reservations.filter((reservation) => {
         return reservation.amenity.id_country == id_country;

@@ -8,6 +8,7 @@ import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import AmenityModel from "../models/amenity.model";
 import Reservation from "../models/reservation.model";
+import User from "../models/user.model";
 
 const router = Router();
 
@@ -158,7 +159,7 @@ router.get('/country/get_by_id/:id_country', [
     const { id_country } = req.params
 
     const reservations = await Reservation.findAll({
-        include: AmenityModel
+        include: [ User, AmenityModel]
     });
 
     const reservations_by_country = reservations.filter( (reservation) => {
