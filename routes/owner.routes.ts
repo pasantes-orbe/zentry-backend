@@ -81,7 +81,7 @@ router.post('/', [
 /**
  * ASSIGN COUNTRY
  */
-router.post('/country/assign', [
+router.post('/assign', [
     check('id_user', "Id de usuario obligatorio").notEmpty(),
     check('id_user', "El id de usuario debe ser numerico").isNumeric(),
     check('id_user').custom(userExists),
