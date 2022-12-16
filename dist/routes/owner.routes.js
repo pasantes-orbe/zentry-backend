@@ -19,6 +19,7 @@ const countryExists_middleware_1 = __importDefault(require("../middlewares/custo
 const propertyExists_middleware_1 = __importDefault(require("../middlewares/customs/propertyExists.middleware"));
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
+const owner_country_model_1 = __importDefault(require("../models/owner_country.model"));
 const user_properties_model_1 = __importDefault(require("../models/user_properties.model"));
 const router = (0, express_1.Router)();
 /**
@@ -73,6 +74,28 @@ router.post('/', [
     const key = new user_properties_model_1.default(req.body);
     key.save();
     return res.json(key);
+}));
+/**
+ * ASSIGN COUNTRY
+ */
+router.post('/country/assign', [
+    (0, express_validator_1.check)('id_user', "Id de usuario obligatorio").notEmpty(),
+    (0, express_validator_1.check)('id_user', "El id de usuario debe ser numerico").isNumeric(),
+    (0, express_validator_1.check)('id_user').custom(userExists_middleware_1.default),
+    (0, express_validator_1.check)('id_country', "Id de country obligatorio").notEmpty(),
+    (0, express_validator_1.check)('id_country', "El id de country debe ser numerico").isNumeric(),
+    (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const isOwnerRole = yield new UserClass_1.default().is("propietario", +req.body.id_user);
+    if (!isOwnerRole) {
+        return res.status(400).send({
+            msg: "No es un usuario propietario"
+        });
+    }
+    const ownerCountry = new owner_country_model_1.default(req.body);
+    ownerCountry.save();
+    return res.json(ownerCountry);
 }));
 exports.default = router;
 //# sourceMappingURL=owner.routes.js.map

@@ -9,6 +9,7 @@ import passwordChangeRequest from "./passwordChangeRequest.model";
 import Reservation from "./reservation.model";
 import GuardCountry from "./guard_country.model";
 import CountryModel from "./country.model";
+import OwnerCountry from "./owner_country.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -97,6 +98,16 @@ GuardCountry.belongsTo(CountryModel, {
     targetKey: 'id'
 })
 
+OwnerCountry.belongsTo(User, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+})
+
+OwnerCountry.belongsTo(CountryModel, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+})
+
 passwordChangeRequest.belongsTo(User, {
     foreignKey: 'id_user',
     targetKey: 'id'
@@ -121,3 +132,4 @@ AmenityModel.sync({ alter: true });
 passwordChangeRequest.sync({alter: true});
 Reservation.sync({alter: true});
 GuardCountry.sync({alter: true});
+OwnerCountry.sync({alter: true});

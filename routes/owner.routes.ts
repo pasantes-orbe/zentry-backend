@@ -5,6 +5,7 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import OwnerCountry from "../models/owner_country.model";
 import Property from "../models/property.model";
 import User from "../models/user.model";
 import UserProperties from "../models/user_properties.model";
@@ -76,6 +77,34 @@ router.post('/', [
     key.save();
     return res.json(key);
 });
+
+/**
+ * ASSIGN COUNTRY
+ */
+router.post('/country/assign', [
+    check('id_user', "Id de usuario obligatorio").notEmpty(),
+    check('id_user', "El id de usuario debe ser numerico").isNumeric(),
+    check('id_user').custom(userExists),
+    check('id_country', "Id de country obligatorio").notEmpty(),
+    check('id_country', "El id de country debe ser numerico").isNumeric(),
+    check('id_country').custom(countryExists),
+    noErrors
+], async(req: Request, res: Response) => {
+    const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
+
+    if(!isOwnerRole){
+        return res.status(400).send({
+            msg: "No es un usuario propietario"
+        })
+    }
+
+    const ownerCountry = new OwnerCountry(req.body);
+    ownerCountry.save();
+    return res.json(ownerCountry);
+} );
+
+
+
 
 
 export default router;
