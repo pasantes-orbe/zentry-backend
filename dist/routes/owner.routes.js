@@ -71,6 +71,17 @@ router.post('/', [
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const isOwnerRole = yield new UserClass_1.default().is("propietario", +req.body.id_user);
+    const alreadyExists = yield user_properties_model_1.default.findOne({
+        where: {
+            id_user: req.body.id_user,
+            id_property: req.body.id_property
+        }
+    });
+    if (alreadyExists) {
+        return res.status(400).send({
+            msg: "Este propietario ya tiene asignada esta propiedad"
+        });
+    }
     const key = new user_properties_model_1.default(req.body);
     key.save();
     return res.json(key);
@@ -93,7 +104,7 @@ router.post('/assign', [
             msg: "No es un usuario propietario"
         });
     }
-    const alreadyExists = yield owner_country_model_1.default.findAll({
+    const alreadyExists = yield owner_country_model_1.default.findOne({
         where: {
             id_user: req.body.id_user,
             id_country: req.body.id_country

@@ -73,6 +73,21 @@ router.post('/', [
     noErrors
 ] , async(req: Request, res: Response) => {
     const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
+
+    const alreadyExists = await UserProperties.findOne({
+        where: {
+            id_user: req.body.id_user,
+            id_property: req.body.id_property
+        }
+    })
+
+    if(alreadyExists){
+
+        return res.status(400).send({
+            msg: "Este propietario ya tiene asignada esta propiedad"
+        })
+    }
+
     const key = new UserProperties(req.body);
     key.save();
     return res.json(key);
@@ -98,7 +113,7 @@ router.post('/assign', [
         })
     }
 
-    const alreadyExists = await OwnerCountry.findAll({
+    const alreadyExists = await OwnerCountry.findOne({
         where: {
             id_user: req.body.id_user,
             id_country: req.body.id_country
