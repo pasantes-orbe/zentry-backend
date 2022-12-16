@@ -98,6 +98,19 @@ router.post('/assign', [
         })
     }
 
+    const alreadyExists = await OwnerCountry.findAll({
+        where: {
+            id_user: req.body.id_user,
+            id_country: req.body.id_country
+        }
+    })
+
+    if(alreadyExists){
+        return res.status(400).send({
+            msg: "Este propietario ya tiene asignado un country"
+        })
+    }
+
     const ownerCountry = new OwnerCountry(req.body);
     ownerCountry.save();
     return res.json(ownerCountry);

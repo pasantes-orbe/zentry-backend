@@ -93,6 +93,17 @@ router.post('/assign', [
             msg: "No es un usuario propietario"
         });
     }
+    const alreadyExists = yield owner_country_model_1.default.findAll({
+        where: {
+            id_user: req.body.id_user,
+            id_country: req.body.id_country
+        }
+    });
+    if (alreadyExists) {
+        return res.status(400).send({
+            msg: "Este propietario ya tiene asignado un country"
+        });
+    }
     const ownerCountry = new owner_country_model_1.default(req.body);
     ownerCountry.save();
     return res.json(ownerCountry);
