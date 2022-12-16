@@ -52,7 +52,7 @@ router.post('/', [
         }
     });
     if (isPendient) {
-        return res.json("Ya tenés una reserva pendiente de aprobación para este lugar de reserva.");
+        return res.status(400).send("Ya tenés una reserva pendiente de aprobación para este lugar de reserva.");
     }
     const reservation = new reservation_model_1.default(reservationBody);
     reservation.save();
