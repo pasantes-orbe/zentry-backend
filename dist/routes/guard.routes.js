@@ -19,6 +19,8 @@ const countryExists_middleware_1 = __importDefault(require("../middlewares/custo
 const isGuard_middleware_1 = __importDefault(require("../middlewares/customs/isGuard.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const guard_schedule_model_1 = __importDefault(require("../models/guard_schedule.model"));
+const moment_1 = __importDefault(require("moment"));
+const Dates_1 = __importDefault(require("../classes/Dates"));
 const router = (0, express_1.Router)();
 /**
  * Get All
@@ -65,7 +67,24 @@ router.get('/schedule/all/:id_country', [
             id_country: req.params.id_country
         }
     });
-    return res.json(guards);
+    const object = guards.map(x => {
+        const guard = x;
+        const now = (0, moment_1.default)();
+        const start = guard.start;
+        const exit = guard.exit;
+        const isInHournow = now.isBetween(start, exit);
+        // console.log(now.day())
+        //TODO: ARREGLAR, NO FUNCIONA
+        const isWorkDay = new Dates_1.default().getDay(now.day());
+        const isWorking = () => {
+            return isInHournow && isWorkDay;
+        };
+        return {
+            guard,
+            guard, ['working']: isWorking()
+        };
+    });
+    return res.json(object);
 }));
 /**
  * Assign Schedule

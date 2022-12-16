@@ -11,6 +11,9 @@ import GuardSchedule from "../models/guard_schedule.model";
 import Role from "../models/roles.model";
 import User from "../models/user.model";
 
+import moment from "moment";
+import DatesHelper, { Dates } from "../classes/Dates";
+
 const router = Router();
 
 /**
@@ -18,7 +21,7 @@ const router = Router();
  */
 router.get('/', async (req: Request, res: Response) => {
     const guards = await new Guard().getAll();
-    return res.json(guards); 
+    return res.json(guards);
 });
 
 /**
@@ -27,9 +30,9 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/get_by_country/:id_country', [
     check('id_country').isNumeric(),
     check('id_country').notEmpty(),
-] , async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
 
-    const guards = await new Guard().getByCountry( +req.params.id_country );
+    const guards = await new Guard().getByCountry(+req.params.id_country);
 
     return res.json(guards);
 
@@ -47,9 +50,9 @@ router.post('/assign', [
     check('id_country').custom(countryExists),
     check('id_user').custom(isGuard),
     noErrors
-] , async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
 
-    const guard  = req.body;
+    const guard = req.body;
     const assign = await new Guard().assignCountry(guard);
     res.json(assign);
 
@@ -61,7 +64,7 @@ router.post('/assign', [
 router.get('/schedule/all/:id_country', [
     check('id_country').isNumeric(),
     check('id_country').notEmpty(),
-] , async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
 
     const guards = await GuardSchedule.findAll({
         where: {
@@ -69,7 +72,30 @@ router.get('/schedule/all/:id_country', [
         }
     })
 
-    return res.json(guards);
+    const object = guards.map(x => {
+
+        const guard = x;
+        const now = moment();
+        const start = guard.start;
+        const exit = guard.exit;
+        const isInHournow = now.isBetween(start, exit);
+
+        // console.log(now.day())
+
+        //TODO: ARREGLAR, NO FUNCIONA
+        const isWorkDay = new DatesHelper().getDay(now.day());
+        const isWorking = () => {
+            return isInHournow && isWorkDay;
+        }
+
+        return {
+            guard,
+            guard['working']: isWorking()
+        }
+    })
+
+
+    return res.json(object);
 
 });
 
@@ -86,7 +112,7 @@ router.post('/schedule', [
     check('id_user').notEmpty(),
     check('id_user').isNumeric(),
     noErrors
-] , async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
 
 
 
