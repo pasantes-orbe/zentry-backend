@@ -97,6 +97,18 @@ class PropertyController {
         }
     }
 
+    public async getByCountry(req: Request, res: Response){
+
+        const properties = await Property.findAll({
+            where: {
+                id_country: req.params.id_country
+            }
+        });
+
+        return res.json(properties);
+
+    }
+
 }
 
 export default PropertyController;

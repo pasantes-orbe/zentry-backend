@@ -15,11 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const UserClass_1 = __importDefault(require("../classes/UserClass"));
+const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
 const propertyExists_middleware_1 = __importDefault(require("../middlewares/customs/propertyExists.middleware"));
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const user_properties_model_1 = __importDefault(require("../models/user_properties.model"));
 const router = (0, express_1.Router)();
+/**
+ * Get All
+ */
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keys = yield user_properties_model_1.default.findAll();
     return res.json(keys);
@@ -39,19 +43,23 @@ router.get('/:id_owner', [
     return res.json(property);
 }));
 /**
- * Get Owners By Property ID
+ * Get All By Country
  */
-router.get('/:id_property', [
-    (0, express_validator_1.check)('id_property').isNumeric(),
+router.get('/country/get_by_id/:id_country', [
+    (0, express_validator_1.check)('id_country').notEmpty(),
+    (0, express_validator_1.check)('id_country').isNumeric(),
+    (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //TODO:
-    // const keys = await UserProperties.findAll({
-    //     where: {
-    //         id
-    //     }
-    // })
+    const owners = yield user_properties_model_1.default.findAll();
+    const owners_by_country = owners.filter((owner) => {
+        return owner.property.id_country == req.params.id_country;
+    });
+    return res.json(owners_by_country);
 }));
+/**
+ * Relation with property
+ */
 router.post('/', [
     (0, express_validator_1.check)('id_user', "Id de usuario obligatorio").notEmpty(),
     (0, express_validator_1.check)('id_user', "El id de usuario debe ser numerico").isNumeric(),

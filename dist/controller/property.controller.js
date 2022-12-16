@@ -89,6 +89,16 @@ class PropertyController {
             }
         });
     }
+    getByCountry(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const properties = yield property_model_1.default.findAll({
+                where: {
+                    id_country: req.params.id_country
+                }
+            });
+            return res.json(properties);
+        });
+    }
 }
 exports.default = PropertyController;
 //# sourceMappingURL=property.controller.js.map

@@ -21,6 +21,14 @@ router.get('/:id_country/:search', [
     (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default),
     noErrors_middleware_1.default
 ], property.search);
+/**
+ * Get All By Country
+ */
+router.get('/country/get_by_id/:id_country', [
+    (0, express_validator_1.check)('id_country').notEmpty(),
+    (0, express_validator_1.check)('id_country').isNumeric(),
+    noErrors_middleware_1.default
+], property.getByCountry);
 router.get('/:id', isAdmin_middleware_1.default, property.getByID);
 router.post('/', [
     isAdmin_middleware_1.default,

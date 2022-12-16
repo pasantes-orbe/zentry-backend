@@ -21,6 +21,15 @@ router.get('/:id_country/:search', [
 ] , property.search);
 
 
+/**
+ * Get All By Country
+ */
+router.get('/country/get_by_id/:id_country', [
+    check('id_country').notEmpty(),
+    check('id_country').isNumeric(),
+    noErrors
+], property.getByCountry)
+
 
 router.get('/:id', isAdmin, property.getByID);
 router.post('/', [
@@ -32,6 +41,8 @@ router.post('/', [
     check('address', 'La direccion es obligatoria').notEmpty(),
     noErrors
 ], property.create);
+
+
 
 
 export default router;

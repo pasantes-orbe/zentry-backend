@@ -15,9 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const amenityExists_middleware_1 = __importDefault(require("../middlewares/customs/amenityExists.middleware"));
+const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
 const reservationExists_middleware_1 = __importDefault(require("../middlewares/customs/reservationExists.middleware"));
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
+const amenity_model_1 = __importDefault(require("../models/amenity.model"));
 const reservation_model_1 = __importDefault(require("../models/reservation.model"));
 const router = (0, express_1.Router)();
 /**
@@ -64,7 +66,8 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const reservations = yield reservation_model_1.default.findAll({
             where: {
                 status
-            }
+            },
+            include: amenity_model_1.default
         });
         return res.json(reservations);
     }
@@ -72,7 +75,7 @@ router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.json(reservations);
 }));
 /**
- * Update
+ * Update Status
  */
 router.patch('/:id_reservation/:status', [
     (0, express_validator_1.check)('id_reservation', "El campo 'id_reservation' no puede estar vacío").notEmpty(),
@@ -122,6 +125,23 @@ router.get('/:id_user', [
         }
     });
     return res.json(reservations);
+}));
+/**
+ * Get All Reservations by Country
+ */
+router.get('/country/get_by_id/:id_country', [
+    (0, express_validator_1.check)('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
+    (0, express_validator_1.check)('id_country', "El campo 'id_country' es obligatorio").notEmpty(),
+    (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default)
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id_country } = req.params;
+    const reservations = yield reservation_model_1.default.findAll({
+        include: amenity_model_1.default
+    });
+    const reservations_by_country = reservations.filter((reservation) => {
+        return reservation.amenity.id_country == id_country;
+    });
+    return res.json(reservations_by_country);
 }));
 exports.default = router;
 //# sourceMappingURL=reservation.routes.js.map

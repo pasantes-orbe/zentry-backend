@@ -12,6 +12,8 @@ const amenity_model_1 = __importDefault(require("./amenity.model"));
 const user_properties_model_1 = __importDefault(require("./user_properties.model"));
 const passwordChangeRequest_model_1 = __importDefault(require("./passwordChangeRequest.model"));
 const reservation_model_1 = __importDefault(require("./reservation.model"));
+const guard_country_model_1 = __importDefault(require("./guard_country.model"));
+const country_model_2 = __importDefault(require("./country.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -68,6 +70,14 @@ user_properties_model_1.default.belongsTo(property_model_1.default, {
     foreignKey: 'id_property',
     targetKey: 'id'
 });
+guard_country_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+});
+guard_country_model_1.default.belongsTo(country_model_2.default, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+});
 passwordChangeRequest_model_1.default.belongsTo(user_model_1.default, {
     foreignKey: 'id_user',
     targetKey: 'id'
@@ -87,4 +97,5 @@ recurrent_model_1.default.sync({ alter: true });
 amenity_model_1.default.sync({ alter: true });
 passwordChangeRequest_model_1.default.sync({ alter: true });
 reservation_model_1.default.sync({ alter: true });
+guard_country_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map

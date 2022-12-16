@@ -23,6 +23,7 @@ const auth_routes_1 = __importDefault(require("../routes/auth.routes"));
 const amenity_routes_1 = __importDefault(require("../routes/amenity.routes"));
 const owner_routes_1 = __importDefault(require("../routes/owner.routes"));
 const reservation_routes_1 = __importDefault(require("../routes/reservation.routes"));
+const guard_routes_1 = __importDefault(require("../routes/guard.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 class Server {
@@ -36,7 +37,8 @@ class Server {
             countries: '/api/countries',
             amenities: '/api/amenities',
             owners: '/api/owners',
-            reservations: '/api/reservations'
+            reservations: '/api/reservations',
+            guards: '/api/guards'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -85,6 +87,7 @@ class Server {
         this.app.use(this.apiPaths.amenities, amenity_routes_1.default);
         this.app.use(this.apiPaths.owners, owner_routes_1.default);
         this.app.use(this.apiPaths.reservations, reservation_routes_1.default);
+        this.app.use(this.apiPaths.guards, guard_routes_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {

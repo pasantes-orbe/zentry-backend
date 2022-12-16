@@ -2,9 +2,11 @@ import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import { where } from "sequelize";
 import amenityExists from "../middlewares/customs/amenityExists.middleware";
+import countryExists from "../middlewares/customs/countryExists.middleware";
 import reservationExists from "../middlewares/customs/reservationExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import AmenityModel from "../models/amenity.model";
 import Reservation from "../models/reservation.model";
 
 const router = Router();
@@ -65,7 +67,8 @@ router.get('/', async (req: Request, res: Response) => {
         const reservations = await Reservation.findAll({
             where: {
                 status
-            }
+            },
+            include: AmenityModel
         });
 
         return res.json(reservations);
@@ -76,7 +79,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 /**
- * Update 
+ * Update Status
  */
 router.patch('/:id_reservation/:status', [
     check('id_reservation', "El campo 'id_reservation' no puede estar vacío").notEmpty(),
@@ -141,6 +144,31 @@ router.get('/:id_user', [
 
     return res.json(reservations);
 });
+
+/**
+ * Get All Reservations by Country
+ */
+
+router.get('/country/get_by_id/:id_country', [
+    check('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
+    check('id_country', "El campo 'id_country' es obligatorio").notEmpty(),
+    check('id_country').custom(countryExists)
+] ,async (req: Request, res: Response) => {
+
+    const { id_country } = req.params
+
+    const reservations = await Reservation.findAll({
+        include: AmenityModel
+    });
+
+    const reservations_by_country = reservations.filter( (reservation) => {
+        return reservation.amenity.id_country == id_country;
+    })
+
+    return res.json(reservations_by_country);
+});
+
+
 
 
 
