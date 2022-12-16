@@ -10,6 +10,7 @@ import Reservation from "./reservation.model";
 import GuardCountry from "./guard_country.model";
 import CountryModel from "./country.model";
 import OwnerCountry from "./owner_country.model";
+import GuardSchedule from "./guard_schedule.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -31,9 +32,6 @@ Country.hasMany(Property, {
     sourceKey: 'id'
 })
 
-
-
-
 Property.hasMany(Recurrent, {
     foreignKey: 'id_property',
     sourceKey: 'id'
@@ -54,18 +52,6 @@ AmenityModel.belongsTo(Country, {
     foreignKey: 'id_country',
     targetKey: 'id'
 })
-
-
-
-// UserProperties.hasOne(User, {
-//     foreignKey: 'id_user',
-//     sourceKey: 'id'
-// })
-
-// UserProperties.hasOne(Property, {
-//     foreignKey: 'id_property',
-//     sourceKey: 'id'
-// })
 
 User.hasOne(UserProperties, {
     foreignKey: 'id_user',
@@ -124,6 +110,16 @@ Reservation.belongsTo(AmenityModel, {
     targetKey: 'id'
 });
 
+GuardSchedule.belongsTo(User, {
+    foreignKey: 'id_user',
+    targetKey: 'id'
+})
+
+GuardSchedule.belongsTo(CountryModel, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+})
+
 UserProperties.sync({ alter: false });
 Property.sync({ alter: true });
 Country.sync({ alter: true });
@@ -133,3 +129,4 @@ passwordChangeRequest.sync({alter: true});
 Reservation.sync({alter: true});
 GuardCountry.sync({alter: true});
 OwnerCountry.sync({alter: true});
+GuardSchedule.sync({alter: true});
