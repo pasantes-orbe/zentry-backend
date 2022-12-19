@@ -80,13 +80,9 @@ router.get('/schedule/all/:id_country', [
         const exit = guard.exit;
         const isInHournow = now.isBetween(start, exit);
 
-        // console.log(now.day())
-
-        //TODO: ARREGLAR, NO FUNCIONA
         const isWorkDay = new DatesHelper().getDay(now.day());
-        const isWorking = () => {
-            return isInHournow && isWorkDay;
-        }
+        console.log(isWorkDay);
+        const isWorking = () => (isInHournow && isWorkDay) ? true : false;
 
         return {
             guard,

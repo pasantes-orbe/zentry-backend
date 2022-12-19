@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
 const property_model_1 = __importDefault(require("../models/property.model"));
+const user_properties_model_1 = __importDefault(require("../models/user_properties.model"));
 class PropertyController {
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -96,7 +97,16 @@ class PropertyController {
                     id_country: req.params.id_country
                 }
             });
-            return res.json(properties);
+            const response = yield Promise.all(properties.map((property) => __awaiter(this, void 0, void 0, function* () {
+                const owners = yield user_properties_model_1.default.findAll({
+                    where: { id_property: property.id }
+                });
+                return {
+                    property,
+                    owners
+                };
+            })));
+            return res.json(response);
         });
     }
 }

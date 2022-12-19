@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Op, Sequelize } from "sequelize";
 import Uploader from "../classes/Uploader";
 import Property from "../models/property.model";
+import UserProperties from "../models/user_properties.model";
 
 class PropertyController {
 
@@ -105,7 +106,26 @@ class PropertyController {
             }
         });
 
-        return res.json(properties);
+
+
+        const response = await Promise.all(
+            properties.map( async (property) => {
+                
+                const owners = await UserProperties.findAll({
+                    where: { id_property: property.id }
+                })
+                
+                return {
+                    property,
+                    owners
+                };
+            })
+        )
+
+        
+
+
+        return res.json(response);
 
     }
 
