@@ -97,6 +97,7 @@ router.post('/schedule', [
     (0, express_validator_1.check)('id_user').isNumeric(),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    req.body.week_day = req.body.week_day.toLowerCase();
     const schedule = new guard_schedule_model_1.default(req.body);
     schedule.save();
     return res.json(schedule);

@@ -92,11 +92,13 @@ class PropertyController {
     }
     getByCountry(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Obtiene todas las propiedades
             const properties = yield property_model_1.default.findAll({
                 where: {
                     id_country: req.params.id_country
                 }
             });
+            // Crea una promesa por cada iteración del map para que lea los valores asíncronos.
             const response = yield Promise.all(properties.map((property) => __awaiter(this, void 0, void 0, function* () {
                 const owners = yield user_properties_model_1.default.findAll({
                     where: { id_property: property.id }

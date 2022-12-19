@@ -100,14 +100,15 @@ class PropertyController {
 
     public async getByCountry(req: Request, res: Response){
 
+
+        // Obtiene todas las propiedades
         const properties = await Property.findAll({
             where: {
                 id_country: req.params.id_country
             }
         });
 
-
-
+        // Crea una promesa por cada iteración del map para que lea los valores asíncronos.
         const response = await Promise.all(
             properties.map( async (property) => {
                 

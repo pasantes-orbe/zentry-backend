@@ -110,7 +110,7 @@ router.post('/schedule', [
     noErrors
 ], async (req: Request, res: Response) => {
 
-
+    req.body.week_day = req.body.week_day.toLowerCase();
 
     const schedule = new GuardSchedule(req.body)
     schedule.save();
