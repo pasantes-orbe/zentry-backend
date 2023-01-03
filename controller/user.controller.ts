@@ -55,6 +55,8 @@ class UserController {
 
         const { body } = req;
 
+        body.email = body.email.toLowerCase();
+        
         try {
 
             // Cifrar password

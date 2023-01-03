@@ -22,9 +22,10 @@ class AuthController {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = req.body;
             // Verify if email exists
+            const emailMinusculas = email.toLowerCase();
             const user = yield user_model_1.default.findOne({
                 where: {
-                    email
+                    emailMinusculas
                 },
                 include: roles_model_1.default
             });

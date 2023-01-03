@@ -14,9 +14,11 @@ class AuthController {
 
             // Verify if email exists
 
+            const emailMinusculas = email.toLowerCase()
+
             const user = await User.findOne({
                 where:{
-                    email
+                    emailMinusculas
                 },
                 include: Role
             });

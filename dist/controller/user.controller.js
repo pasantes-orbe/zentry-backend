@@ -59,6 +59,7 @@ class UserController {
     register(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;
+            body.email = body.email.toLowerCase();
             try {
                 // Cifrar password
                 body.password = new password_helper_1.default().hash(body.password);

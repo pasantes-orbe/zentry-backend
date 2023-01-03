@@ -1,6 +1,6 @@
 import express, { Application } from "express";
+import { createServer } from "http";
 import cors from "cors";
-
 import userRoutes from "../routes/user.routes";
 import roleRoutes from "../routes/role.routes";
 import propertyRoutes from "../routes/property.routes";
@@ -17,7 +17,8 @@ import db from "../DB/connection";
 import fileUpload from "express-fileupload";
 
 class Server {
-
+    private server: any;
+    private io: any;
     private app: Application;
     private port: string;
     private apiPaths = {
@@ -36,13 +37,22 @@ class Server {
     constructor() {
         this.app = express();
         this.port = process.env.PORT || "3000";
+        this.server = require('http').createServer(this.app);
+        this.io = require('socket.io')(this.server,{
+            cors: {
+              origin: '*',
+            }
+        });
 
+        
 
         // App routes
         this.dbConnection();
         this.middlewares();
         this.sync();
         this.routes();
+        
+        this.sockets();
 
 
     }
@@ -93,8 +103,19 @@ class Server {
         this.app.use(this.apiPaths.guards, guardRoutes);
     }
 
+    sockets(){
+        this.io.on("connection", (socket) => {
+            console.log('Conectado' , socket.id); // x8WIv7-mJelg7on_ALbx
+
+            socket.on('disconnect', () => {
+                console.log('Desconectado', socket.id);
+            })
+
+          });
+    }
+
     listen() {
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log("Servidor corriendo", this.port);
         })
     }

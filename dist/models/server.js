@@ -42,11 +42,18 @@ class Server {
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
+        this.server = require('http').createServer(this.app);
+        this.io = require('socket.io')(this.server, {
+            cors: {
+                origin: '*',
+            }
+        });
         // App routes
         this.dbConnection();
         this.middlewares();
         this.sync();
         this.routes();
+        this.sockets();
     }
     sync() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -89,8 +96,16 @@ class Server {
         this.app.use(this.apiPaths.reservations, reservation_routes_1.default);
         this.app.use(this.apiPaths.guards, guard_routes_1.default);
     }
+    sockets() {
+        this.io.on("connection", (socket) => {
+            console.log('Conectado', socket.id); // x8WIv7-mJelg7on_ALbx
+            socket.on('disconnect', () => {
+                console.log('Desconectado', socket.id);
+            });
+        });
+    }
     listen() {
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log("Servidor corriendo", this.port);
         });
     }
