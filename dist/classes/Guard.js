@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const country_model_1 = __importDefault(require("../models/country.model"));
 const guard_country_model_1 = __importDefault(require("../models/guard_country.model"));
 const roles_model_1 = __importDefault(require("../models/roles.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
@@ -31,6 +32,17 @@ class Guard {
                 where: { id_country }
             });
             return guards;
+        });
+    }
+    getCountry(id_user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const country = yield guard_country_model_1.default.findOne({
+                where: {
+                    id_user
+                },
+                include: [country_model_1.default]
+            });
+            return country;
         });
     }
     assignCountry(guard) {

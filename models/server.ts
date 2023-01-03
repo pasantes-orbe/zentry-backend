@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import { createServer } from "http";
 import cors from "cors";
+
 import userRoutes from "../routes/user.routes";
 import roleRoutes from "../routes/role.routes";
 import propertyRoutes from "../routes/property.routes";
@@ -11,6 +12,8 @@ import amenityRoutes from "../routes/amenity.routes";
 import ownersRoutes from "../routes/owner.routes";
 import reservationRoutes from "../routes/reservation.routes";
 import guardRoutes from "../routes/guard.routes";
+import checkIn from "../routes/checkin.routes";
+
 
 import db from "../DB/connection";
 
@@ -31,7 +34,8 @@ class Server {
         amenities: '/api/amenities',
         owners: '/api/owners',
         reservations: '/api/reservations',
-        guards: '/api/guards'
+        guards: '/api/guards',
+        checkin: '/api/checkin'
     }
 
     constructor() {
@@ -101,6 +105,7 @@ class Server {
         this.app.use(this.apiPaths.owners, ownersRoutes);
         this.app.use(this.apiPaths.reservations, reservationRoutes);
         this.app.use(this.apiPaths.guards, guardRoutes);
+        this.app.use(this.apiPaths.checkin, checkIn);
     }
 
     sockets(){

@@ -1,3 +1,4 @@
+import CountryModel from "../models/country.model";
 import GuardCountry from "../models/guard_country.model";
 import Role from "../models/roles.model";
 import User from "../models/user.model";
@@ -20,6 +21,19 @@ class Guard {
         });
 
         return guards;
+    }
+
+    public async getCountry(id_user: number){
+
+        const country = await GuardCountry.findOne({
+            where: {
+                id_user
+            },
+            include: [CountryModel]
+        })
+
+        return country;
+
     }
 
 

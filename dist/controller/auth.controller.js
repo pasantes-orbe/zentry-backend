@@ -25,7 +25,7 @@ class AuthController {
             const emailMinusculas = email.toLowerCase();
             const user = yield user_model_1.default.findOne({
                 where: {
-                    emailMinusculas
+                    email: emailMinusculas
                 },
                 include: roles_model_1.default
             });

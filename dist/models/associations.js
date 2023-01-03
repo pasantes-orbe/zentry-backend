@@ -16,6 +16,7 @@ const guard_country_model_1 = __importDefault(require("./guard_country.model"));
 const country_model_2 = __importDefault(require("./country.model"));
 const owner_country_model_1 = __importDefault(require("./owner_country.model"));
 const guard_schedule_model_1 = __importDefault(require("./guard_schedule.model"));
+const checkin_model_1 = __importDefault(require("./checkin.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -100,6 +101,22 @@ guard_schedule_model_1.default.belongsTo(country_model_2.default, {
     foreignKey: 'id_country',
     targetKey: 'id'
 });
+checkin_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_guard',
+    targetKey: 'id'
+});
+checkin_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_owner',
+    targetKey: 'id'
+});
+checkin_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_guard',
+    targetKey: 'id'
+});
+checkin_model_1.default.belongsTo(user_model_1.default, {
+    foreignKey: 'id_owner',
+    targetKey: 'id'
+});
 user_properties_model_1.default.sync({ alter: false });
 property_model_1.default.sync({ alter: true });
 country_model_1.default.sync({ alter: true });
@@ -110,4 +127,5 @@ reservation_model_1.default.sync({ alter: true });
 guard_country_model_1.default.sync({ alter: true });
 owner_country_model_1.default.sync({ alter: true });
 guard_schedule_model_1.default.sync({ alter: true });
+checkin_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map

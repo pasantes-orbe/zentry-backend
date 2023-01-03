@@ -39,6 +39,20 @@ router.get('/get_by_country/:id_country', [
 });
 
 /**
+ * Get Guard Country
+ */
+router.get('/get_country/:id_user', [
+    check('id_user').isNumeric(),
+    check('id_user').notEmpty(),
+], async (req: Request, res: Response) => {
+
+    const country = await new Guard().getCountry(+req.params.id_user)
+
+    return res.json(country);
+
+});
+
+/**
  * Assign Country
  */
 

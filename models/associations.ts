@@ -11,6 +11,7 @@ import GuardCountry from "./guard_country.model";
 import CountryModel from "./country.model";
 import OwnerCountry from "./owner_country.model";
 import GuardSchedule from "./guard_schedule.model";
+import CheckInModel from "./checkin.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -118,7 +119,32 @@ GuardSchedule.belongsTo(User, {
 GuardSchedule.belongsTo(CountryModel, {
     foreignKey: 'id_country',
     targetKey: 'id'
+});
+
+
+
+
+CheckInModel.belongsTo(User, {
+    foreignKey: 'id_guard',
+    targetKey: 'id'
 })
+
+CheckInModel.belongsTo(User, {
+    foreignKey: 'id_owner',
+    targetKey: 'id'
+})
+
+
+CheckInModel.belongsTo(User, {
+    foreignKey: 'id_guard',
+    targetKey: 'id'
+})
+
+CheckInModel.belongsTo(User, {
+    foreignKey: 'id_owner',
+    targetKey: 'id'
+})
+
 
 UserProperties.sync({ alter: false });
 Property.sync({ alter: true });
@@ -130,3 +156,4 @@ Reservation.sync({alter: true});
 GuardCountry.sync({alter: true});
 OwnerCountry.sync({alter: true});
 GuardSchedule.sync({alter: true});
+CheckInModel.sync({alter: true});
