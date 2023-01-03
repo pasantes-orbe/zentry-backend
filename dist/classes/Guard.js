@@ -26,6 +26,16 @@ class Guard {
             return guards;
         });
     }
+    exists(id_user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const exists = yield user_model_1.default.findByPk(id_user, {
+                include: [roles_model_1.default]
+            });
+            if (!exists || exists.role.name != "vigilador")
+                return false;
+            return true;
+        });
+    }
     getByCountry(id_country) {
         return __awaiter(this, void 0, void 0, function* () {
             const guards = yield guard_country_model_1.default.findAll({

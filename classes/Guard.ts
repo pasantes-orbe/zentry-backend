@@ -14,6 +14,17 @@ class Guard {
         return guards;
     }
 
+    public async exists(id_user: number){
+        const exists = await User.findByPk(id_user, {
+            include: [Role]
+        });
+
+        if(!exists || exists.role.name != "vigilador") return false
+
+        return true;
+
+    }
+
     public async getByCountry(id_country: number){
         
         const guards = await GuardCountry.findAll({

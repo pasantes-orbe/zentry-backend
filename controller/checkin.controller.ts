@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
+import { check } from "express-validator";
+import CheckIn from "../classes/CheckIn";
+import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
 
 class checkInController {
 
-    public create(req: Request, res: Response){
+    public async create(req: Request, res: Response){
 
         const {
             guest_name,
             guest_lastname,
-            dni,
+            DNI,
             income_date,
             transport,
             patent,
@@ -26,11 +29,39 @@ class checkInController {
             req.body.confirmed_by_owner = true
         }
 
-        //TODO: id_guard debe ser numérico, controlarlo
+        if(patent){
+            req.body.patent = req.body.patent.toUpperCase();
+        }
 
-        return res.send(req.body);
+        if(req.body.id_guard){
 
-        // const newCheckin = new CheckInModel()
+            const guard = await new Guard().exists(id_guard);
+            // SI NO ES UN id_guard CORRESPONDIENTE A UN GUARDIA O INVÁLIDO lo tomará como NULL
+            if(!guard){
+                console.log("--------Guardia no existe--------");
+                req.body.id_guard = null
+            }
+
+        }
+
+        
+
+        req.body.check_in = false;
+
+        const checkIn = new CheckInModel(req.body);
+        checkIn.save();
+
+        return res.send(checkIn);
+
+    }
+
+    public async approve(req: Request, res: Response){
+
+        const { id_checkin } = req.params;
+        
+        const update = await new CheckIn().approve(+id_checkin);
+
+        res.send(update);
 
     }
 
