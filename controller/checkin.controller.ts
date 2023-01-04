@@ -3,6 +3,7 @@ import { check } from "express-validator";
 import CheckIn from "../classes/CheckIn";
 import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
+import User from "../models/user.model";
 
 class checkInController {
 
@@ -82,7 +83,8 @@ class checkInController {
         const checkins = await CheckInModel.findAll({
             where: {
                 confirmed_by_owner: true
-            }
+            },
+            include: [User]
         })
 
         res.send(checkins);

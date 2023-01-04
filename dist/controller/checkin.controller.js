@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const CheckIn_1 = __importDefault(require("../classes/CheckIn"));
 const Guard_1 = __importDefault(require("../classes/Guard"));
 const checkin_model_1 = __importDefault(require("../models/checkin.model"));
+const user_model_1 = __importDefault(require("../models/user.model"));
 class checkInController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -68,7 +69,8 @@ class checkInController {
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
                     confirmed_by_owner: true
-                }
+                },
+                include: [user_model_1.default]
             });
             res.send(checkins);
         });
