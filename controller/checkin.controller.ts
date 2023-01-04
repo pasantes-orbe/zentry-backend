@@ -89,6 +89,20 @@ class checkInController {
 
     }
 
+    public async getByOwner(req: Request, res: Response){
+
+        const { id_owner } = req.params;
+
+        const checkins = await CheckInModel.findAll({
+            where: {
+                id_owner
+            }
+        })
+
+        return res.send(checkins);
+
+    }
+
 }
 
 export default checkInController

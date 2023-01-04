@@ -73,6 +73,17 @@ class checkInController {
             res.send(checkins);
         });
     }
+    getByOwner(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_owner } = req.params;
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    id_owner
+                }
+            });
+            return res.send(checkins);
+        });
+    }
 }
 exports.default = checkInController;
 //# sourceMappingURL=checkin.controller.js.map

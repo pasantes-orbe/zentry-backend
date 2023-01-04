@@ -28,6 +28,7 @@ const checkin_routes_1 = __importDefault(require("../routes/checkin.routes"));
 const checkout_routes_1 = __importDefault(require("../routes/checkout.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
+const controller_1 = __importDefault(require("../sockets/controller"));
 class Server {
     constructor() {
         this.apiPaths = {
@@ -58,6 +59,9 @@ class Server {
         this.sync();
         this.routes();
         this.sockets();
+    }
+    static get instance() {
+        return this._instance || (this._instance = new this());
     }
     sync() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -104,10 +108,10 @@ class Server {
     }
     sockets() {
         this.io.on("connection", (socket) => {
-            console.log('Conectado', socket.id); // x8WIv7-mJelg7on_ALbx
-            socket.on('disconnect', () => {
-                console.log('Desconectado', socket.id);
-            });
+            const controller = new controller_1.default();
+            console.log('Conectado', socket.id);
+            controller.disconnect(socket);
+            controller.mensaje(socket);
         });
     }
     listen() {

@@ -5,6 +5,6 @@ require('./models/associations');
 // Config .env
 dotenv.config();
 
-const server = new Server();
+const server = Server.instance;
 server.listen();
 

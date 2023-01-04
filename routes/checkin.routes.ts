@@ -47,5 +47,10 @@ router.get('/approved', checkin_controller.getApproved)
  * Get All "confirmed_by_owner" in true
  */
 router.get('/confirmed', checkin_controller.getConfirmedByOwner)
+/**
+ * Get by owner ID
+ */
+router.get('/get_by_owner/:id_owner', checkin_controller.getByOwner)
+
 
 export default router;

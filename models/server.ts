@@ -19,8 +19,13 @@ import checkOut from "../routes/checkout.routes";
 import db from "../DB/connection";
 
 import fileUpload from "express-fileupload";
+import { Socket } from "socket.io";
+import SocketController from "../sockets/controller";
 
 class Server {
+
+    private static _instance: Server;
+
     private server: any;
     private io: any;
     private app: Application;
@@ -41,7 +46,7 @@ class Server {
 
     }
 
-    constructor() {
+    private constructor() {
         this.app = express();
         this.port = process.env.PORT || "3000";
         this.server = require('http').createServer(this.app);
@@ -63,6 +68,11 @@ class Server {
 
 
     }
+
+    public static get instance(): Server {
+        return this._instance || ( this._instance = new this() ) ;
+    }
+
 
     async sync() {
         await db.sync({ alter: true });
@@ -113,12 +123,12 @@ class Server {
     }
 
     sockets(){
-        this.io.on("connection", (socket) => {
-            console.log('Conectado' , socket.id); // x8WIv7-mJelg7on_ALbx
+        this.io.on("connection", (socket: Socket) => {
 
-            socket.on('disconnect', () => {
-                console.log('Desconectado', socket.id);
-            })
+            const controller = new SocketController();
+            console.log('Conectado' , socket.id); 
+            controller.disconnect(socket);
+            controller.mensaje(socket);
 
           });
     }
