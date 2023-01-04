@@ -14,6 +14,7 @@ const CheckOutModel = db.define('checkout', {
 {
     // timestamps: false
     createdAt: 'out_date',
+    updatedAt: false
 }
 );
 

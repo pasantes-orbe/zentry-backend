@@ -21,6 +21,26 @@ class CheckIn {
 
 
     }
+
+
+    public async exists(id_checkin: number){
+
+        const exists = await CheckInModel.findByPk(id_checkin);
+        return exists;
+
+    }
+
+    public async isApproved(id_checkin: number){
+
+        const checkin = await this.exists(id_checkin);
+
+        if(!checkin) return false;
+
+        if(checkin.check_in && checkin.confirmed_by_owner) return true;
+
+        return false;
+
+    }
     
 }
 

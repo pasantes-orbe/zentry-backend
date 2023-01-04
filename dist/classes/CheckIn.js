@@ -30,6 +30,22 @@ class CheckIn {
             return false;
         });
     }
+    exists(id_checkin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const exists = yield checkin_model_1.default.findByPk(id_checkin);
+            return exists;
+        });
+    }
+    isApproved(id_checkin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkin = yield this.exists(id_checkin);
+            if (!checkin)
+                return false;
+            if (checkin.check_in && checkin.confirmed_by_owner)
+                return true;
+            return false;
+        });
+    }
 }
 exports.default = CheckIn;
 //# sourceMappingURL=CheckIn.js.map

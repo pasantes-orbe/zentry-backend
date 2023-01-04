@@ -15,6 +15,7 @@ const CheckOutModel = connection_1.default.define('checkout', {
 }, {
     // timestamps: false
     createdAt: 'out_date',
+    updatedAt: false
 });
 exports.default = CheckOutModel;
 //# sourceMappingURL=checkout.model.js.map
