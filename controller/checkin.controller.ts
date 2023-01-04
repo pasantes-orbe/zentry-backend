@@ -72,7 +72,8 @@ class checkInController {
         const checkins = await CheckInModel.findAll({
             where: {
                 check_in: true
-            }
+            },
+            include: [User]
         })
 
         res.send(checkins);

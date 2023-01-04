@@ -59,7 +59,8 @@ class checkInController {
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
                     check_in: true
-                }
+                },
+                include: [user_model_1.default]
             });
             res.send(checkins);
         });
