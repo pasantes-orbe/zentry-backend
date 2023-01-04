@@ -25,6 +25,7 @@ const owner_routes_1 = __importDefault(require("../routes/owner.routes"));
 const reservation_routes_1 = __importDefault(require("../routes/reservation.routes"));
 const guard_routes_1 = __importDefault(require("../routes/guard.routes"));
 const checkin_routes_1 = __importDefault(require("../routes/checkin.routes"));
+const checkout_routes_1 = __importDefault(require("../routes/checkout.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 class Server {
@@ -40,7 +41,8 @@ class Server {
             owners: '/api/owners',
             reservations: '/api/reservations',
             guards: '/api/guards',
-            checkin: '/api/checkin'
+            checkin: '/api/checkin',
+            checkout: '/api/checkout'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -98,6 +100,7 @@ class Server {
         this.app.use(this.apiPaths.reservations, reservation_routes_1.default);
         this.app.use(this.apiPaths.guards, guard_routes_1.default);
         this.app.use(this.apiPaths.checkin, checkin_routes_1.default);
+        this.app.use(this.apiPaths.checkout, checkout_routes_1.default);
     }
     sockets() {
         this.io.on("connection", (socket) => {

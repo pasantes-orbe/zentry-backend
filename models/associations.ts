@@ -12,6 +12,7 @@ import CountryModel from "./country.model";
 import OwnerCountry from "./owner_country.model";
 import GuardSchedule from "./guard_schedule.model";
 import CheckInModel from "./checkin.model";
+import CheckOutModel from "./checkout.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -145,6 +146,11 @@ CheckInModel.belongsTo(User, {
     targetKey: 'id'
 })
 
+CheckOutModel.belongsTo(CheckInModel, {
+    foreignKey: 'id_checkin',
+    targetKey: 'id'
+})
+
 
 UserProperties.sync({ alter: false });
 Property.sync({ alter: true });
@@ -157,3 +163,4 @@ GuardCountry.sync({alter: true});
 OwnerCountry.sync({alter: true});
 GuardSchedule.sync({alter: true});
 CheckInModel.sync({alter: true});
+CheckOutModel.sync({alter: true});

@@ -40,7 +40,10 @@ class checkInController {
             req.body.check_in = false;
             const checkIn = new checkin_model_1.default(req.body);
             checkIn.save();
-            return res.send(checkIn);
+            return res.send({
+                msg: "Check-In registrado exitosamente",
+                checkIn
+            });
         });
     }
     approve(req, res) {
@@ -48,6 +51,26 @@ class checkInController {
             const { id_checkin } = req.params;
             const update = yield new CheckIn_1.default().approve(+id_checkin);
             res.send(update);
+        });
+    }
+    getApproved(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    check_in: true
+                }
+            });
+            res.send(checkins);
+        });
+    }
+    getConfirmedByOwner(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    confirmed_by_owner: true
+                }
+            });
+            res.send(checkins);
         });
     }
 }

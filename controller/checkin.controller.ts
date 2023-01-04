@@ -44,14 +44,15 @@ class checkInController {
 
         }
 
-        
-
         req.body.check_in = false;
 
         const checkIn = new CheckInModel(req.body);
         checkIn.save();
 
-        return res.send(checkIn);
+        return res.send({
+            msg: "Check-In registrado exitosamente",
+            checkIn
+        });
 
     }
 
@@ -62,6 +63,29 @@ class checkInController {
         const update = await new CheckIn().approve(+id_checkin);
 
         res.send(update);
+
+    }
+
+    public async getApproved(req: Request, res: Response){
+
+        const checkins = await CheckInModel.findAll({
+            where: {
+                check_in: true
+            }
+        })
+
+        res.send(checkins);
+
+    }
+    public async getConfirmedByOwner(req: Request, res: Response){
+
+        const checkins = await CheckInModel.findAll({
+            where: {
+                confirmed_by_owner: true
+            }
+        })
+
+        res.send(checkins);
 
     }
 

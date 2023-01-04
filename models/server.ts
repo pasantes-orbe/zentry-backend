@@ -13,6 +13,7 @@ import ownersRoutes from "../routes/owner.routes";
 import reservationRoutes from "../routes/reservation.routes";
 import guardRoutes from "../routes/guard.routes";
 import checkIn from "../routes/checkin.routes";
+import checkOut from "../routes/checkout.routes";
 
 
 import db from "../DB/connection";
@@ -35,7 +36,9 @@ class Server {
         owners: '/api/owners',
         reservations: '/api/reservations',
         guards: '/api/guards',
-        checkin: '/api/checkin'
+        checkin: '/api/checkin',
+        checkout: '/api/checkout'
+
     }
 
     constructor() {
@@ -106,6 +109,7 @@ class Server {
         this.app.use(this.apiPaths.reservations, reservationRoutes);
         this.app.use(this.apiPaths.guards, guardRoutes);
         this.app.use(this.apiPaths.checkin, checkIn);
+        this.app.use(this.apiPaths.checkout, checkOut);
     }
 
     sockets(){

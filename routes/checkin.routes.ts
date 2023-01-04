@@ -9,6 +9,9 @@ const router = Router();
 
 const checkin_controller: checkInController = new checkInController();
 
+/**
+ * Create Check-In
+ */
 router.post('/', [
 
     check('guest_name', "Campo 'guest_name' es obligatorio" ).notEmpty(),
@@ -22,16 +25,27 @@ router.post('/', [
     check('income_date', "Campo 'income_date' es obligatorio").notEmpty(),
 
     //TODO: Hay que controlar que solo sea propietario y no USER
-    check('id_owner').custom(userExists)
-    
+    check('id_owner').custom(userExists),
 
     noErrors
 ], checkin_controller.create);
 
+/**
+ * Turn to TRUE checkin
+ */
 router.patch('/:id_checkin', [
     check('id_checkin', "Parámetro 'id_checkin' es obligatorio").notEmpty(),
     check('id_checkin', "Parámetro 'id_checkin' debe ser numérico").isNumeric(),
     noErrors
 ], checkin_controller.approve );
+
+/**
+ * Get All "check_in" Approved
+ */
+router.get('/approved', checkin_controller.getApproved)
+/**
+ * Get All "confirmed_by_owner" in true
+ */
+router.get('/confirmed', checkin_controller.getConfirmedByOwner)
 
 export default router;

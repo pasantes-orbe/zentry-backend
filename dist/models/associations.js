@@ -17,6 +17,7 @@ const country_model_2 = __importDefault(require("./country.model"));
 const owner_country_model_1 = __importDefault(require("./owner_country.model"));
 const guard_schedule_model_1 = __importDefault(require("./guard_schedule.model"));
 const checkin_model_1 = __importDefault(require("./checkin.model"));
+const checkout_model_1 = __importDefault(require("./checkout.model"));
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -117,6 +118,10 @@ checkin_model_1.default.belongsTo(user_model_1.default, {
     foreignKey: 'id_owner',
     targetKey: 'id'
 });
+checkout_model_1.default.belongsTo(checkin_model_1.default, {
+    foreignKey: 'id_checkin',
+    targetKey: 'id'
+});
 user_properties_model_1.default.sync({ alter: false });
 property_model_1.default.sync({ alter: true });
 country_model_1.default.sync({ alter: true });
@@ -128,4 +133,5 @@ guard_country_model_1.default.sync({ alter: true });
 owner_country_model_1.default.sync({ alter: true });
 guard_schedule_model_1.default.sync({ alter: true });
 checkin_model_1.default.sync({ alter: true });
+checkout_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map
