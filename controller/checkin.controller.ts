@@ -3,6 +3,7 @@ import { check } from "express-validator";
 import CheckIn from "../classes/CheckIn";
 import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
+import Server from "../models/server";
 import User from "../models/user.model";
 
 class checkInController {
@@ -50,6 +51,10 @@ class checkInController {
         const checkIn = new CheckInModel(req.body);
         checkIn.save();
 
+        // Emitir socket
+        const server = Server.instance;
+        server.io.emit('notificar-checkin', {msg: `${guest_lastname} ${guest_name} está solicitando check-in`, checkIn});
+
         return res.send({
             msg: "Check-In registrado exitosamente",
             checkIn
@@ -63,7 +68,40 @@ class checkInController {
         
         const update = await new CheckIn().approve(+id_checkin);
 
+        if(!update){
+            return res.status(400).send({
+                msg: "Check-in no existe o no fue aprobado por el propietario"
+            })
+        }
+
+        // Emitir socket TODO: Debería enviarle SOLO al propietario que le interesa la notificación.
+        const server = Server.instance;
+        server.io.emit('checkin-aprobado', {msg: `Check-in de ${update.guest_lastname} ${update.guest_name} aprobado`, update});
+
         res.send(update);
+
+    }
+
+    public async ownerConfirm(req: Request, res: Response){
+
+        const { id_checkin } = req.params;
+        
+        const update = await new CheckIn().ownerConfirm(+id_checkin);
+
+        if(!update){
+            return res.status(404).send({
+                msg: "Check-in no existe"
+            })
+        }
+
+        // Emitir socket TODO: Debería enviarle solo a los guardias esta notificación
+        const server = Server.instance;
+        server.io.emit('checkin-confirmado-por-propietario', {msg: `Check-in de ${update.guest_name} ${update.guest_lastname} confirmado`, update});
+
+        res.send({
+            msg: "Check-in confirmado",
+            update
+        });
 
     }
 
@@ -99,7 +137,8 @@ class checkInController {
         const checkins = await CheckInModel.findAll({
             where: {
                 id_owner
-            }
+            },
+            include: [{all:true}]
         })
 
         return res.send(checkins);

@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import CheckIn from "../classes/CheckIn";
+import CheckInModel from "../models/checkin.model";
 import CheckOutModel from "../models/checkout.model";
+import Server from "../models/server";
 
 class checkOutController {
 
@@ -21,10 +23,18 @@ class checkOutController {
         }
 
         const checkout = new CheckOutModel(req.body);
-        checkout.save();
+        const ck = await checkout.save();
+
+        const data = await CheckOutModel.findByPk(ck.id, {
+            include: [CheckInModel]
+        });
+        const server = Server.instance;
+        server.io.emit('notificar-checkout', {msg:`Check-Out de ${data.checkin.guest_name} ${data.checkin.guest_lastname} registrado
+        - Detalles: ${data.details}` , data});
 
         return res.send({
-            msg: "Checkout registrado con éxito"
+            msg: "Checkout registrado con éxito",
+            data
         })
 
     }

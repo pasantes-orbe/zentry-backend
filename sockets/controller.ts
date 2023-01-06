@@ -6,6 +6,9 @@ class SocketController{
 
         client.on('mensaje', (payload) => {
             console.log("Mensaje recibido", payload);
+
+            client.broadcast.emit('mensaje', payload);
+
         })
 
     }

@@ -12,7 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const checkin_model_1 = __importDefault(require("../models/checkin.model"));
 const checkout_model_1 = __importDefault(require("../models/checkout.model"));
+const server_1 = __importDefault(require("../models/server"));
 class checkOutController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,9 +30,16 @@ class checkOutController {
                 });
             }
             const checkout = new checkout_model_1.default(req.body);
-            checkout.save();
+            const ck = yield checkout.save();
+            const data = yield checkout_model_1.default.findByPk(ck.id, {
+                include: [checkin_model_1.default]
+            });
+            const server = server_1.default.instance;
+            server.io.emit('notificar-checkout', { msg: `Check-Out de ${data.checkin.guest_name} ${data.checkin.guest_lastname} registrado
+        - Detalles: ${data.details}`, data });
             return res.send({
-                msg: "Checkout registrado con éxito"
+                msg: "Checkout registrado con éxito",
+                data
             });
         });
     }

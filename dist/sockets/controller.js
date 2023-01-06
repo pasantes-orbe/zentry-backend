@@ -4,6 +4,7 @@ class SocketController {
     mensaje(client) {
         client.on('mensaje', (payload) => {
             console.log("Mensaje recibido", payload);
+            client.broadcast.emit('mensaje', payload);
         });
     }
     disconnect(client) {

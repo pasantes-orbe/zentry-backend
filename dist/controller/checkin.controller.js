@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const CheckIn_1 = __importDefault(require("../classes/CheckIn"));
 const Guard_1 = __importDefault(require("../classes/Guard"));
 const checkin_model_1 = __importDefault(require("../models/checkin.model"));
+const server_1 = __importDefault(require("../models/server"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 class checkInController {
     create(req, res) {
@@ -41,6 +42,9 @@ class checkInController {
             req.body.check_in = false;
             const checkIn = new checkin_model_1.default(req.body);
             checkIn.save();
+            // Emitir socket
+            const server = server_1.default.instance;
+            server.io.emit('notificar-checkin', { msg: `${guest_lastname} ${guest_name} está solicitando check-in`, checkIn });
             return res.send({
                 msg: "Check-In registrado exitosamente",
                 checkIn
@@ -51,7 +55,33 @@ class checkInController {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_checkin } = req.params;
             const update = yield new CheckIn_1.default().approve(+id_checkin);
+            if (!update) {
+                return res.status(400).send({
+                    msg: "Check-in no existe o no fue aprobado por el propietario"
+                });
+            }
+            // Emitir socket TODO: Debería enviarle SOLO al propietario que le interesa la notificación.
+            const server = server_1.default.instance;
+            server.io.emit('checkin-aprobado', { msg: `Check-in de ${update.guest_lastname} ${update.guest_name} aprobado`, update });
             res.send(update);
+        });
+    }
+    ownerConfirm(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_checkin } = req.params;
+            const update = yield new CheckIn_1.default().ownerConfirm(+id_checkin);
+            if (!update) {
+                return res.status(404).send({
+                    msg: "Check-in no existe"
+                });
+            }
+            // Emitir socket TODO: Debería enviarle solo a los guardias esta notificación
+            const server = server_1.default.instance;
+            server.io.emit('checkin-confirmado-por-propietario', { msg: `Check-in de ${update.guest_name} ${update.guest_lastname} confirmado`, update });
+            res.send({
+                msg: "Check-in confirmado",
+                update
+            });
         });
     }
     getApproved(req, res) {
@@ -82,7 +112,8 @@ class checkInController {
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
                     id_owner
-                }
+                },
+                include: [{ all: true }]
             });
             return res.send(checkins);
         });

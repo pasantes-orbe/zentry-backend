@@ -17,9 +17,25 @@ class CheckIn {
     approve(id_checkin) {
         return __awaiter(this, void 0, void 0, function* () {
             const checkin = yield checkin_model_1.default.findByPk(id_checkin);
-            if (checkin) {
+            if (checkin && checkin.confirmed_by_owner) {
                 checkin.update({
                     check_in: true
+                }, {
+                    where: {
+                        id: checkin.id
+                    }
+                });
+                return checkin;
+            }
+            return false;
+        });
+    }
+    ownerConfirm(id_checkin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkin = yield checkin_model_1.default.findByPk(id_checkin);
+            if (checkin) {
+                checkin.update({
+                    confirmed_by_owner: true
                 }, {
                     where: {
                         id: checkin.id

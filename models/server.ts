@@ -27,7 +27,7 @@ class Server {
     private static _instance: Server;
 
     private server: any;
-    private io: any;
+    public io: any;
     private app: Application;
     private port: string;
     private apiPaths = {
@@ -68,6 +68,8 @@ class Server {
 
 
     }
+
+    
 
     public static get instance(): Server {
         return this._instance || ( this._instance = new this() ) ;

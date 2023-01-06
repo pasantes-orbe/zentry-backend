@@ -7,6 +7,9 @@ import checkInApproved from "../middlewares/customs/checkInApproved.middleware";
 import checkInExists from "../middlewares/customs/checkInExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import CheckInModel from "../models/checkin.model";
+import CheckOutModel from "../models/checkout.model";
+import Server from "../models/server";
 
 const router = Router();
 
@@ -19,5 +22,23 @@ router.post('/', [
 
     noErrors
 ] ,controller.create);
+
+router.post('/socket', async (req: Request, res: Response) => {
+
+
+    const checkouts = await CheckOutModel.findAll({
+        include: [CheckInModel]
+    });
+
+
+    const server = Server.instance;
+    server.io.emit('mensaje', checkouts);
+
+    
+
+    res.send(checkouts);
+
+})
+
 
 export default router;

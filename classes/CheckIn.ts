@@ -6,7 +6,7 @@ class CheckIn {
 
         const checkin = await CheckInModel.findByPk(id_checkin);
 
-        if(checkin){
+        if(checkin && checkin.confirmed_by_owner){
             checkin.update({
                 check_in: true
             }, {
@@ -22,6 +22,24 @@ class CheckIn {
 
     }
 
+    public async ownerConfirm(id_checkin: number){
+
+        const checkin = await CheckInModel.findByPk(id_checkin);
+
+        if(checkin){
+            checkin.update({
+                confirmed_by_owner: true
+            }, {
+                where: {
+                    id: checkin.id
+                }
+            })
+            return checkin
+        } 
+
+        return false;
+
+    }
 
     public async exists(id_checkin: number){
 

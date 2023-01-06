@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../DB/connection";
+import CheckInModel from "./checkin.model";
 
 const CheckOutModel = db.define('checkout', {
     id: {
@@ -13,6 +14,9 @@ const CheckOutModel = db.define('checkout', {
 },
 {
     // timestamps: false
+    defaultScope: {
+        include: [CheckInModel]
+    },
     createdAt: 'out_date',
     updatedAt: false
 }

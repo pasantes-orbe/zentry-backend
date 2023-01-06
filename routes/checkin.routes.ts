@@ -40,6 +40,13 @@ router.patch('/:id_checkin', [
 ], checkin_controller.approve );
 
 /**
+ * Turn to TRUE checkin
+ */
+router.patch('/confirm/:id_checkin', [
+    noErrors
+], checkin_controller.ownerConfirm );
+
+/**
  * Get All "check_in" Approved
  */
 router.get('/approved', checkin_controller.getApproved)

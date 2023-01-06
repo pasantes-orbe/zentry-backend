@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../DB/connection";
+import User from "./user.model";
 
 const CheckInModel = db.define('checkin', {
     id: {
@@ -19,6 +20,7 @@ const CheckInModel = db.define('checkin', {
 
 },
 {
+    
     timestamps: false
 }
 );
