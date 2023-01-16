@@ -19,6 +19,19 @@ const guard_schedule_model_1 = __importDefault(require("./guard_schedule.model")
 const checkin_model_1 = __importDefault(require("./checkin.model"));
 const checkout_model_1 = __importDefault(require("./checkout.model"));
 const antipanic_model_1 = __importDefault(require("./antipanic.model"));
+property_model_1.default.sync({ alter: true });
+country_model_1.default.sync({ alter: true });
+recurrent_model_1.default.sync({ alter: true });
+amenity_model_1.default.sync({ alter: true });
+passwordChangeRequest_model_1.default.sync({ alter: true });
+reservation_model_1.default.sync({ alter: true });
+guard_country_model_1.default.sync({ alter: true });
+owner_country_model_1.default.sync({ alter: true });
+guard_schedule_model_1.default.sync({ alter: true });
+checkin_model_1.default.sync({ alter: true });
+checkout_model_1.default.sync({ alter: true });
+antipanic_model_1.default.sync({ alter: true });
+user_properties_model_1.default.sync({ alter: false });
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -129,17 +142,4 @@ antipanic_model_1.default.belongsTo(country_model_1.default, {
     foreignKey: 'id_country',
     targetKey: 'id'
 });
-user_properties_model_1.default.sync({ alter: false });
-property_model_1.default.sync({ alter: true });
-country_model_1.default.sync({ alter: true });
-recurrent_model_1.default.sync({ alter: true });
-amenity_model_1.default.sync({ alter: true });
-passwordChangeRequest_model_1.default.sync({ alter: true });
-reservation_model_1.default.sync({ alter: true });
-guard_country_model_1.default.sync({ alter: true });
-owner_country_model_1.default.sync({ alter: true });
-guard_schedule_model_1.default.sync({ alter: true });
-checkin_model_1.default.sync({ alter: true });
-checkout_model_1.default.sync({ alter: true });
-antipanic_model_1.default.sync({ alter: true });
 //# sourceMappingURL=associations.js.map
