@@ -34,11 +34,21 @@ router.patch('/:id_checkin', [
     noErrors_middleware_1.default
 ], checkin_controller.approve);
 /**
- * Turn to TRUE checkin
+ * Get by owner ID
+ */
+router.patch('/changeStatus/:id_checkin', checkin_controller.changeStatus);
+/**
+ * Turn to TRUE confirmed_by_owner
  */
 router.patch('/confirm/:id_checkin', [
     noErrors_middleware_1.default
 ], checkin_controller.ownerConfirm);
+/**
+ * Turn to TRUE checkOut
+ */
+router.patch('/checkout/:id_checkin', [
+    noErrors_middleware_1.default
+], checkin_controller.checkOutConfirmed);
 /**
  * Get All "check_in" Approved
  */
@@ -47,6 +57,10 @@ router.get('/approved', checkin_controller.getApproved);
  * Get All "confirmed_by_owner" in true
  */
 router.get('/confirmed', checkin_controller.getConfirmedByOwner);
+/**
+ * Get All "check_out" in true
+ */
+router.get('/checkout', checkin_controller.getCheckOutFalse);
 /**
  * Get by owner ID
  */

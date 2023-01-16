@@ -26,6 +26,7 @@ const reservation_routes_1 = __importDefault(require("../routes/reservation.rout
 const guard_routes_1 = __importDefault(require("../routes/guard.routes"));
 const checkin_routes_1 = __importDefault(require("../routes/checkin.routes"));
 const checkout_routes_1 = __importDefault(require("../routes/checkout.routes"));
+const antipanic_routes_1 = __importDefault(require("../routes/antipanic.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 const controller_1 = __importDefault(require("../sockets/controller"));
@@ -43,7 +44,8 @@ class Server {
             reservations: '/api/reservations',
             guards: '/api/guards',
             checkin: '/api/checkin',
-            checkout: '/api/checkout'
+            checkout: '/api/checkout',
+            antipanic: '/api/antipanic'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -105,13 +107,16 @@ class Server {
         this.app.use(this.apiPaths.guards, guard_routes_1.default);
         this.app.use(this.apiPaths.checkin, checkin_routes_1.default);
         this.app.use(this.apiPaths.checkout, checkout_routes_1.default);
+        this.app.use(this.apiPaths.antipanic, antipanic_routes_1.default);
     }
     sockets() {
         this.io.on("connection", (socket) => {
             const controller = new controller_1.default();
             console.log('Conectado', socket.id);
             controller.disconnect(socket);
-            controller.mensaje(socket);
+            controller.notificarCheckIn(socket);
+            controller.escucharAntipanico(socket);
+            controller.escucharNuevoConfirmedByOwner(socket);
         });
     }
     listen() {

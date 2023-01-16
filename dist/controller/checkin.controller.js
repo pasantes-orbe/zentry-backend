@@ -20,13 +20,19 @@ const user_model_1 = __importDefault(require("../models/user.model"));
 class checkInController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { guest_name, guest_lastname, DNI, income_date, transport, patent, details, id_guard, id_owner, confirmed_by_owner } = req.body;
+            const { guest_name, guest_lastname, DNI, income_date, transport, patent, details, id_guard, id_owner, confirmed_by_owner, check_out } = req.body;
             //TODO: Cuando "confirmed_by_owner" no venga en la request hacerlo FALSE
             if (!confirmed_by_owner) {
                 req.body.confirmed_by_owner = false;
             }
             else {
                 req.body.confirmed_by_owner = true;
+            }
+            if (!check_out) {
+                req.body.check_out = false;
+            }
+            else {
+                req.body.check_out = null;
             }
             if (patent) {
                 req.body.patent = req.body.patent.toUpperCase();
@@ -84,6 +90,22 @@ class checkInController {
             });
         });
     }
+    changeStatus(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_checkin } = req.params;
+            const { new_status } = req.body;
+            const update = yield new CheckIn_1.default().changeStatus(+id_checkin, new_status);
+            if (!update) {
+                return res.status(404).send({
+                    msg: "Check-in no existe"
+                });
+            }
+            res.send({
+                msg: "Check-in actualizado correctamente",
+                update
+            });
+        });
+    }
     getApproved(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const checkins = yield checkin_model_1.default.findAll({
@@ -99,7 +121,19 @@ class checkInController {
         return __awaiter(this, void 0, void 0, function* () {
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
-                    confirmed_by_owner: true
+                    confirmed_by_owner: true,
+                    check_in: false
+                },
+                include: [user_model_1.default]
+            });
+            res.send(checkins);
+        });
+    }
+    getCheckOutFalse(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    check_out: false
                 },
                 include: [user_model_1.default]
             });
@@ -116,6 +150,21 @@ class checkInController {
                 include: [{ all: true }]
             });
             return res.send(checkins);
+        });
+    }
+    checkOutConfirmed(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_checkin } = req.params;
+            const update = yield new CheckIn_1.default().checkOutConfirm(+id_checkin);
+            if (!update) {
+                return res.status(404).send({
+                    msg: "Check-in no existe"
+                });
+            }
+            res.send({
+                msg: "Check-out confirmado",
+                update
+            });
         });
     }
 }

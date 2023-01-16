@@ -19,7 +19,8 @@ const CheckInModel = connection_1.default.define('checkin', {
     patent: { type: sequelize_1.DataTypes.STRING },
     details: { type: sequelize_1.DataTypes.TEXT },
     confirmed_by_owner: { type: sequelize_1.DataTypes.BOOLEAN },
-    check_in: { type: sequelize_1.DataTypes.BOOLEAN }
+    check_in: { type: sequelize_1.DataTypes.BOOLEAN },
+    check_out: { type: sequelize_1.DataTypes.BOOLEAN },
 }, {
     timestamps: false
 });

@@ -46,6 +46,38 @@ class CheckIn {
             return false;
         });
     }
+    changeStatus(id_checkin, newStatus) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkin = yield checkin_model_1.default.findByPk(id_checkin);
+            if (checkin) {
+                checkin.update({
+                    confirmed_by_owner: newStatus
+                }, {
+                    where: {
+                        id: checkin.id
+                    }
+                });
+                return checkin;
+            }
+            return false;
+        });
+    }
+    checkOutConfirm(id_checkin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const checkin = yield checkin_model_1.default.findByPk(id_checkin);
+            if (checkin) {
+                checkin.update({
+                    check_out: true
+                }, {
+                    where: {
+                        id: checkin.id
+                    }
+                });
+                return checkin;
+            }
+            return false;
+        });
+    }
     exists(id_checkin) {
         return __awaiter(this, void 0, void 0, function* () {
             const exists = yield checkin_model_1.default.findByPk(id_checkin);

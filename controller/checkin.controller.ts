@@ -20,7 +20,8 @@ class checkInController {
             details,
             id_guard,
             id_owner,
-            confirmed_by_owner
+            confirmed_by_owner,
+            check_out
         } = req.body
 
         //TODO: Cuando "confirmed_by_owner" no venga en la request hacerlo FALSE
@@ -30,6 +31,13 @@ class checkInController {
         } else {
             req.body.confirmed_by_owner = true
         }
+
+        if(!check_out){
+            req.body.check_out = false
+        } else {
+            req.body.check_out = null
+        }
+       
 
         if(patent){
             req.body.patent = req.body.patent.toUpperCase();
@@ -105,6 +113,27 @@ class checkInController {
 
     }
 
+    public async changeStatus(req: Request, res: Response){
+        
+        const {id_checkin} = req.params;
+
+        const {new_status} = req.body;
+
+        const update = await new CheckIn().changeStatus(+id_checkin, new_status)
+
+        if (!update){
+            return res.status(404).send({
+                msg: "Check-in no existe"
+            })
+        }
+
+        res.send({
+            msg: "Check-in actualizado correctamente",
+            update
+        });
+
+    }
+
     public async getApproved(req: Request, res: Response){
 
         const checkins = await CheckInModel.findAll({
@@ -121,7 +150,21 @@ class checkInController {
 
         const checkins = await CheckInModel.findAll({
             where: {
-                confirmed_by_owner: true
+                confirmed_by_owner: true,
+                check_in: false
+            },
+            include: [User]
+        })
+
+        res.send(checkins);
+
+    }
+
+    public async getCheckOutFalse(req: Request, res: Response){
+
+        const checkins = await CheckInModel.findAll({
+            where: {
+                check_out: false
             },
             include: [User]
         })
@@ -144,6 +187,28 @@ class checkInController {
         return res.send(checkins);
 
     }
+
+
+
+    public async checkOutConfirmed(req: Request, res: Response){
+
+        const { id_checkin } = req.params;
+        
+        const update = await new CheckIn().checkOutConfirm(+id_checkin)
+
+        if(!update){
+            return res.status(404).send({
+                msg: "Check-in no existe"
+            })
+        } 
+
+        res.send({
+            msg: "Check-out confirmado",
+            update
+        });
+
+    }
+
 
 }
 

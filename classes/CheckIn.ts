@@ -40,6 +40,44 @@ class CheckIn {
         return false;
 
     }
+    
+    public async changeStatus(id_checkin: number, newStatus: boolean){
+
+        const checkin = await CheckInModel.findByPk(id_checkin);
+
+        if(checkin){
+            checkin.update({
+                confirmed_by_owner: newStatus
+            }, {
+                where: {
+                    id: checkin.id
+                }
+            })
+            return checkin
+        } 
+
+        return false;
+
+    }
+
+    public async checkOutConfirm(id_checkin: number){
+
+        const checkin = await CheckInModel.findByPk(id_checkin);
+
+        if(checkin){
+            checkin.update({
+                check_out: true
+            }, {
+                where: {
+                    id: checkin.id
+                }
+            })
+            return checkin
+        } 
+
+        return false;
+
+    }
 
     public async exists(id_checkin: number){
 

@@ -16,8 +16,8 @@ const CheckInModel = db.define('checkin', {
     patent: {type: DataTypes.STRING},
     details: {type: DataTypes.TEXT},
     confirmed_by_owner: {type: DataTypes.BOOLEAN},
-    check_in: {type: DataTypes.BOOLEAN}
-
+    check_in: {type: DataTypes.BOOLEAN},
+    check_out: {type: DataTypes.BOOLEAN},
 },
 {
     

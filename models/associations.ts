@@ -13,6 +13,7 @@ import OwnerCountry from "./owner_country.model";
 import GuardSchedule from "./guard_schedule.model";
 import CheckInModel from "./checkin.model";
 import CheckOutModel from "./checkout.model";
+import AntipanicModel from "./antipanic.model";
 
 Role.hasOne(User, {
     foreignKey: 'role_id',
@@ -151,6 +152,15 @@ CheckOutModel.belongsTo(CheckInModel, {
     targetKey: 'id'
 })
 
+AntipanicModel.belongsTo(User, { as: 'owner' })
+
+AntipanicModel.belongsTo(User, { as: 'guard' })
+
+AntipanicModel.belongsTo(Country, {
+    foreignKey: 'id_country',
+    targetKey: 'id'
+})
+
 
 UserProperties.sync({ alter: false });
 Property.sync({ alter: true });
@@ -164,3 +174,4 @@ OwnerCountry.sync({alter: true});
 GuardSchedule.sync({alter: true});
 CheckInModel.sync({alter: true});
 CheckOutModel.sync({alter: true});
+AntipanicModel.sync({alter:true})

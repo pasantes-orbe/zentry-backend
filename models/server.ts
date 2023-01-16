@@ -14,7 +14,7 @@ import reservationRoutes from "../routes/reservation.routes";
 import guardRoutes from "../routes/guard.routes";
 import checkIn from "../routes/checkin.routes";
 import checkOut from "../routes/checkout.routes";
-
+import antipanic from "../routes/antipanic.routes"
 
 import db from "../DB/connection";
 
@@ -42,7 +42,8 @@ class Server {
         reservations: '/api/reservations',
         guards: '/api/guards',
         checkin: '/api/checkin',
-        checkout: '/api/checkout'
+        checkout: '/api/checkout',
+        antipanic: '/api/antipanic'
 
     }
 
@@ -122,6 +123,8 @@ class Server {
         this.app.use(this.apiPaths.guards, guardRoutes);
         this.app.use(this.apiPaths.checkin, checkIn);
         this.app.use(this.apiPaths.checkout, checkOut);
+        this.app.use(this.apiPaths.antipanic, antipanic);
+
     }
 
     sockets(){
@@ -130,8 +133,9 @@ class Server {
             const controller = new SocketController();
             console.log('Conectado' , socket.id); 
             controller.disconnect(socket);
-            controller.mensaje(socket);
-
+            controller.notificarCheckIn(socket);
+            controller.escucharAntipanico(socket);
+            controller.escucharNuevoConfirmedByOwner(socket)
           });
     }
 
