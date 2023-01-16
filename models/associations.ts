@@ -15,11 +15,11 @@ import CheckInModel from "./checkin.model";
 import CheckOutModel from "./checkout.model";
 import AntipanicModel from "./antipanic.model";
 
-Property.sync({ alter: true });
 Country.sync({ alter: true });
+Property.sync({ alter: true });
+UserProperties.sync({ alter: false });
 Recurrent.sync({ alter: true });
 AmenityModel.sync({ alter: true });
-passwordChangeRequest.sync({alter: true});
 Reservation.sync({alter: true});
 GuardCountry.sync({alter: true});
 OwnerCountry.sync({alter: true});
@@ -27,7 +27,7 @@ GuardSchedule.sync({alter: true});
 CheckInModel.sync({alter: true});
 CheckOutModel.sync({alter: true});
 AntipanicModel.sync({alter:true})
-UserProperties.sync({ alter: false });
+passwordChangeRequest.sync({alter: true});
 
 
 Role.hasOne(User, {
@@ -175,5 +175,4 @@ AntipanicModel.belongsTo(Country, {
     foreignKey: 'id_country',
     targetKey: 'id'
 })
-
 

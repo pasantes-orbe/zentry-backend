@@ -164,7 +164,9 @@ class checkInController {
 
         const checkins = await CheckInModel.findAll({
             where: {
-                check_out: false
+                check_out: false,
+                check_in: true,
+                confirmed_by_owner:true
             },
             include: [User]
         })

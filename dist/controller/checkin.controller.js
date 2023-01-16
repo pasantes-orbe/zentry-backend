@@ -133,7 +133,9 @@ class checkInController {
         return __awaiter(this, void 0, void 0, function* () {
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
-                    check_out: false
+                    check_out: false,
+                    check_in: true,
+                    confirmed_by_owner: true
                 },
                 include: [user_model_1.default]
             });
