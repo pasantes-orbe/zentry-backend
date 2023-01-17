@@ -4,9 +4,10 @@ const sequelize_1 = require("sequelize");
 let db;
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
-        host: 'localhost',
+    db = new sequelize_1.Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
+        host: 'containers-us-west-164.railway.app',
         dialect: 'postgres',
+        port: 7068
     });
 }
 catch (error) {
