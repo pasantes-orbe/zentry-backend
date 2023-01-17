@@ -80,6 +80,7 @@ class AntipanicController {
     desactivateAntipanic(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
+            const { details } = req.body;
             const alertAntipanic = yield antipanic_model_1.default.findByPk(id);
             if (!alertAntipanic) {
                 res.json({
@@ -88,7 +89,8 @@ class AntipanicController {
             }
             else {
                 const antipanicUpdated = yield alertAntipanic.update({
-                    state: false
+                    state: false,
+                    details
                 });
                 res.json({
                     msg: "Estado cambiado correctamente",

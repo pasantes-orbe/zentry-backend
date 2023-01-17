@@ -15,19 +15,19 @@ import CheckInModel from "./checkin.model";
 import CheckOutModel from "./checkout.model";
 import AntipanicModel from "./antipanic.model";
 
-Country.sync({ alter: true });
-Property.sync({ alter: true });
-UserProperties.sync({ alter: false });
-Recurrent.sync({ alter: true });
-AmenityModel.sync({ alter: true });
-Reservation.sync({alter: true});
-GuardCountry.sync({alter: true});
-OwnerCountry.sync({alter: true});
-GuardSchedule.sync({alter: true});
-CheckInModel.sync({alter: true});
-CheckOutModel.sync({alter: true});
-AntipanicModel.sync({alter:true})
-passwordChangeRequest.sync({alter: true});
+Country.sync();
+Property.sync();
+UserProperties.sync();
+Recurrent.sync();
+AmenityModel.sync();
+Reservation.sync();
+GuardCountry.sync();
+OwnerCountry.sync();
+GuardSchedule.sync();
+CheckInModel.sync();
+CheckOutModel.sync();
+AntipanicModel.sync()
+passwordChangeRequest.sync();
 
 
 Role.hasOne(User, {

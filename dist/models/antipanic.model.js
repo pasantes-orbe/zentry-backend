@@ -16,7 +16,8 @@ const AntipanicModel = connection_1.default.define('antipanic', {
     finishAt: { type: sequelize_1.DataTypes.DATE },
     state: { type: sequelize_1.DataTypes.BOOLEAN },
 }, {
-    timestamps: true
+    timestamps: true,
+    updatedAt: false
 });
 exports.default = AntipanicModel;
 //# sourceMappingURL=antipanic.model.js.map

@@ -13,7 +13,8 @@ const AntipanicModel = db.define('antipanic', {
     state: {type: DataTypes.BOOLEAN},
 },
 {
-    timestamps: true
+    timestamps: true,
+    updatedAt: false
 }
 );
 

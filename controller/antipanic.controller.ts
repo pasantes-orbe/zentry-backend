@@ -84,17 +84,21 @@ class AntipanicController {
 
         const {id} = req.params
 
+        const {details} = req.body
 
         const alertAntipanic = await AntipanicModel.findByPk(id)
 
+        
         if(!alertAntipanic){
             res.json({
                 msg: "El id de la alarma antipanico no es correcto",
             }
             )
         } else {
+
             const antipanicUpdated = await alertAntipanic.update({
-                state: false
+                state: false,
+                details
             })
 
 
