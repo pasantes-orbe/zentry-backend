@@ -22,7 +22,7 @@ class AntipanicController {
 
     public async newAntipanic(req: Request, res: Response){
 
-        const {id_owner, address, id_country} = req.body;
+        const {id_owner, address, id_country,} = req.body;
         const state = true;
 
         try {
@@ -51,7 +51,7 @@ class AntipanicController {
 
     public async guardConfirm(req: Request, res: Response){
         const {id} = req.params
-        const {id_guard, details} = req.body
+        const {guardId, details, finishAt} = req.body
 
 
         const alertAntipanic = await AntipanicModel.findByPk(id)
@@ -64,12 +64,14 @@ class AntipanicController {
         } else{
 
             const antipanicUpdated = await alertAntipanic.update({
-                guardId: id_guard,
-                details
+                guardId,
+                details,
+                state: false,
+                finishAt
             })
 
             res.json({
-                msg: "Estado cambiado correctamente",
+                msg: "Antipanico actualizado correctamente",
                 antipanic: antipanicUpdated
             }
             )
@@ -86,6 +88,7 @@ class AntipanicController {
 
         const {details} = req.body
 
+
         const alertAntipanic = await AntipanicModel.findByPk(id)
 
         
@@ -98,13 +101,13 @@ class AntipanicController {
 
             const antipanicUpdated = await alertAntipanic.update({
                 state: false,
-                details
+                details,
             })
 
 
             res.json({
                 msg: "Estado cambiado correctamente",
-                antipanic: antipanicUpdated
+                antipanic: antipanicUpdated,
             }
             )
 

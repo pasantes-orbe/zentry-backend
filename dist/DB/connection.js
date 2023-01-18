@@ -4,10 +4,9 @@ const sequelize_1 = require("sequelize");
 let db;
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
-        host: 'containers-us-west-164.railway.app',
-        dialect: 'postgres',
-        port: 7068
+    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
+        host: 'localhost',
+        dialect: 'postgres'
     });
 }
 catch (error) {
@@ -15,10 +14,11 @@ catch (error) {
 }
 // PRODUCTION
 /*try {
-    db = new Sequelize('qegbbqka', 'qegbbqka', 's0BlHlZEfD1gPRUqxtAc1IMMVFkxTGMy', {
-        host: 'kesavan.db.elephantsql.com',
-        dialect: 'postgres',
-    });
+    db = new Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
+         host: 'containers-us-west-164.railway.app',
+         dialect: 'postgres',
+         port: 7068
+     });
 } catch (error) {
     throw new Error("No se pudo conectar con la base de datos")
 }

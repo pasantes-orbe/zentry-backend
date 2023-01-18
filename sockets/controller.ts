@@ -20,16 +20,33 @@ class SocketController{
             const {res, ownerName, ownerLastName} = payload
 
                 const address = res['antipanic']['address'];
-
+                const id = res['antipanic']['id']
             const antipanicAdvice = {
                 ownerName,
                 ownerLastName,
-                address
+                address,
+                id
             }
 
             console.log(antipanicAdvice)
             
             client.broadcast.emit('notificacion-antipanico', antipanicAdvice)
+
+
+        })
+    }
+
+    public escucharAntipanicoFinalizado(client: Socket){
+
+        client.on('notificar-antipanico-finalizado', (payload) => {
+
+            console.log(payload)
+            console.log("Hola Mundo")
+            
+            
+            client.broadcast.emit('notificacion-antipanico-finalizado', 
+                payload,
+             )
 
 
         })
@@ -51,6 +68,9 @@ class SocketController{
 
         })
     }
+
+    
+    
 
 
     public disconnect( client: Socket ){

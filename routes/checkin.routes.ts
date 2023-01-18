@@ -78,6 +78,11 @@ router.get('/checkout', checkin_controller.getCheckOutFalse)
  */
 router.get('/get_by_owner/:id_owner', checkin_controller.getByOwner)
 
+/**
+ * Get all today by owner ID
+ */
+
+router.get('/getAllToday/:id_owner', checkin_controller.getcheckInsToday)
 
 
 export default router;

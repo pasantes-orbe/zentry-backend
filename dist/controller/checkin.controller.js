@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sequelize_1 = require("sequelize");
 const CheckIn_1 = __importDefault(require("../classes/CheckIn"));
 const Guard_1 = __importDefault(require("../classes/Guard"));
 const checkin_model_1 = __importDefault(require("../models/checkin.model"));
@@ -167,6 +168,24 @@ class checkInController {
                 msg: "Check-out confirmado",
                 update
             });
+        });
+    }
+    getcheckInsToday(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id_owner } = req.params;
+            const TODAY_START = new Date().setHours(0, 0, 0, 0);
+            const NOW = new Date().setHours(23, 59);
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    id_owner,
+                    income_date: {
+                        [sequelize_1.Op.gt]: TODAY_START,
+                        [sequelize_1.Op.lt]: NOW
+                    }
+                },
+                include: [user_model_1.default]
+            });
+            res.send(checkins);
         });
     }
 }

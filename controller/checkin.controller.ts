@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { check } from "express-validator";
+import { Sequelize } from "sequelize";
+import { Op } from "sequelize";
+
 import CheckIn from "../classes/CheckIn";
 import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
@@ -210,6 +213,30 @@ class checkInController {
         });
 
     }
+
+    
+    public async getcheckInsToday(req: Request, res: Response){
+        const {id_owner} = req.params;
+
+        const TODAY_START = new Date().setHours(0, 0, 0, 0);
+        const NOW = new Date().setHours(23,59)
+
+        const checkins = await CheckInModel.findAll({
+            where: {
+                id_owner,
+                income_date: {
+                    [Op.gt]: TODAY_START,
+                    [Op.lt]: NOW
+                }
+
+            },
+            include: [User]
+        })
+            res.send(checkins);        
+
+
+    }
+
 
 
 }

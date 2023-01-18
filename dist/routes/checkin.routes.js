@@ -65,5 +65,9 @@ router.get('/checkout', checkin_controller.getCheckOutFalse);
  * Get by owner ID
  */
 router.get('/get_by_owner/:id_owner', checkin_controller.getByOwner);
+/**
+ * Get all today by owner ID
+ */
+router.get('/getAllToday/:id_owner', checkin_controller.getcheckInsToday);
 exports.default = router;
 //# sourceMappingURL=checkin.routes.js.map

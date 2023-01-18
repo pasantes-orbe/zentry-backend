@@ -32,7 +32,7 @@ class AntipanicController {
     }
     newAntipanic(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_owner, address, id_country } = req.body;
+            const { id_owner, address, id_country, } = req.body;
             const state = true;
             try {
                 const antipanic = new antipanic_model_1.default({
@@ -58,7 +58,7 @@ class AntipanicController {
     guardConfirm(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
-            const { id_guard, details } = req.body;
+            const { guardId, details, finishAt } = req.body;
             const alertAntipanic = yield antipanic_model_1.default.findByPk(id);
             if (!alertAntipanic) {
                 res.json({
@@ -67,11 +67,13 @@ class AntipanicController {
             }
             else {
                 const antipanicUpdated = yield alertAntipanic.update({
-                    guardId: id_guard,
-                    details
+                    guardId,
+                    details,
+                    state: false,
+                    finishAt
                 });
                 res.json({
-                    msg: "Estado cambiado correctamente",
+                    msg: "Antipanico actualizado correctamente",
                     antipanic: antipanicUpdated
                 });
             }
@@ -90,11 +92,11 @@ class AntipanicController {
             else {
                 const antipanicUpdated = yield alertAntipanic.update({
                     state: false,
-                    details
+                    details,
                 });
                 res.json({
                     msg: "Estado cambiado correctamente",
-                    antipanic: antipanicUpdated
+                    antipanic: antipanicUpdated,
                 });
             }
         });

@@ -11,13 +11,22 @@ class SocketController {
         client.on('notificar-antipanico', (payload) => {
             const { res, ownerName, ownerLastName } = payload;
             const address = res['antipanic']['address'];
+            const id = res['antipanic']['id'];
             const antipanicAdvice = {
                 ownerName,
                 ownerLastName,
-                address
+                address,
+                id
             };
             console.log(antipanicAdvice);
             client.broadcast.emit('notificacion-antipanico', antipanicAdvice);
+        });
+    }
+    escucharAntipanicoFinalizado(client) {
+        client.on('notificar-antipanico-finalizado', (payload) => {
+            console.log(payload);
+            console.log("Hola Mundo");
+            client.broadcast.emit('notificacion-antipanico-finalizado', payload);
         });
     }
     escucharNuevoConfirmedByOwner(client) {

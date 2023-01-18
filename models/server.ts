@@ -136,6 +136,7 @@ class Server {
             controller.notificarCheckIn(socket);
             controller.escucharAntipanico(socket);
             controller.escucharNuevoConfirmedByOwner(socket)
+            controller.escucharAntipanicoFinalizado(socket)
           });
     }
 
