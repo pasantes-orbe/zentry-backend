@@ -5,7 +5,7 @@ import Notifcation from "../models/notification.model"
 class Notifications {
     private _app_id: string = "df4ae4bb-9ade-4eba-9d09-06da4069a8c7"
     private _Authorization : string = "Basic ZDU0YTlhYTAtZTE4ZC00OTVkLWJhZjEtOGNiM2NkZDAxMDRm"
-    private _BaseUrl: string =  "https://shock-app-backend-production.up.railway.app"
+    private _BaseUrl: string =  "https://app-countries-f8d5b.web.app/"
 
     async notifyAExternal_User_By_ID(id:string, msg: string, heading: string, name:string){
 
