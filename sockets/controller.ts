@@ -26,11 +26,7 @@ class SocketController{
             const dni = payload['DNI'];                       // con el id_owner envio la notificacion
 
             const user = await User.findByPk(id_owner)
-<<<<<<< HEAD
-
-=======
             console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
             this.notifications.notifyAExternal_User_By_ID(String(id_owner),
                 `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`,
                 `${user.name}`, 
@@ -53,10 +49,22 @@ class SocketController{
 
         client.on('notificar-antipanico', (payload) => {
 
+         
+
             const {res, ownerName, ownerLastName} = payload
 
-                const address = res['antipanic']['address'];
-                const id = res['antipanic']['id']
+
+            const address = res['antipanic']['address'];
+            const id = res['antipanic']['id']
+            const id_country = res['antipanic']['id_country']
+
+            this.notifications.notifyAllGuards(
+                String(id_country),
+                `Antipanico activado por ${ownerName} ${ownerLastName} de direccion ${address}`,
+                'Antipanico Activado',
+                'Antipanico'
+            )
+            
             const antipanicAdvice = {
                 ownerName,
                 ownerLastName,
@@ -101,21 +109,11 @@ class SocketController{
             const id_country = payload ['id_country']
             const guest_name = payload['guest_name'];                       
             const guest_lastname = payload['guest_lastname'];                       // con el id_owner envio la notificacion
-<<<<<<< HEAD
-            const dni = payload['DNI'];  
-
-=======
             const dni = payload['DNI'];         
-            const id_owner = payload['id_owner']
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
             const owner = await User.findByPk(payload['id_owner'])
 
             if(payload['check_out'] == true){
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
             this.notifications.notifyAExternal_User_By_ID(String(id_owner),
             `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`,
             `${owner.name}`, 
@@ -140,11 +138,7 @@ class SocketController{
             }   
             else if( payload['confirmed_by_owner'] == true && payload['check_in'] == true){
 
-<<<<<<< HEAD
-                this.notifications.notifyAExternal_User_By_ID(id_owner,
-=======
                 this.notifications.notifyAExternal_User_By_ID(String(id_owner),
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
                 `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`,
                 `${owner.name}`, 
                 'Nuevo Check-in'

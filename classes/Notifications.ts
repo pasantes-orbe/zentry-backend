@@ -9,13 +9,6 @@ class Notifications {
 
     async notifyAExternal_User_By_ID(id:string, msg: string, heading: string, name:string){
 
-<<<<<<< HEAD
-=======
-    async notifyAExternal_User_By_ID(id:string, msg: string, heading: string, url:string, name:string){
-        
-        console.log("ESTE ES EL ID AL CUAL SE MANDA LA NOTIFICACION", id);
-
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
         const send = await axios.post(`https://onesignal.com/api/v1/notifications`, {
             app_id: this._app_id,
             contents: {"es": msg, "en": msg},
@@ -45,26 +38,7 @@ class Notifications {
     }
 
 
-<<<<<<< HEAD
     async notifyAllGuards(id_country: any, msg: string, heading: string, name:string){
-=======
-    async notifyAllGuards(msg: string, heading: string, url:string, name:string){
-        const send = await axios.post(`https://onesignal.com/api/v1/notifications`, {
-            app_id: this._app_id,
-            contents: {"es": msg, "en": msg},
-            headings: {"es": heading, "en": heading},
-            name: name,
-            url: url,
-            included_segments: ['vigiladores'],
-        },
-        {
-            headers: {
-            'Authorization': this._Authorization,
-            'content-type': 'application/json'
-            }
-          }
-        ).then(res => console.log(res))
->>>>>>> 6c5f7aec9fb656c2b2a4724f4e631456c30e9ed4
 
         const guards = await GuardCountry.findAll({
             where: {id_country}

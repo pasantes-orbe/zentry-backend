@@ -32,6 +32,7 @@ class SocketController {
             const guest_lastname = payload['guest_lastname']; // con el id_owner envio la notificacion
             const dni = payload['DNI']; // con el id_owner envio la notificacion
             const user = yield user_model_1.default.findByPk(id_owner);
+            console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
             this.notifications.notifyAExternal_User_By_ID(String(id_owner), `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`, `${user.name}`, 'Nueva Solicitud de Check-in');
             const owner = this.ownerControl.getownersByUserId(id_owner);
             if (owner) {
@@ -47,6 +48,8 @@ class SocketController {
             const { res, ownerName, ownerLastName } = payload;
             const address = res['antipanic']['address'];
             const id = res['antipanic']['id'];
+            const id_country = res['antipanic']['id_country'];
+            this.notifications.notifyAllGuards(String(id_country), `Antipanico activado por ${ownerName} ${ownerLastName} de direccion ${address}`, 'Antipanico Activado', 'Antipanico');
             const antipanicAdvice = {
                 ownerName,
                 ownerLastName,
@@ -90,7 +93,7 @@ class SocketController {
                 this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`, `Vigiladores`, `Nueva Confirmacion del Propietario`);
             }
             else if (payload['confirmed_by_owner'] == true && payload['check_in'] == true) {
-                this.notifications.notifyAExternal_User_By_ID(id_owner, `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
+                this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
             }
             client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
         }));
