@@ -19,7 +19,7 @@ class Notifications {
     constructor() {
         this._app_id = "df4ae4bb-9ade-4eba-9d09-06da4069a8c7";
         this._Authorization = "Basic ZDU0YTlhYTAtZTE4ZC00OTVkLWJhZjEtOGNiM2NkZDAxMDRm";
-        this._BaseUrl = "https://shock-app-backend-production.up.railway.app";
+        this._BaseUrl = "https://app-countries-f8d5b.web.app/";
     }
     notifyAExternal_User_By_ID(id, msg, heading, name) {
         return __awaiter(this, void 0, void 0, function* () {
