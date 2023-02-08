@@ -23,17 +23,16 @@ class Notifications {
             'content-type': 'application/json'
             }
           }
-        ).then(
-           async res => {
-                console.log(res)
+        )
+
+        if(send){
                 const notification = new Notifcation({
                     title : heading,
                     content: msg,
                     id_user: id
                 })
                 await notification.save();
-            } 
-        )
+        }
 
     }
 
@@ -62,18 +61,17 @@ class Notifications {
                 'content-type': 'application/json'
                 }
               }
-            ).then(async res => {
-                console.log(res)
+            )
+            
+            if(send){
                 const notification = new Notifcation({
                     title : heading,
                     content: msg,
                     id_user,
                 })
-                
                 await notification.save();
-            })
+        }
 
-            
          }
 
       
