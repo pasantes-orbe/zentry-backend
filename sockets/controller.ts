@@ -114,46 +114,66 @@ class SocketController{
 
             if(payload['check_out'] == true){
 
-            await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
+            const notificationSend = await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
             `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`,
             `${owner.name}`, 
             'Nuevo Check-out')
 
+            if(notificationSend){
+                client.broadcast.emit('notificacion-nuevo-confirmedByOwner', 
+                    payload,
+                    )
+            }
+
+
+
             } else if(payload['confirmed_by_owner'] == false){
 
-                await this.notifications.notifyAllGuards(id_country,
+                const notificationSend = await this.notifications.notifyAllGuards(id_country,
                     `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} se actualizó a denegado por el propietario`,
                     `Vigiladores`,
                     `Rechazo de Propietario`)
+
+                if (notificationSend){
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', 
+                    payload,
+                    )
+                }
 
             } 
 
             else if(payload['confirmed_by_owner'] == true && payload['check_in'] == false){
 
-                await this.notifications.notifyAllGuards(id_country,
+                const notificationSend = await this.notifications.notifyAllGuards(id_country,
                     `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`,
                     `Vigiladores`,
                     `Nueva Confirmacion del Propietario`)
 
-            }   
+                    if(notificationSend){
+                        client.broadcast.emit('notificacion-nuevo-confirmedByOwner', 
+                        payload,
+                    )
+                    }
+
+                }
+                   
             else if( payload['confirmed_by_owner'] == true && payload['check_in'] == true){
 
-                await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
+                const notificationSend = await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
                 `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`,
                 `${owner.name}`, 
                 'Nuevo Check-in'
 
                 )
+
+                if(notificationSend){
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', 
+                        payload,
+                    )
+                }
+
                
             }
-
-
-            client.broadcast.emit('notificacion-nuevo-confirmedByOwner', 
-                payload,
-             )
-
-             
-
 
         })
     }

@@ -84,18 +84,29 @@ class SocketController {
             const dni = payload['DNI'];
             const owner = yield user_model_1.default.findByPk(payload['id_owner']);
             if (payload['check_out'] == true) {
-                yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-out');
+                const notificationSend = yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-out');
+                if (notificationSend) {
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
+                }
             }
             else if (payload['confirmed_by_owner'] == false) {
-                yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} se actualizó a denegado por el propietario`, `Vigiladores`, `Rechazo de Propietario`);
+                const notificationSend = yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} se actualizó a denegado por el propietario`, `Vigiladores`, `Rechazo de Propietario`);
+                if (notificationSend) {
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
+                }
             }
             else if (payload['confirmed_by_owner'] == true && payload['check_in'] == false) {
-                yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`, `Vigiladores`, `Nueva Confirmacion del Propietario`);
+                const notificationSend = yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`, `Vigiladores`, `Nueva Confirmacion del Propietario`);
+                if (notificationSend) {
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
+                }
             }
             else if (payload['confirmed_by_owner'] == true && payload['check_in'] == true) {
-                yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
+                const notificationSend = yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
+                if (notificationSend) {
+                    client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
+                }
             }
-            client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
         }));
     }
     propietarioConectado(client) {
