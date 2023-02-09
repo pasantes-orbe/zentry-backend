@@ -35,15 +35,15 @@ class Notifications {
                     'Authorization': this._Authorization,
                     'content-type': 'application/json'
                 }
-            }).then((res) => __awaiter(this, void 0, void 0, function* () {
-                console.log(res);
+            });
+            if (send) {
                 const notification = new notification_model_1.default({
                     title: heading,
                     content: msg,
                     id_user: id
                 });
                 yield notification.save();
-            }));
+            }
         });
     }
     notifyAllGuards(id_country, msg, heading, name) {
@@ -67,15 +67,15 @@ class Notifications {
                         'Authorization': this._Authorization,
                         'content-type': 'application/json'
                     }
-                }).then((res) => __awaiter(this, void 0, void 0, function* () {
-                    console.log(res);
+                });
+                if (send) {
                     const notification = new notification_model_1.default({
                         title: heading,
                         content: msg,
                         id_user,
                     });
                     yield notification.save();
-                }));
+                }
             }
         });
     }

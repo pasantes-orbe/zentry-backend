@@ -179,7 +179,7 @@ CheckOutModel.belongsTo(CheckInModel, {
 
 AntipanicModel.belongsTo(User, { as: 'owner' })
 
-AntipanicModel.belongsTo(User, { as: 'guard' })
+AntipanicModel.belongsTo (User, { as: 'guard' })
 
 AntipanicModel.belongsTo(Country, {
     foreignKey: 'id_country',
