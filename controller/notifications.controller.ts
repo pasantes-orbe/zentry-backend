@@ -13,6 +13,7 @@ class NotificationsController {
                 id_user
             }
         })
+        
 
         res.json(noti)
     }   

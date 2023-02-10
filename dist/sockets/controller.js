@@ -84,16 +84,16 @@ class SocketController {
             const dni = payload['DNI'];
             const owner = yield user_model_1.default.findByPk(payload['id_owner']);
             if (payload['check_out'] == true) {
-                this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-out');
+                yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-out');
             }
             else if (payload['confirmed_by_owner'] == false) {
-                this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} se actualizó a denegado por el propietario`, `Vigiladores`, `Rechazo de Propietario`);
+                yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} se actualizó a denegado por el propietario`, `Vigiladores`, `Rechazo de Propietario`);
             }
             else if (payload['confirmed_by_owner'] == true && payload['check_in'] == false) {
-                this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`, `Vigiladores`, `Nueva Confirmacion del Propietario`);
+                yield this.notifications.notifyAllGuards(id_country, `El Check-in: ${guest_name} ${guest_lastname} - DNI: ${dni} ya fue autorizado por el propietario correspondiente`, `Vigiladores`, `Nueva Confirmacion del Propietario`);
             }
             else if (payload['confirmed_by_owner'] == true && payload['check_in'] == true) {
-                this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
+                yield this.notifications.notifyAExternal_User_By_ID(String(id_owner), `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`, `${owner.name}`, 'Nuevo Check-in');
             }
             client.broadcast.emit('notificacion-nuevo-confirmedByOwner', payload);
         }));

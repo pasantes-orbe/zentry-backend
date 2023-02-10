@@ -17,6 +17,8 @@ import checkOut from "../routes/checkout.routes";
 import antipanic from "../routes/antipanic.routes";
 import pushNotifications from "../routes/push_notifications.routes";
 import notificationRoutes from "../routes/notification.routes";
+import invitationRoutes from "../routes/invitations.routes";
+
 
 import db from "../DB/connection";
 
@@ -47,7 +49,8 @@ class Server {
         checkout: '/api/checkout',
         antipanic: '/api/antipanic',
         push_notifications: '/api/notifications',
-        notifications: '/api/notifications'
+        notifications: '/api/notifications',
+        invitation: '/api/invitation'
 
     }
 
@@ -129,7 +132,8 @@ class Server {
         this.app.use(this.apiPaths.checkout, checkOut);
         this.app.use(this.apiPaths.antipanic, antipanic);
         this.app.use(this.apiPaths.push_notifications, pushNotifications);
-        this.app.use(this.apiPaths.notifications, notificationRoutes)
+        this.app.use(this.apiPaths.notifications, notificationRoutes);
+        this.app.use(this.apiPaths.invitation, invitationRoutes);
 
     }
 
