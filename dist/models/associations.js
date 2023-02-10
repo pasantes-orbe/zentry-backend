@@ -21,6 +21,7 @@ const checkout_model_1 = __importDefault(require("./checkout.model"));
 const antipanic_model_1 = __importDefault(require("./antipanic.model"));
 const app_id_model_1 = __importDefault(require("./app_id.model"));
 const notification_model_1 = __importDefault(require("./notification.model"));
+const invitations_model_1 = __importDefault(require("./invitations.model"));
 country_model_1.default.sync();
 property_model_1.default.sync();
 user_properties_model_1.default.sync();
@@ -35,6 +36,7 @@ checkout_model_1.default.sync();
 antipanic_model_1.default.sync();
 passwordChangeRequest_model_1.default.sync();
 app_id_model_1.default.sync();
+invitations_model_1.default.sync();
 roles_model_1.default.hasOne(user_model_1.default, {
     foreignKey: 'role_id',
     sourceKey: 'id'
@@ -161,6 +163,14 @@ notification_model_1.default.belongsTo(user_model_1.default, {
 });
 user_model_1.default.hasMany(app_id_model_1.default, {
     foreignKey: 'id_user',
+    sourceKey: 'id'
+});
+invitations_model_1.default.belongsTo(reservation_model_1.default, {
+    foreignKey: 'id_reservation',
+    targetKey: 'id'
+});
+reservation_model_1.default.hasMany(reservation_model_1.default, {
+    foreignKey: 'id',
     sourceKey: 'id'
 });
 //# sourceMappingURL=associations.js.map

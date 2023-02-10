@@ -16,6 +16,7 @@ import CheckOutModel from "./checkout.model";
 import AntipanicModel from "./antipanic.model";
 import AppId from "./app_id.model";
 import Notifcation from "./notification.model";
+import Invitation from "./invitations.model";
 
 Country.sync();
 Property.sync();
@@ -31,6 +32,7 @@ CheckOutModel.sync();
 AntipanicModel.sync()
 passwordChangeRequest.sync();
 AppId.sync();
+Invitation.sync();
 
 
 Role.hasOne(User, {
@@ -198,5 +200,15 @@ Notifcation.belongsTo(User,{
 
 User.hasMany(AppId, {
     foreignKey: 'id_user',
+    sourceKey: 'id'
+})
+
+Invitation.belongsTo(Reservation, {
+    foreignKey: 'id_reservation',
+    targetKey: 'id'
+})
+
+Reservation.hasMany(Reservation, {
+    foreignKey: 'id',
     sourceKey: 'id'
 })

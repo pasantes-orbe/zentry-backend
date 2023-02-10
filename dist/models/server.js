@@ -29,6 +29,7 @@ const checkout_routes_1 = __importDefault(require("../routes/checkout.routes"));
 const antipanic_routes_1 = __importDefault(require("../routes/antipanic.routes"));
 const push_notifications_routes_1 = __importDefault(require("../routes/push_notifications.routes"));
 const notification_routes_1 = __importDefault(require("../routes/notification.routes"));
+const invitations_routes_1 = __importDefault(require("../routes/invitations.routes"));
 const connection_1 = __importDefault(require("../DB/connection"));
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 const controller_1 = __importDefault(require("../sockets/controller"));
@@ -49,7 +50,8 @@ class Server {
             checkout: '/api/checkout',
             antipanic: '/api/antipanic',
             push_notifications: '/api/notifications',
-            notifications: '/api/notifications'
+            notifications: '/api/notifications',
+            invitation: '/api/invitation'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || "3000";
@@ -114,6 +116,7 @@ class Server {
         this.app.use(this.apiPaths.antipanic, antipanic_routes_1.default);
         this.app.use(this.apiPaths.push_notifications, push_notifications_routes_1.default);
         this.app.use(this.apiPaths.notifications, notification_routes_1.default);
+        this.app.use(this.apiPaths.invitation, invitations_routes_1.default);
     }
     sockets() {
         const controller = new controller_1.default();
