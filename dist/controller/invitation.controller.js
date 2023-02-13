@@ -16,7 +16,12 @@ const invitations_model_1 = __importDefault(require("../models/invitations.model
 class InvitationController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { guests } = req.body;
+            const { guests: guestArr } = req.body;
+            const { id_reservation } = req.params;
+            const guests = guestArr.map(guest => {
+                guest['id_reservation'] = id_reservation;
+                return guest;
+            });
             const invitations = yield invitations_model_1.default.bulkCreate(guests);
             return res.send({ msg: "invitados agregados con exito", invitations });
         });

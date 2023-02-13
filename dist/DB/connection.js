@@ -4,7 +4,7 @@ const sequelize_1 = require("sequelize");
 let db;
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('Countries', 'admin', 'admin', {
+    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
         host: 'localhost',
         dialect: 'postgres',
     });
@@ -34,4 +34,10 @@ catch (error) {
  }
 */
 exports.default = db;
+/*
+db = new Sequelize('Countries', 'admin', 'admin', {
+    host: 'localhost',
+    dialect: 'postgres',
+});
+*/ 
 //# sourceMappingURL=connection.js.map

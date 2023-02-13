@@ -6,10 +6,10 @@ let db: Sequelize;
 
 // LOCAL
 try {
-     db = new Sequelize('Countries', 'admin', 'admin', {
-         host: 'localhost',
-         dialect: 'postgres',
-     });
+    db = new Sequelize('Countries', 'postgres', 'admin', {
+        host: 'localhost',
+        dialect: 'postgres',
+    });
  } catch (error) {
      throw new Error("No se pudo conectar con la base de datos")
  }
@@ -39,3 +39,9 @@ try {
  }
 */
 export default db;
+/*
+db = new Sequelize('Countries', 'admin', 'admin', {
+    host: 'localhost',
+    dialect: 'postgres',
+});
+*/

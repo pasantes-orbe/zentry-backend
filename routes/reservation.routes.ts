@@ -51,7 +51,8 @@ router.post('/', [
     }
 
     const reservation = new Reservation(reservationBody);
-    reservation.save();
+
+    await reservation.save();
 
     return res.json(reservation);
 

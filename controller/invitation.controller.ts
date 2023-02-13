@@ -6,7 +6,15 @@ class InvitationController {
 
     public async create(req: Request, res: Response) {
 
-        const { guests } = req.body;
+        const { guests: guestArr } = req.body;
+        const { id_reservation } = req.params;
+
+        const guests = guestArr.map( guest => {
+            guest['id_reservation'] = id_reservation
+            
+            return guest
+        });
+
 
         const invitations = await Invitation.bulkCreate(guests)
 
