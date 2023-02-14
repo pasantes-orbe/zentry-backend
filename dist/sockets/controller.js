@@ -72,7 +72,7 @@ class SocketController {
             console.log("Este es el id del socket", owner.id_socket);
             if (owner) {
                 console.log("ESTE ES EL PAYLOD", payload);
-                client.broadcast.emit('notificacion-antipanico-finalizado', {msg: "hola mundo"});
+                client.broadcast.emit('notificacion-antipanico-finalizado', payload);
                 client.to(owner.id_socket).emit('notificacion-antipanico-finalizado', payload);
             }
             else {
