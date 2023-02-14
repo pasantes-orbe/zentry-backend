@@ -21,6 +21,11 @@ class SocketController {
         this.guardsUbication = new GuardsUbicationControl_1.default();
         this.ownerControl = new OwnersConnectedControl_1.default();
         this.notifications = new Notifications_1.default();
+        // public disconnect( client: Socket ){
+        //     client.on('disconnect', () => {
+        //         console.log('Desconectado', client.id);
+        //     })
+        // }
     }
     notificarCheckIn(client) {
         client.on('notificar-check-in', (payload) => __awaiter(this, void 0, void 0, function* () {
@@ -67,6 +72,7 @@ class SocketController {
             console.log("Este es el id del socket", owner.id_socket);
             if (owner) {
                 console.log("ESTE ES EL PAYLOD", payload);
+                client.broadcast.emit('notificacion-antipanico-finalizado', {msg: "hola mundo"});
                 client.to(owner.id_socket).emit('notificacion-antipanico-finalizado', payload);
             }
             else {
@@ -130,11 +136,6 @@ class SocketController {
         });
     }
     notifiyOwner() {
-    }
-    disconnect(client) {
-        client.on('disconnect', () => {
-            console.log('Desconectado', client.id);
-        });
     }
 }
 exports.default = SocketController;

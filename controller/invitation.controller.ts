@@ -11,7 +11,6 @@ class InvitationController {
 
         const guests = guestArr.map( guest => {
             guest['id_reservation'] = id_reservation
-            
             return guest
         });
 

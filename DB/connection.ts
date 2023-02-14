@@ -6,8 +6,8 @@ let db: Sequelize;
 
 // LOCAL
 try {
-    db = new Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
-        host: 'containers-us-west-164.railway.app',
+    db = new Sequelize('Countries', 'postgres', 'admin', {
+        host: 'localhost',
         dialect: 'postgres',
         port: 7068
     });

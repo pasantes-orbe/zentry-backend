@@ -90,6 +90,7 @@ class SocketController{
             console.log("Este es el id del socket", owner.id_socket)
             if(owner){
                 console.log("ESTE ES EL PAYLOD", payload)
+                client.broadcast.emit('notificacion-antipanico-finalizado', payload);
                 client.to(owner.id_socket).emit('notificacion-antipanico-finalizado', payload)
             } else {
                 return
@@ -221,17 +222,13 @@ class SocketController{
 
     }
 
-    
-    
+    // public disconnect( client: Socket ){
 
+    //     client.on('disconnect', () => {
+    //         console.log('Desconectado', client.id);
+    //     })
 
-    public disconnect( client: Socket ){
-
-        client.on('disconnect', () => {
-            console.log('Desconectado', client.id);
-        })
-
-    }
+    // }
 
 
 }

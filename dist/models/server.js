@@ -123,13 +123,13 @@ class Server {
         this.io.on("connection", (socket) => {
             console.log('Conectado', socket.id);
             controller.propietarioConectado(socket);
-            controller.disconnect(socket);
             controller.notificarCheckIn(socket);
             controller.escucharAntipanico(socket);
             controller.escucharNuevoConfirmedByOwner(socket);
             controller.escucharAntipanicoFinalizado(socket);
             controller.escucharNuevaPosicionGuardia(socket);
             controller.escucharGuardDisconnected(socket);
+            // controller.disconnect(socket);
         });
     }
     listen() {
