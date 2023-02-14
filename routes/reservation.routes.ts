@@ -16,6 +16,7 @@ const router = Router();
 /**
  * Create Reservation
  */
+
 router.post('/', [
     check('id_amenity', "El campo 'id_amenity' no puede estar vacío").notEmpty(),
     check('id_amenity', "El campo 'id_amenity' debe ser numérico").isNumeric(),
@@ -59,25 +60,35 @@ router.post('/', [
 });
 
 /**
- * Get all Reservations
+ * Get all Reservations by Status and ID_Country
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/:id_country', async (req: Request, res: Response) => {
 
     const { status } = req.query;
+    const {id_country} = req.params
 
+    console.log("ESTE ES EL ID DEL COUNTRY");
     if(status){
         const reservations = await Reservation.findAll({
             where: {
-                status
+                status,
             },
             include: AmenityModel
         });
 
-        return res.json(reservations);
+        const reservations_by_country = reservations.filter( (reservation) => {
+            return reservation.amenity.id_country == id_country;
+        })
+
+        return res.json(reservations_by_country);
     }
 
     const reservations = await Reservation.findAll();
-    return res.json(reservations);
+    const reservations_by_country = reservations.filter( (reservation) => {
+        return reservation.amenity.id_country == id_country;
+    })
+
+    return res.json(reservations_by_country);
 });
 
 /**

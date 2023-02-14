@@ -59,21 +59,29 @@ router.post('/', [
     return res.json(reservation);
 }));
 /**
- * Get all Reservations
+ * Get all Reservations by Status and ID_Country
  */
-router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/:id_country', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { status } = req.query;
+    const { id_country } = req.params;
+    console.log("ESTE ES EL ID DEL COUNTRY");
     if (status) {
         const reservations = yield reservation_model_1.default.findAll({
             where: {
-                status
+                status,
             },
             include: amenity_model_1.default
         });
-        return res.json(reservations);
+        const reservations_by_country = reservations.filter((reservation) => {
+            return reservation.amenity.id_country == id_country;
+        });
+        return res.json(reservations_by_country);
     }
     const reservations = yield reservation_model_1.default.findAll();
-    return res.json(reservations);
+    const reservations_by_country = reservations.filter((reservation) => {
+        return reservation.amenity.id_country == id_country;
+    });
+    return res.json(reservations_by_country);
 }));
 /**
  * Update Status
