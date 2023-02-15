@@ -142,16 +142,19 @@ router.patch('/:id_reservation/:status', [
  * Get All Reservations By User
  */
 
-router.get('/:id_user', [
+router.get('/get_by_user/:id_user', [
     check('id_user', "El campo 'id_user' debe ser numérico").isNumeric(),
     check('id_user').custom(userExists)
 ] ,async (req: Request, res: Response) => {
 
+    
     const { id_user } = req.params
+
+    console.log(id_user);
 
     const reservations = await Reservation.findAll({
         where: {
-            id_user
+            id_user 
         }
     });
 

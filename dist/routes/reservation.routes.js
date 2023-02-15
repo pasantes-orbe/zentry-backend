@@ -123,11 +123,12 @@ router.patch('/:id_reservation/:status', [
 /**
  * Get All Reservations By User
  */
-router.get('/:id_user', [
+router.get('/get_by_user/:id_user', [
     (0, express_validator_1.check)('id_user', "El campo 'id_user' debe ser numérico").isNumeric(),
     (0, express_validator_1.check)('id_user').custom(userExists_middleware_1.default)
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_user } = req.params;
+    console.log(id_user);
     const reservations = yield reservation_model_1.default.findAll({
         where: {
             id_user
