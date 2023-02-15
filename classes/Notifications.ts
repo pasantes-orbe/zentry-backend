@@ -32,6 +32,11 @@ class Notifications {
                     id_user: id
                 })
                 await notification.save();
+
+                return true
+
+        } else {
+            return false
         }
 
     }
@@ -43,36 +48,49 @@ class Notifications {
             where: {id_country}
         });
 
+        const guardsIDS: string[] = []
+
         for (let index = 0; index < guards.length; index++){
             const guard= guards[index];
             const id_user = String(guard.user.id)
-            const send = await axios.post(`https://onesignal.com/api/v1/notifications`, {
-                app_id: this._app_id,
-                contents: {"es": msg, "en": msg},
-                headings: {"es": heading, "en": heading},
-                channel_for_external_user_ids: "push",
-                name: name,
-                url: this._BaseUrl,
-                include_external_user_ids: [id_user]
-            },
-            {
-                headers: {
-                'Authorization': this._Authorization,
-                'content-type': 'application/json'
-                }
-              }
-            )
-            
-            if(send){
+
+            if(id_user){
+                guardsIDS.push(id_user)
                 const notification = new Notifcation({
                     title : heading,
                     content: msg,
                     id_user,
                 })
+                
                 await notification.save();
-        }
+            }
 
          }
+
+        console.log("ESTE ES EL ARRAY AL CUAL SE ENVIA", guardsIDS);
+
+         const send = await axios.post(`https://onesignal.com/api/v1/notifications`, {
+            app_id: this._app_id,
+            contents: {"es": msg, "en": msg},
+            headings: {"es": heading, "en": heading},
+            channel_for_external_user_ids: "push",
+            name: name,
+            url: this._BaseUrl,
+            include_external_user_ids: guardsIDS
+        },
+        {
+            headers: {
+            'Authorization': this._Authorization,
+            'content-type': 'application/json'
+            }
+          }
+        )
+        
+        if(send){
+            return true
+        } else {
+            return false
+        }
 
       
     }

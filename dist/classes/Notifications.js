@@ -43,6 +43,10 @@ class Notifications {
                     id_user: id
                 });
                 yield notification.save();
+                return true;
+            }
+            else {
+                return false;
             }
         });
     }
@@ -51,24 +55,12 @@ class Notifications {
             const guards = yield guard_country_model_1.default.findAll({
                 where: { id_country }
             });
+            const guardsIDS = [];
             for (let index = 0; index < guards.length; index++) {
                 const guard = guards[index];
                 const id_user = String(guard.user.id);
-                const send = yield axios_1.default.post(`https://onesignal.com/api/v1/notifications`, {
-                    app_id: this._app_id,
-                    contents: { "es": msg, "en": msg },
-                    headings: { "es": heading, "en": heading },
-                    channel_for_external_user_ids: "push",
-                    name: name,
-                    url: this._BaseUrl,
-                    include_external_user_ids: [id_user]
-                }, {
-                    headers: {
-                        'Authorization': this._Authorization,
-                        'content-type': 'application/json'
-                    }
-                });
-                if (send) {
+                if (id_user) {
+                    guardsIDS.push(id_user);
                     const notification = new notification_model_1.default({
                         title: heading,
                         content: msg,
@@ -76,6 +68,27 @@ class Notifications {
                     });
                     yield notification.save();
                 }
+            }
+            console.log("ESTE ES EL ARRAY AL CUAL SE ENVIA", guardsIDS);
+            const send = yield axios_1.default.post(`https://onesignal.com/api/v1/notifications`, {
+                app_id: this._app_id,
+                contents: { "es": msg, "en": msg },
+                headings: { "es": heading, "en": heading },
+                channel_for_external_user_ids: "push",
+                name: name,
+                url: this._BaseUrl,
+                include_external_user_ids: guardsIDS
+            }, {
+                headers: {
+                    'Authorization': this._Authorization,
+                    'content-type': 'application/json'
+                }
+            });
+            if (send) {
+                return true;
+            }
+            else {
+                return false;
             }
         });
     }
