@@ -10,7 +10,8 @@ class InvitationController {
         const { id_reservation } = req.params;
 
         const guests = guestArr.map( guest => {
-            guest['id_reservation'] = id_reservation
+            guest['id_reservation'] = id_reservation;
+            guest['fullname'] = guest.lastname + " " + guest.name;
             return guest
         });
 

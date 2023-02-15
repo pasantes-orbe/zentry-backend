@@ -7,7 +7,9 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const server_1 = __importDefault(require("./models/server"));
 require('./models/associations');
 // Config .env
-dotenv_1.default.config();
+dotenv_1.default.config({
+    path: "./.env"
+});
 const server = server_1.default.instance;
 server.listen();
 //# sourceMappingURL=app.js.map

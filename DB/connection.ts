@@ -4,6 +4,7 @@ import { Sequelize } from 'sequelize';
 
 let db: Sequelize;
 
+console.log(process.env.PORT);
 // LOCAL
 try {
     db = new Sequelize('Countries', 'admin', 'admin', {

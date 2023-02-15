@@ -20,6 +20,7 @@ class InvitationController {
             const { id_reservation } = req.params;
             const guests = guestArr.map(guest => {
                 guest['id_reservation'] = id_reservation;
+                guest['fullname'] = guest.lastname + " " + guest.name;
                 return guest;
             });
             const invitations = yield invitations_model_1.default.bulkCreate(guests);
