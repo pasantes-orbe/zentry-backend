@@ -8,6 +8,8 @@ const connection_1 = __importDefault(require("../DB/connection"));
 const Invitation = connection_1.default.define('invitation', {
     fullname: { type: sequelize_1.DataTypes.STRING },
     dni: { type: sequelize_1.DataTypes.STRING },
+    lastname: { type: sequelize_1.DataTypes.STRING },
+    name: { type: sequelize_1.DataTypes.STRING },
 }, {
     timestamps: false
 });

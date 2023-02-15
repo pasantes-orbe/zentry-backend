@@ -4,10 +4,9 @@ const sequelize_1 = require("sequelize");
 let db;
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
+    db = new sequelize_1.Sequelize('Countries', 'admin', 'admin', {
         host: 'localhost',
         dialect: 'postgres',
-        port: 7068
     });
 }
 catch (error) {
