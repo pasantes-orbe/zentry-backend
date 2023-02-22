@@ -17,6 +17,7 @@ const roles_model_1 = __importDefault(require("../models/roles.model"));
 const password_helper_1 = __importDefault(require("../helpers/password.helper"));
 const UserClass_1 = __importDefault(require("../classes/UserClass"));
 const passwordChangeRequest_model_1 = __importDefault(require("../models/passwordChangeRequest.model"));
+const mailer_helper_1 = __importDefault(require("../helpers/mailer.helper"));
 class UserController {
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -120,7 +121,9 @@ class UserController {
     changePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_request } = req.params;
-            const request = yield passwordChangeRequest_model_1.default.findByPk(id_request);
+            const request = yield passwordChangeRequest_model_1.default.findByPk(id_request, {
+                include: [user_model_1.default]
+            });
             if (!request) {
                 return res.status(404).send({
                     msg: `No existe ninguna solicitud con id ${id_request}`
@@ -148,8 +151,7 @@ class UserController {
                     id: id_request
                 }
             });
-            console.log(user_update.email);
-            //        const mail = await new Mailer().send(generated_pass, );
+            const mail = yield new mailer_helper_1.default().send(generated_pass, request.user.email);
             return res.json({
                 msg: "Reestablecimiento de contraseña exitoso",
                 new_password: generated_pass

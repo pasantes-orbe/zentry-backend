@@ -137,7 +137,9 @@ class UserController {
 
         
 
-        const request = await passwordChangeRequest.findByPk(id_request);
+        const request = await passwordChangeRequest.findByPk(id_request, {
+            include: [User]
+        });
 
         if(!request){
             return res.status(404).send({
@@ -171,9 +173,8 @@ class UserController {
             }
         })
 
-        console.log(user_update.email);
 
-//        const mail = await new Mailer().send(generated_pass, );
+       const mail = await new Mailer().send(generated_pass, request.user.email);
 
         return res.json({
             msg: "Reestablecimiento de contraseña exitoso",

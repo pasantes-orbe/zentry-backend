@@ -36,7 +36,7 @@ router.post('/', [
 router.post('/request-change-password', [
     check('email', "Campo 'email' obligatorio").notEmpty(),
     check('email', "El email no es valido").isEmail(),
-    noErrors
+    noErrors    
 ] , controller.RequestChangePassword);
 
 /**

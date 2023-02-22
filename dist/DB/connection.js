@@ -5,7 +5,7 @@ let db;
 console.log(process.env.PORT);
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
+    db = new Sequelize('railway', 'postgres', 'K4bKPagGIjAVGQ5TOZby', {
         host: 'containers-us-west-164.railway.app',
         dialect: 'postgres',
         port: 7068

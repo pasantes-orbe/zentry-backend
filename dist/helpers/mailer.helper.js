@@ -16,6 +16,7 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 class Mailer {
     send(message, email) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("Este es el email ", email);
             console.log("SENDING");
             let transporter = nodemailer_1.default.createTransport({
                 host: "c2301030.ferozo.com",
@@ -35,8 +36,13 @@ class Mailer {
                 text: `Tu nueva contraseña para ingresar a la aplicación es: ${message}`,
                 html: `<p>Tu nueva contraseña para ingresar a la aplicación es: ${message}</p>`
             };
-            const info = yield transporter.sendMail(msg);
-            console.log(info);
+            try {
+                const info = yield transporter.sendMail(msg);
+                console.log(info);
+            }
+            catch (error) {
+                console.log("err", error);
+            }
             // let info = transporter.sendMail(msg, (error, info) => {
             //     if (error) {
             //         return console.log(error);

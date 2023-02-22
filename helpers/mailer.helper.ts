@@ -5,6 +5,8 @@ class Mailer {
 
     public async send(message, email:string) {
 
+        console.log("Este es el email ", email);
+
         console.log("SENDING");
 
         let transporter = nodemailer.createTransport({
@@ -28,9 +30,16 @@ class Mailer {
             html: `<p>Tu nueva contraseña para ingresar a la aplicación es: ${message}</p>`
         }
 
-        const info = await transporter.sendMail(msg);
 
-        console.log(info);
+        try {
+            const info = await transporter.sendMail(msg);
+            console.log(info);
+
+        } catch (error) {
+
+            console.log("err", error);
+            
+        }
 
         // let info = transporter.sendMail(msg, (error, info) => {
         //     if (error) {
