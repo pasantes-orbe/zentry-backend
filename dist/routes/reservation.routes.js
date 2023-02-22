@@ -20,6 +20,8 @@ const reservationExists_middleware_1 = __importDefault(require("../middlewares/c
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const amenity_model_1 = __importDefault(require("../models/amenity.model"));
+const checkin_model_1 = __importDefault(require("../models/checkin.model"));
+const invitations_model_1 = __importDefault(require("../models/invitations.model"));
 const reservation_model_1 = __importDefault(require("../models/reservation.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const router = (0, express_1.Router)();
@@ -94,6 +96,8 @@ router.patch('/:id_reservation/:status', [
     (0, express_validator_1.check)('status', "El campo 'status' debe ser booleano").isBoolean(),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // return res.send({invitations_to_checkin, event, invitations});
+    // return res.send({event, invitations_to_checkin});
     let msg = "";
     let newStatus = "";
     const { status, id_reservation } = req.params;
@@ -112,6 +116,26 @@ router.patch('/:id_reservation/:status', [
                 id: id_reservation
             }
         });
+        const event = yield reservation_model_1.default.findByPk(req.params.id_reservation);
+        const invitations = yield invitations_model_1.default.findAll({
+            where: {
+                id_reservation: req.params.id_reservation
+            }
+        });
+        const invitations_to_checkin = invitations.map(invitation => {
+            return {
+                guest_name: invitation.name,
+                guest_lastname: invitation.lastname,
+                DNI: invitation.dni,
+                confirmed_by_owner: true,
+                check_in: false,
+                check_out: false,
+                income_date: event.date,
+                id_owner: event.user.id,
+                id_country: event.id_amenity
+            };
+        });
+        const checkIn = yield checkin_model_1.default.bulkCreate(invitations_to_checkin);
     }
     catch (error) {
         return res.status(500).send({
