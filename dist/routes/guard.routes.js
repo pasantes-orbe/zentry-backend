@@ -93,6 +93,51 @@ router.get('/schedule/all/:id_country', [
     });
     return res.json(object);
 }));
+// GET BY USER ID
+router.get('/schedule/:id_user', [
+    (0, express_validator_1.check)('id_user').isNumeric(),
+    (0, express_validator_1.check)('id_user').notEmpty(),
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const guards = yield guard_schedule_model_1.default.findAll({
+        where: {
+            id_user: req.params.id_user
+        }
+    });
+    const object = guards.map(x => {
+        const guard = x;
+        const id = x.id;
+        const week_day = x.week_day;
+        const start = x.start;
+        const exit = x.exit;
+        return {
+            id,
+            week_day,
+            start,
+            exit
+        };
+    });
+    return res.json(object);
+}));
+// Update Schedule By ID
+router.put(`/schedule/:id`, [
+    (0, express_validator_1.check)('id').isNumeric(),
+    (0, express_validator_1.check)('id').notEmpty(),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { newStart, newExit } = req.body;
+    const { id } = req.params;
+    const schedule = yield guard_schedule_model_1.default.findByPk(id);
+    if (!schedule) {
+        return res.status(404).send('No se encontró calendario');
+    }
+    else {
+        const updatedSchedule = yield schedule.update({
+            'start': newStart,
+            'exit': newExit
+        });
+        return res.json(updatedSchedule);
+    }
+}));
 /**
  * Assign Schedule
  */

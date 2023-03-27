@@ -93,7 +93,7 @@ router.get('/schedule/all/:id_country', [
         const start = guard.start;
         const exit = guard.exit;
         const isInHournow = now.isBetween(start, exit);
-        
+
         const isWorkDay = new DatesHelper().getDay(now.day());
         console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
         const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
@@ -108,6 +108,68 @@ router.get('/schedule/all/:id_country', [
     return res.json(object);
 
 });
+
+// GET BY USER ID
+
+
+router.get('/schedule/:id_user', [
+    check('id_user').isNumeric(),
+    check('id_user').notEmpty(),
+], async (req: Request, res: Response) => {
+
+    const guards = await GuardSchedule.findAll({
+        where: {
+            id_user: req.params.id_user
+        }
+    })
+
+    const object = guards.map(x => {
+
+        const guard = x;
+        const id = x.id
+        const week_day = x.week_day
+        const start = x.start
+        const exit = x.exit
+
+
+        return {
+            id,
+            week_day,
+            start,
+            exit
+        }
+    })
+
+
+    return res.json(object);
+
+});
+
+// Update Schedule By ID
+
+router.put(`/schedule/:id`, [
+    check('id').isNumeric(),
+    check('id').notEmpty(),
+    noErrors
+], async (req: Request, res: Response) => {
+
+    const {newStart, newExit} = req.body
+
+    const { id } = req.params
+    const schedule = await GuardSchedule.findByPk(id)
+
+    if(!schedule){
+        return res.status(404).send('No se encontró calendario')
+    } else {
+        const updatedSchedule = await schedule.update({
+            'start': newStart,
+            'exit': newExit
+        })
+        return res.json(updatedSchedule)
+    }
+
+});
+
 
 /**
  * Assign Schedule
@@ -132,5 +194,8 @@ router.post('/schedule', [
     return res.json(schedule);
 
 });
+
+
+
 
 export default router;
