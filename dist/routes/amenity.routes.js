@@ -17,7 +17,9 @@ const express_validator_1 = require("express-validator");
 const Amenity_1 = __importDefault(require("../classes/Amenity"));
 const Countries_1 = __importDefault(require("../classes/Countries"));
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
+const amenityExists_middleware_1 = __importDefault(require("../middlewares/customs/amenityExists.middleware"));
 const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
+const isAdmin_middleware_1 = __importDefault(require("../middlewares/jwt/isAdmin.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const amenity_model_1 = __importDefault(require("../models/amenity.model"));
 const router = (0, express_1.Router)();
@@ -96,6 +98,24 @@ router.post('/:id', [
         msg: "Amenity agregado con éxito!",
         amenitySaved
     });
+}));
+router.delete(':/id', [
+    isAdmin_middleware_1.default,
+    (0, express_validator_1.check)('id').custom(amenityExists_middleware_1.default),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const deleted = yield amenity_model_1.default.destroy({
+            where: { id }
+        });
+        return res.json({
+            msg: "Eliminado correctamente"
+        });
+    }
+    catch (error) {
+        return res.status(500).send(error);
+    }
 }));
 exports.default = router;
 //# sourceMappingURL=amenity.routes.js.map

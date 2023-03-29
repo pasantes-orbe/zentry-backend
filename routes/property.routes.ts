@@ -57,6 +57,4 @@ router.delete("/:id", [
     noErrors
 ], property.delete);
 
-
-
 export default router;

@@ -186,17 +186,15 @@ class PropertyController {
 
             const deleted = await Property.destroy({
                 where: { id }
-            })
-            
+            });
+
             return res.json({
                 msg: "Eliminado correctamente"
-            })
+            });
 
         } catch (error) {
             return res.status(500).send(error);
         }
-
-        
 
     }
 
