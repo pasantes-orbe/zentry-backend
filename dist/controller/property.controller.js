@@ -146,6 +146,22 @@ class PropertyController {
             }
         });
     }
+    delete(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            try {
+                const deleted = yield property_model_1.default.destroy({
+                    where: { id }
+                });
+                return res.json({
+                    msg: "Eliminado correctamente"
+                });
+            }
+            catch (error) {
+                return res.status(500).send(error);
+            }
+        });
+    }
 }
 exports.default = PropertyController;
 //# sourceMappingURL=property.controller.js.map

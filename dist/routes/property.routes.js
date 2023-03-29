@@ -41,8 +41,16 @@ router.post('/', [
     noErrors_middleware_1.default
 ], property.create);
 router.patch("/:id", [
+    isAdmin_middleware_1.default,
     (0, express_validator_1.check)('id').notEmpty(),
-    (0, express_validator_1.check)('id').custom(propertyExists_middleware_1.default)
+    (0, express_validator_1.check)('id').custom(propertyExists_middleware_1.default),
+    noErrors_middleware_1.default
 ], property.update);
+router.delete("/:id", [
+    isAdmin_middleware_1.default,
+    (0, express_validator_1.check)('id').notEmpty(),
+    (0, express_validator_1.check)('id').custom(propertyExists_middleware_1.default),
+    noErrors_middleware_1.default
+], property.delete);
 exports.default = router;
 //# sourceMappingURL=property.routes.js.map

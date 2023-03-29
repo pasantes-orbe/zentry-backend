@@ -44,9 +44,18 @@ router.post('/', [
 ], property.create);
 
 router.patch("/:id", [
+    isAdmin,
     check('id').notEmpty(),
-    check('id').custom(propertyExists)
+    check('id').custom(propertyExists),
+    noErrors
 ], property.update)
+
+router.delete("/:id", [
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').custom(propertyExists),
+    noErrors
+], property.delete);
 
 
 
