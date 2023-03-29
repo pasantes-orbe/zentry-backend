@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { UploadedFile } from "express-fileupload";
 import { Op, Sequelize } from "sequelize";
 import Uploader from "../classes/Uploader";
 import Property from "../models/property.model";
@@ -17,12 +18,12 @@ class PropertyController {
 
         const { search } = req.params;
 
-        if(!Number.isInteger(+search)){
+        if (!Number.isInteger(+search)) {
 
             const properties = await Property.findAll({
                 where: {
                     id_country: req.params.id_country,
-                    name: {[Sequelize.Op.iLike]: `%${String(req.params.search)}%`}
+                    name: { [Sequelize.Op.iLike]: `%${String(req.params.search)}%` }
                 }
             });
 
@@ -36,7 +37,7 @@ class PropertyController {
                 number: search
             }
         });
-        
+
         return res.json(properties);
 
     }
@@ -69,7 +70,7 @@ class PropertyController {
             }
         })
 
-        if(propertyNumber){
+        if (propertyNumber) {
             return res.status(400).send({
                 msg: `Ya existe una propiedad con el N° ${body.number}`
             })
@@ -77,14 +78,14 @@ class PropertyController {
 
         try {
 
-            const { tempFilePath } = req.files?.avatar;
+            const { tempFilePath }: any = req.files?.avatar;
             const { secure_url } = await new Uploader().uploadImage(tempFilePath);
 
             body['avatar'] = secure_url;
 
             const property = new Property(body);
             await property.save();
-            
+
             res.json({
                 msg: "La propiedad se creo con exito",
                 property
@@ -98,7 +99,7 @@ class PropertyController {
         }
     }
 
-    public async getByCountry(req: Request, res: Response){
+    public async getByCountry(req: Request, res: Response) {
 
 
         // Obtiene todas las propiedades
@@ -110,12 +111,12 @@ class PropertyController {
 
         // Crea una promesa por cada iteración del map para que lea los valores asíncronos.
         const response = await Promise.all(
-            properties.map( async (property) => {
-                
+            properties.map(async (property) => {
+
                 const owners = await UserProperties.findAll({
                     where: { id_property: property.id }
                 })
-                
+
                 return {
                     property,
                     owners
@@ -123,10 +124,56 @@ class PropertyController {
             })
         )
 
-        
+
 
 
         return res.json(response);
+
+    }
+
+    public async update(req: Request, res: Response) {
+
+        const { name, number, address } = req.body;
+        let avatar = req.files?.avatar;
+        let avatarEdit: string = "";
+        const { id } = req.params;
+
+        const property = await Property.findOne({
+            where: { "id_country": id }
+        });
+        
+        try {
+
+            if (avatar) {
+                const { tempFilePath }: any = req.files?.avatar;
+                const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+                avatarEdit = secure_url;
+            }
+
+            console.log(avatar);
+
+            const property_update = await Property.update({
+                name,
+                number,
+                address,
+                avatar: avatarEdit
+            }, { where: { id } });
+    
+            
+            return res.json({
+                msg: "Actualizado correctamente",
+            })
+            
+        } catch (error) {
+
+            return res.status(500).send({
+                msg: "Error en el servidor",
+                error
+            })
+            
+        }
+
+        
 
     }
 

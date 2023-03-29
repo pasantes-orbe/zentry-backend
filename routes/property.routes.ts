@@ -2,6 +2,7 @@ import { Router } from "express";
 import { check } from "express-validator";
 import PropertyController from "../controller/property.controller";
 import countryExists from "../middlewares/customs/countryExists.middleware";
+import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 
@@ -42,6 +43,10 @@ router.post('/', [
     noErrors
 ], property.create);
 
+router.patch("/:id", [
+    check('id').notEmpty(),
+    check('id').custom(propertyExists)
+], property.update)
 
 
 
