@@ -8,6 +8,10 @@ try {
     db = new sequelize_1.Sequelize('Countries', 'admin', 'admin', {
         host: 'localhost',
         dialect: 'postgres',
+        dialectOptions: {
+            useUTC: false, // -->Add this line. for reading from database
+        },
+        timezone: "+05:30"
     });
 }
 catch (error) {

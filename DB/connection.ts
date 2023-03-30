@@ -12,6 +12,10 @@ console.log(process.env.PORT);
         db = new Sequelize('Countries', 'admin', 'admin', {
             host: 'localhost',
             dialect: 'postgres',
+            dialectOptions: {
+                useUTC: false, // -->Add this line. for reading from database
+            },
+            timezone: "+05:30"
         });
     } catch (error) {
         throw new Error("No se pudo conectar con la base de datos")

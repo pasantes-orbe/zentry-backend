@@ -103,6 +103,7 @@ router.post('/:id',
 });
 
 router.delete(':/id', [
+
     isAdmin,
     check('id').custom(amenityExists),
     noErrors

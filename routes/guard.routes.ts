@@ -93,10 +93,19 @@ router.get('/schedule/all/:id_country', [
         const start = guard.start;
         const exit = guard.exit;
         const isInHournow = now.isBetween(start, exit);
-
+        
         const isWorkDay = new DatesHelper().getDay(now.day());
+
         console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
         const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
+
+        console.log("GUARDIA", guard.user.id);
+        console.log("NOw", now);
+        console.log("start", start);
+        console.log("exit", exit);
+        console.log("@", isWorkDay == guard.week_day);
+        console.log("@@", isWorkDay);
+        console.log("@@@", guard.week_day);
 
         return {
             guard,
@@ -120,10 +129,12 @@ router.get('/schedule/:id_user', [
     const guards = await GuardSchedule.findAll({
         where: {
             id_user: req.params.id_user
-        }
+        },
     })
 
-    const object = guards.map(x => {
+    console.log(guards);
+
+    const object = guards.map((x: any) => {
 
         const guard = x;
         const id = x.id
@@ -131,12 +142,15 @@ router.get('/schedule/:id_user', [
         const start = x.start
         const exit = x.exit
 
+        const format_start = moment.utc(start).format();
+        const format_exit = moment.utc(exit).format();
+
 
         return {
             id,
             week_day,
-            start,
-            exit
+            start: start,
+            exit: exit
         }
     })
 
@@ -154,6 +168,9 @@ router.put(`/schedule/:id`, [
 ], async (req: Request, res: Response) => {
 
     const {newStart, newExit} = req.body
+
+    console.log(newStart);
+    console.log(newExit);
 
     const { id } = req.params
     const schedule = await GuardSchedule.findByPk(id)
