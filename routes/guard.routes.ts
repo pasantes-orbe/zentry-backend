@@ -34,8 +34,6 @@ router.get('/get_by_country/:id_country', [
 
     const guards = await new Guard().getByCountry(+req.params.id_country);
 
-    console.log("ESTOS SON LOS GUARDIAS", guards)
-    
     return res.json(guards);
 
 });
@@ -169,11 +167,11 @@ router.put(`/schedule/:id`, [
     noErrors
 ], async (req: Request, res: Response) => {
 
-    const {newStart, newExit} = req.body
+    const {newStart, newExit, week_day} = req.body
 
     console.log(newStart);
     console.log(newExit);
-
+    console.log(week_day)
     const { id } = req.params
     const schedule = await GuardSchedule.findByPk(id)
 
@@ -182,7 +180,8 @@ router.put(`/schedule/:id`, [
     } else {
         const updatedSchedule = await schedule.update({
             'start': newStart,
-            'exit': newExit
+            'exit': newExit,
+            week_day
         })
         return res.json(updatedSchedule)
     }

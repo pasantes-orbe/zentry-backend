@@ -50,10 +50,15 @@ router.get('/country/get_by_id/:id_country', [
     noErrors
 ], async (req: Request, res: Response) => {
 
-    const owners = await UserProperties.findAll();
+    const owners = await UserProperties.findAll();  
+
+    console.log("ESTO ES LO QUE SE RECIBE", req.params.id_country);
 
     const owners_by_country = owners.filter( (owner) => {
-        return owner.property.id_country == req.params.id_country;
+
+        console.log(owner.property.id_country);
+
+        // return owner.property.id_country == req.params.id_country;
     })
 
     return res.json(owners_by_country);

@@ -37,7 +37,6 @@ router.get('/get_by_country/:id_country', [
     (0, express_validator_1.check)('id_country').notEmpty(),
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const guards = yield new Guard_1.default().getByCountry(+req.params.id_country);
-    console.log("ESTOS SON LOS GUARDIAS", guards);
     return res.json(guards);
 }));
 /**
@@ -135,9 +134,10 @@ router.put(`/schedule/:id`, [
     (0, express_validator_1.check)('id').notEmpty(),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { newStart, newExit } = req.body;
+    const { newStart, newExit, week_day } = req.body;
     console.log(newStart);
     console.log(newExit);
+    console.log(week_day);
     const { id } = req.params;
     const schedule = yield guard_schedule_model_1.default.findByPk(id);
     if (!schedule) {
@@ -146,7 +146,8 @@ router.put(`/schedule/:id`, [
     else {
         const updatedSchedule = yield schedule.update({
             'start': newStart,
-            'exit': newExit
+            'exit': newExit,
+            week_day
         });
         return res.json(updatedSchedule);
     }
