@@ -5,7 +5,7 @@ let db;
 console.log(process.env.PORT);
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
+    db = new sequelize_1.Sequelize('postgres', 'admindb', 'bu38kuZUpa', {
         host: 'localhost',
         dialect: 'postgres',
         dialectOptions: {
@@ -45,4 +45,12 @@ db = new Sequelize('Countries', 'admin', 'admin', {
     dialect: 'postgres',
 });
 */
+// db = new Sequelize('postgres', 'admindb', 'bu38kuZUpa', {
+//     host: 'localhost',
+//     dialect: 'postgres',
+//     dialectOptions: {
+//         useUTC: false, // -->Add this line. for reading from database
+//     },
+//     timezone: "+05:30"
+// });
 //# sourceMappingURL=connection.js.map
