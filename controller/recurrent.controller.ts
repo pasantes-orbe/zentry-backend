@@ -51,6 +51,21 @@ class RecurrentController {
         
     }
 
+    public async getByProperty(req: Request, res: Response) {
+
+        const id_property = req.params.id_property;
+
+        const recurrent = await Recurrent.findAll({
+            where: {
+                id_property
+            }
+        });
+
+
+        return res.json(recurrent);
+        
+    }
+
     
 
     public async create(req: Request, res: Response) {

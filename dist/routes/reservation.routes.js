@@ -20,6 +20,8 @@ const reservationExists_middleware_1 = __importDefault(require("../middlewares/c
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const amenity_model_1 = __importDefault(require("../models/amenity.model"));
+const checkin_model_1 = __importDefault(require("../models/checkin.model"));
+const invitations_model_1 = __importDefault(require("../models/invitations.model"));
 const reservation_model_1 = __importDefault(require("../models/reservation.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const router = (0, express_1.Router)();
@@ -55,25 +57,33 @@ router.post('/', [
         return res.status(400).send("Ya tenés una reserva pendiente de aprobación para este lugar de reserva.");
     }
     const reservation = new reservation_model_1.default(reservationBody);
-    reservation.save();
+    yield reservation.save();
     return res.json(reservation);
 }));
 /**
- * Get all Reservations
+ * Get all Reservations by Status and ID_Country
  */
-router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/:id_country', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { status } = req.query;
+    const { id_country } = req.params;
+    console.log("ESTE ES EL ID DEL COUNTRY");
     if (status) {
         const reservations = yield reservation_model_1.default.findAll({
             where: {
-                status
+                status,
             },
             include: amenity_model_1.default
         });
-        return res.json(reservations);
+        const reservations_by_country = reservations.filter((reservation) => {
+            return reservation.amenity.id_country == id_country;
+        });
+        return res.json(reservations_by_country);
     }
     const reservations = yield reservation_model_1.default.findAll();
-    return res.json(reservations);
+    const reservations_by_country = reservations.filter((reservation) => {
+        return reservation.amenity.id_country == id_country;
+    });
+    return res.json(reservations_by_country);
 }));
 /**
  * Update Status
@@ -86,6 +96,8 @@ router.patch('/:id_reservation/:status', [
     (0, express_validator_1.check)('status', "El campo 'status' debe ser booleano").isBoolean(),
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // return res.send({invitations_to_checkin, event, invitations});
+    // return res.send({event, invitations_to_checkin});
     let msg = "";
     let newStatus = "";
     const { status, id_reservation } = req.params;
@@ -104,6 +116,26 @@ router.patch('/:id_reservation/:status', [
                 id: id_reservation
             }
         });
+        const event = yield reservation_model_1.default.findByPk(req.params.id_reservation);
+        const invitations = yield invitations_model_1.default.findAll({
+            where: {
+                id_reservation: req.params.id_reservation
+            }
+        });
+        const invitations_to_checkin = invitations.map(invitation => {
+            return {
+                guest_name: invitation.name,
+                guest_lastname: invitation.lastname,
+                DNI: invitation.dni,
+                confirmed_by_owner: true,
+                check_in: false,
+                check_out: false,
+                income_date: event.date,
+                id_owner: event.user.id,
+                id_country: event.id_amenity
+            };
+        });
+        const checkIn = yield checkin_model_1.default.bulkCreate(invitations_to_checkin);
     }
     catch (error) {
         return res.status(500).send({
@@ -115,11 +147,12 @@ router.patch('/:id_reservation/:status', [
 /**
  * Get All Reservations By User
  */
-router.get('/:id_user', [
+router.get('/get_by_user/:id_user', [
     (0, express_validator_1.check)('id_user', "El campo 'id_user' debe ser numérico").isNumeric(),
     (0, express_validator_1.check)('id_user').custom(userExists_middleware_1.default)
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_user } = req.params;
+    console.log(id_user);
     const reservations = yield reservation_model_1.default.findAll({
         where: {
             id_user

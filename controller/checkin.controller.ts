@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { check } from "express-validator";
 import { Sequelize } from "sequelize";
 import { Op } from "sequelize";
@@ -6,6 +6,7 @@ import { Op } from "sequelize";
 import CheckIn from "../classes/CheckIn";
 import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
+import CheckOutModel from "../models/checkout.model";
 import Server from "../models/server";
 import User from "../models/user.model";
 
@@ -24,6 +25,7 @@ class checkInController {
             id_guard,
             id_owner,
             confirmed_by_owner,
+            id_country,
             check_out
         } = req.body
 
@@ -57,6 +59,9 @@ class checkInController {
 
         }
 
+      
+
+
         req.body.check_in = false;
 
         const checkIn = new CheckInModel(req.body);
@@ -87,7 +92,6 @@ class checkInController {
 
         // Emitir socket TODO: Debería enviarle SOLO al propietario que le interesa la notificación.
         const server = Server.instance;
-        server.io.emit('checkin-aprobado', {msg: `Check-in de ${update.guest_lastname} ${update.guest_name} aprobado`, update});
 
         res.send(update);
 
@@ -139,8 +143,10 @@ class checkInController {
 
     public async getApproved(req: Request, res: Response){
 
+        const {id_country} = req.params
         const checkins = await CheckInModel.findAll({
             where: {
+                id_country,
                 check_in: true
             },
             include: [User]
@@ -151,15 +157,47 @@ class checkInController {
     }
     public async getConfirmedByOwner(req: Request, res: Response){
 
+        const {id_country} = req.params
+
         const checkins = await CheckInModel.findAll({
             where: {
                 confirmed_by_owner: true,
-                check_in: false
+                check_in: false,
+                id_country,
             },
             include: [User]
         })
 
         res.send(checkins);
+
+    }
+
+    public async getRegisters(req: Request, res: Response){
+
+        const responseArray: any[] = []
+
+        const {id_country} = req.params;
+        const checkins = await CheckInModel.findAll({
+            where: {
+                id_country,
+                check_in: true
+            },
+        })
+
+        for (let i=0; i< checkins.length; i++){
+            const checkout = await CheckOutModel.findOne({
+                where: {
+                    id_checkin: checkins[i].id
+                }
+            })
+
+            responseArray.push({
+                checkin: checkins[i],
+                checkout: checkout
+            } )
+        }
+
+        res.send(responseArray);        
 
     }
 
@@ -230,7 +268,14 @@ class checkInController {
                 }
 
             },
-            include: [User]
+            include: [{
+                model: User,
+                as: 'owner'
+            },
+            {
+                model: User,
+                as: 'guard'
+            }]
         })
             res.send(checkins);        
 

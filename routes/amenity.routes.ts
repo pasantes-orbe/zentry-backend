@@ -4,7 +4,9 @@ import Amenity from "../classes/Amenity";
 import Countries from "../classes/Countries";
 import Country from "../classes/Country";
 import Uploader from "../classes/Uploader";
+import amenityExists from "../middlewares/customs/amenityExists.middleware";
 import countryExists from "../middlewares/customs/countryExists.middleware";
+import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import AmenityModel from "../models/amenity.model";
 
@@ -97,6 +99,32 @@ router.post('/:id',
         msg: "Amenity agregado con éxito!",
         amenitySaved
     });
+
+});
+
+router.delete(':/id', [
+
+    isAdmin,
+    check('id').custom(amenityExists),
+    noErrors
+
+], async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+        try {
+
+            const deleted = await AmenityModel.destroy({
+                where: { id }
+            });
+
+            return res.json({
+                msg: "Eliminado correctamente"
+            });
+
+        } catch (error) {
+            return res.status(500).send(error);
+        }
 
 });
 

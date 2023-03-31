@@ -16,12 +16,13 @@ const sequelize_1 = require("sequelize");
 const CheckIn_1 = __importDefault(require("../classes/CheckIn"));
 const Guard_1 = __importDefault(require("../classes/Guard"));
 const checkin_model_1 = __importDefault(require("../models/checkin.model"));
+const checkout_model_1 = __importDefault(require("../models/checkout.model"));
 const server_1 = __importDefault(require("../models/server"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 class checkInController {
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { guest_name, guest_lastname, DNI, income_date, transport, patent, details, id_guard, id_owner, confirmed_by_owner, check_out } = req.body;
+            const { guest_name, guest_lastname, DNI, income_date, transport, patent, details, id_guard, id_owner, confirmed_by_owner, id_country, check_out } = req.body;
             //TODO: Cuando "confirmed_by_owner" no venga en la request hacerlo FALSE
             if (!confirmed_by_owner) {
                 req.body.confirmed_by_owner = false;
@@ -69,7 +70,6 @@ class checkInController {
             }
             // Emitir socket TODO: Debería enviarle SOLO al propietario que le interesa la notificación.
             const server = server_1.default.instance;
-            server.io.emit('checkin-aprobado', { msg: `Check-in de ${update.guest_lastname} ${update.guest_name} aprobado`, update });
             res.send(update);
         });
     }
@@ -109,8 +109,10 @@ class checkInController {
     }
     getApproved(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const { id_country } = req.params;
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
+                    id_country,
                     check_in: true
                 },
                 include: [user_model_1.default]
@@ -120,14 +122,40 @@ class checkInController {
     }
     getConfirmedByOwner(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const { id_country } = req.params;
             const checkins = yield checkin_model_1.default.findAll({
                 where: {
                     confirmed_by_owner: true,
-                    check_in: false
+                    check_in: false,
+                    id_country,
                 },
                 include: [user_model_1.default]
             });
             res.send(checkins);
+        });
+    }
+    getRegisters(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const responseArray = [];
+            const { id_country } = req.params;
+            const checkins = yield checkin_model_1.default.findAll({
+                where: {
+                    id_country,
+                    check_in: true
+                },
+            });
+            for (let i = 0; i < checkins.length; i++) {
+                const checkout = yield checkout_model_1.default.findOne({
+                    where: {
+                        id_checkin: checkins[i].id
+                    }
+                });
+                responseArray.push({
+                    checkin: checkins[i],
+                    checkout: checkout
+                });
+            }
+            res.send(responseArray);
         });
     }
     getCheckOutFalse(req, res) {
@@ -183,7 +211,14 @@ class checkInController {
                         [sequelize_1.Op.lt]: NOW
                     }
                 },
-                include: [user_model_1.default]
+                include: [{
+                        model: user_model_1.default,
+                        as: 'owner'
+                    },
+                    {
+                        model: user_model_1.default,
+                        as: 'guard'
+                    }]
             });
             res.send(checkins);
         });

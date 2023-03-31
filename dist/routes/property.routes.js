@@ -7,6 +7,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const property_controller_1 = __importDefault(require("../controller/property.controller"));
 const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
+const propertyExists_middleware_1 = __importDefault(require("../middlewares/customs/propertyExists.middleware"));
 const isAdmin_middleware_1 = __importDefault(require("../middlewares/jwt/isAdmin.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const router = (0, express_1.Router)();
@@ -39,5 +40,17 @@ router.post('/', [
     (0, express_validator_1.check)('address', 'La direccion es obligatoria').notEmpty(),
     noErrors_middleware_1.default
 ], property.create);
+router.patch("/:id", [
+    isAdmin_middleware_1.default,
+    (0, express_validator_1.check)('id').notEmpty(),
+    (0, express_validator_1.check)('id').custom(propertyExists_middleware_1.default),
+    noErrors_middleware_1.default
+], property.update);
+router.delete("/:id", [
+    isAdmin_middleware_1.default,
+    (0, express_validator_1.check)('id').notEmpty(),
+    (0, express_validator_1.check)('id').custom(propertyExists_middleware_1.default),
+    noErrors_middleware_1.default
+], property.delete);
 exports.default = router;
 //# sourceMappingURL=property.routes.js.map

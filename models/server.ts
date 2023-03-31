@@ -14,7 +14,11 @@ import reservationRoutes from "../routes/reservation.routes";
 import guardRoutes from "../routes/guard.routes";
 import checkIn from "../routes/checkin.routes";
 import checkOut from "../routes/checkout.routes";
-import antipanic from "../routes/antipanic.routes"
+import antipanic from "../routes/antipanic.routes";
+import pushNotifications from "../routes/push_notifications.routes";
+import notificationRoutes from "../routes/notification.routes";
+import invitationRoutes from "../routes/invitations.routes";
+
 
 import db from "../DB/connection";
 
@@ -43,7 +47,10 @@ class Server {
         guards: '/api/guards',
         checkin: '/api/checkin',
         checkout: '/api/checkout',
-        antipanic: '/api/antipanic'
+        antipanic: '/api/antipanic',
+        push_notifications: '/api/notifications',
+        notifications: '/api/notifications',
+        invitation: '/api/invitation'
 
     }
 
@@ -124,19 +131,25 @@ class Server {
         this.app.use(this.apiPaths.checkin, checkIn);
         this.app.use(this.apiPaths.checkout, checkOut);
         this.app.use(this.apiPaths.antipanic, antipanic);
+        this.app.use(this.apiPaths.push_notifications, pushNotifications);
+        this.app.use(this.apiPaths.notifications, notificationRoutes);
+        this.app.use(this.apiPaths.invitation, invitationRoutes);
 
     }
 
     sockets(){
-        this.io.on("connection", (socket: Socket) => {
+        const controller = new SocketController();
 
-            const controller = new SocketController();
+        this.io.on("connection", (socket: Socket) => {
             console.log('Conectado' , socket.id); 
-            controller.disconnect(socket);
+            controller.propietarioConectado(socket)
             controller.notificarCheckIn(socket);
             controller.escucharAntipanico(socket);
             controller.escucharNuevoConfirmedByOwner(socket)
             controller.escucharAntipanicoFinalizado(socket)
+            controller.escucharNuevaPosicionGuardia(socket)
+            controller.escucharGuardDisconnected(socket)
+            // controller.disconnect(socket);
           });
     }
 

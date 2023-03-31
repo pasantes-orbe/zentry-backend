@@ -22,6 +22,16 @@ router.get('/get-by-country/:id_country', [
     noErrors
 ] , recurrent.getByCountry);
 
+/**
+ * Get Recurrents by Property
+ */
+
+router.get(`/get-by-property/:id_property`,[
+    check(`id_property`).notEmpty(),
+    check(`id_property`).isNumeric(),
+    noErrors
+], recurrent.getByProperty)
+
 router.post('/', [
     check('id_property', 'El id de propiedad es obligatorio').notEmpty(),
     check('id_property', 'El id de propiedad debe ser numerico').isNumeric(),

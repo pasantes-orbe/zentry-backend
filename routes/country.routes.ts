@@ -21,7 +21,6 @@ router.get('/', [
 });
 
 router.get('/:id', [
-    isAdmin,
     noErrors
 ], async (req: Request, res: Response) => {
     

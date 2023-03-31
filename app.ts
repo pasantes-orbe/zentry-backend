@@ -1,9 +1,15 @@
+
 import dotenv from "dotenv";
 import Server from "./models/server";
 
-require('./models/associations');
 // Config .env
-dotenv.config();
+dotenv.config({
+    path: "./.env"
+});
+console.log(process.env.TZ);
+
+require('./models/associations');
+
 
 const server = Server.instance;
 server.listen();

@@ -4,9 +4,15 @@ import User from "../models/user.model";
 
 class AntipanicController {
 
-    public async getAll(req: Request, res: Response) {
+    public async getAllByCountry(req: Request, res: Response) {
 
+        const {id_country} = req.params
         const registroAntipanicos = await AntipanicModel.findAll({
+
+        where: {
+            id_country
+        },
+
         include: [{
             model: User,
             as: 'owner'
@@ -22,7 +28,7 @@ class AntipanicController {
 
     public async newAntipanic(req: Request, res: Response){
 
-        const {id_owner, address, id_country,} = req.body;
+        const {id_owner, address, id_country, propertyNumber} = req.body;
         const state = true;
 
         try {
@@ -30,7 +36,8 @@ class AntipanicController {
             ownerId: id_owner,
             address,
             state,
-            id_country
+            id_country,
+            propertyNumber
         })
             const antipanicGuardado = await antipanic.save();
 

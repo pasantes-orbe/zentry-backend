@@ -4,15 +4,22 @@ import { Sequelize } from 'sequelize';
 
 let db: Sequelize;
 
-// LOCAL
- try {
-     db = new Sequelize('Countries', 'postgres', 'admin', {
-         host: 'localhost',
-         dialect: 'postgres'
-     });
- } catch (error) {
-     throw new Error("No se pudo conectar con la base de datos")
- }
+console.log(process.env.PORT);
+
+
+    // LOCAL
+    try {
+        db = new Sequelize('Countries', 'postgres', 'admin', {
+            host: 'localhost',
+            dialect: 'postgres',
+            dialectOptions: {
+                useUTC: false, // -->Add this line. for reading from database
+            },
+            timezone: "+05:30"
+        });
+    } catch (error) {
+        throw new Error("No se pudo conectar con la base de datos")
+    }
 
 // PRODUCTION
 /*try {
@@ -26,4 +33,22 @@ let db: Sequelize;
 }
 */
 
-export default db;
+
+
+/*
+ try {
+     db = new Sequelize('Countries', 'postgres', 'admin', {
+         host: 'localhost',
+         dialect: 'postgres',
+     });
+ } catch (error) {
+     throw new Error("No se pudo conectar con la base de datos")
+ }
+*/
+export default db;  
+/*
+db = new Sequelize('Countries', 'admin', 'admin', {
+    host: 'localhost',
+    dialect: 'postgres',
+});
+*/

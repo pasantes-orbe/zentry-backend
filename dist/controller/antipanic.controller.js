@@ -15,9 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const antipanic_model_1 = __importDefault(require("../models/antipanic.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 class AntipanicController {
-    getAll(req, res) {
+    getAllByCountry(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const { id_country } = req.params;
             const registroAntipanicos = yield antipanic_model_1.default.findAll({
+                where: {
+                    id_country
+                },
                 include: [{
                         model: user_model_1.default,
                         as: 'owner'
@@ -32,14 +36,15 @@ class AntipanicController {
     }
     newAntipanic(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_owner, address, id_country, } = req.body;
+            const { id_owner, address, id_country, propertyNumber } = req.body;
             const state = true;
             try {
                 const antipanic = new antipanic_model_1.default({
                     ownerId: id_owner,
                     address,
                     state,
-                    id_country
+                    id_country,
+                    propertyNumber
                 });
                 const antipanicGuardado = yield antipanic.save();
                 res.json({

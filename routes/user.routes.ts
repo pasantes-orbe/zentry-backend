@@ -36,7 +36,7 @@ router.post('/', [
 router.post('/request-change-password', [
     check('email', "Campo 'email' obligatorio").notEmpty(),
     check('email', "El email no es valido").isEmail(),
-    noErrors
+    noErrors    
 ] , controller.RequestChangePassword);
 
 /**
@@ -45,6 +45,16 @@ router.post('/request-change-password', [
 router.patch('/change-password/:id_request', [
     isAdmin,
 ], controller.changePassword);
+
+/**
+ * Update User
+ */
+
+router.patch('/update-user/:id', [
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], controller.updateUser)
 
 /**
  * All Password Change Requests

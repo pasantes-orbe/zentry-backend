@@ -7,12 +7,20 @@ const router = Router();
 
 const antipanicController: AntipanicController = new AntipanicController()
 
-//TODO: ADMIN only
-router.get('/', antipanicController.getAll);
+// Get All By Country ID
+
+router.get('/:id_country', antipanicController.getAllByCountry);
+
+// New Antipanic from owner
 
 router.post('/', antipanicController.newAntipanic)
 
+// Update Antipanic from guard
+
+
 router.put('/:id', antipanicController.guardConfirm)
+
+//Desactivate Antipanic
 
 router.patch('/:id', antipanicController.desactivateAntipanic);
 

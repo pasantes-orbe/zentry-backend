@@ -51,6 +51,17 @@ class RecurrentController {
             return res.json(recurrents_by_country);
         });
     }
+    getByProperty(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id_property = req.params.id_property;
+            const recurrent = yield recurrent_model_1.default.findAll({
+                where: {
+                    id_property
+                }
+            });
+            return res.json(recurrent);
+        });
+    }
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { body } = req;

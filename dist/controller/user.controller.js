@@ -121,7 +121,9 @@ class UserController {
     changePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_request } = req.params;
-            const request = yield passwordChangeRequest_model_1.default.findByPk(id_request);
+            const request = yield passwordChangeRequest_model_1.default.findByPk(id_request, {
+                include: [user_model_1.default]
+            });
             if (!request) {
                 return res.status(404).send({
                     msg: `No existe ninguna solicitud con id ${id_request}`
@@ -149,10 +151,33 @@ class UserController {
                     id: id_request
                 }
             });
-            const mail = yield new mailer_helper_1.default().send(generated_pass);
+            const mail = yield new mailer_helper_1.default().send(generated_pass, request.user.email);
             return res.json({
                 msg: "Reestablecimiento de contraseña exitoso",
                 new_password: generated_pass
+            });
+        });
+    }
+    updateUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { name, lastname, email, birthday, phone } = req.body;
+            const user = yield user_model_1.default.findByPk(id);
+            if (!user) {
+                return res.status(404).send({
+                    msg: `No existe ningun usuario con ese id ${id}`
+                });
+            }
+            const user_update = yield user.update({
+                name,
+                lastname,
+                email,
+                phone,
+                birthday
+            });
+            return res.json({
+                msg: "Actualizado correctamente",
+                user: user_update
             });
         });
     }

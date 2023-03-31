@@ -15,6 +15,7 @@ const AntipanicModel = connection_1.default.define('antipanic', {
     details: { type: sequelize_1.DataTypes.STRING },
     finishAt: { type: sequelize_1.DataTypes.DATE },
     state: { type: sequelize_1.DataTypes.BOOLEAN },
+    propertyNumber: { type: sequelize_1.DataTypes.INTEGER }
 }, {
     timestamps: true,
     updatedAt: false

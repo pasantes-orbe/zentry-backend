@@ -12,7 +12,7 @@ import Role from "../models/roles.model";
 import User from "../models/user.model";
 
 import moment from "moment";
-import DatesHelper, { Dates } from "../classes/Dates";
+import DatesHelper from "../classes/Dates";
 
 const router = Router();
 
@@ -93,10 +93,19 @@ router.get('/schedule/all/:id_country', [
         const start = guard.start;
         const exit = guard.exit;
         const isInHournow = now.isBetween(start, exit);
-
+        
         const isWorkDay = new DatesHelper().getDay(now.day());
-        console.log(isWorkDay);
-        const isWorking = () => (isInHournow && isWorkDay) ? true : false;
+
+        console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
+        const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
+
+        console.log("GUARDIA", guard.user.id);
+        console.log("NOw", now);
+        console.log("start", start);
+        console.log("exit", exit);
+        console.log("@", isWorkDay == guard.week_day);
+        console.log("@@", isWorkDay);
+        console.log("@@@", guard.week_day);
 
         return {
             guard,
@@ -108,6 +117,77 @@ router.get('/schedule/all/:id_country', [
     return res.json(object);
 
 });
+
+// GET BY USER ID
+
+
+router.get('/schedule/:id_user', [
+    check('id_user').isNumeric(),
+    check('id_user').notEmpty(),
+], async (req: Request, res: Response) => {
+
+    const guards = await GuardSchedule.findAll({
+        where: {
+            id_user: req.params.id_user
+        },
+    })
+
+    console.log(guards);
+
+    const object = guards.map((x: any) => {
+
+        const guard = x;
+        const id = x.id
+        const week_day = x.week_day
+        const start = x.start
+        const exit = x.exit
+
+        const format_start = moment.utc(start).format();
+        const format_exit = moment.utc(exit).format();
+
+
+        return {
+            id,
+            week_day,
+            start: start,
+            exit: exit
+        }
+    })
+
+
+    return res.json(object);
+
+});
+
+// Update Schedule By ID
+
+router.put(`/schedule/:id`, [
+    check('id').isNumeric(),
+    check('id').notEmpty(),
+    noErrors
+], async (req: Request, res: Response) => {
+
+    const {newStart, newExit, week_day} = req.body
+
+    console.log(newStart);
+    console.log(newExit);
+    console.log(week_day)
+    const { id } = req.params
+    const schedule = await GuardSchedule.findByPk(id)
+
+    if(!schedule){
+        return res.status(404).send('No se encontró calendario')
+    } else {
+        const updatedSchedule = await schedule.update({
+            'start': newStart,
+            'exit': newExit,
+            week_day
+        })
+        return res.json(updatedSchedule)
+    }
+
+});
+
 
 /**
  * Assign Schedule
@@ -132,5 +212,8 @@ router.post('/schedule', [
     return res.json(schedule);
 
 });
+
+
+
 
 export default router;

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const checkin_controller_1 = __importDefault(require("../controller/checkin.controller"));
+const countryExists_middleware_1 = __importDefault(require("../middlewares/customs/countryExists.middleware"));
 const userExists_middleware_1 = __importDefault(require("../middlewares/customs/userExists.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const router = (0, express_1.Router)();
@@ -23,6 +24,8 @@ router.post('/', [
     (0, express_validator_1.check)('income_date', "Campo 'income_date' es obligatorio").notEmpty(),
     //TODO: Hay que controlar que solo sea propietario y no USER
     (0, express_validator_1.check)('id_owner').custom(userExists_middleware_1.default),
+    (0, express_validator_1.check)('id_country').custom(countryExists_middleware_1.default),
+    (0, express_validator_1.check)('id_country', "Campo id_country es obligatorio").notEmpty(),
     noErrors_middleware_1.default
 ], checkin_controller.create);
 /**
@@ -52,11 +55,19 @@ router.patch('/checkout/:id_checkin', [
 /**
  * Get All "check_in" Approved
  */
-router.get('/approved', checkin_controller.getApproved);
+router.get('/approved/:id_country', [
+    (0, express_validator_1.check)('id_country', "Parámetro 'id_country' es obligatorio").notEmpty(),
+    (0, express_validator_1.check)('id_country', "Parámetro 'id_country' debe ser numérico").isNumeric(),
+    noErrors_middleware_1.default
+], checkin_controller.getApproved);
+/**
+ * Get All "registers" in true
+ */
+router.get('/registers/:id_country', checkin_controller.getRegisters);
 /**
  * Get All "confirmed_by_owner" in true
  */
-router.get('/confirmed', checkin_controller.getConfirmedByOwner);
+router.get('/confirmed/:id_country', checkin_controller.getConfirmedByOwner);
 /**
  * Get All "check_out" in true
  */

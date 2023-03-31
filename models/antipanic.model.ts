@@ -11,6 +11,7 @@ const AntipanicModel = db.define('antipanic', {
     details: {type: DataTypes.STRING},
     finishAt: {type: DataTypes.DATE},
     state: {type: DataTypes.BOOLEAN},
+    propertyNumber: {type: DataTypes.INTEGER}
 },
 {
     timestamps: true,

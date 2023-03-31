@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import AuthController from "../controller/auth.controller";
 import checkInController from "../controller/checkin.controller";
+import countryExists from "../middlewares/customs/countryExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 
@@ -26,6 +27,10 @@ router.post('/', [
 
     //TODO: Hay que controlar que solo sea propietario y no USER
     check('id_owner').custom(userExists),
+
+    check('id_country').custom(countryExists),
+    check('id_country', "Campo id_country es obligatorio").notEmpty(),
+
 
     noErrors
 ], checkin_controller.create);
@@ -61,11 +66,22 @@ router.patch('/checkout/:id_checkin', [
 /**
  * Get All "check_in" Approved
  */
-router.get('/approved', checkin_controller.getApproved)
+router.get('/approved/:id_country',[
+    check('id_country', "Parámetro 'id_country' es obligatorio").notEmpty(),
+    check('id_country', "Parámetro 'id_country' debe ser numérico").isNumeric(),
+    noErrors
+], checkin_controller.getApproved,)
+
+/**
+ * Get All "registers" in true
+ */
+router.get('/registers/:id_country', checkin_controller.getRegisters)
+
 /**
  * Get All "confirmed_by_owner" in true
  */
-router.get('/confirmed', checkin_controller.getConfirmedByOwner)
+
+router.get('/confirmed/:id_country', checkin_controller.getConfirmedByOwner)
 
 /**
  * Get All "check_out" in true

@@ -53,8 +53,10 @@ router.get('/country/get_by_id/:id_country', [
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const owners = yield user_properties_model_1.default.findAll();
+    console.log("ESTO ES LO QUE SE RECIBE", req.params.id_country);
     const owners_by_country = owners.filter((owner) => {
-        return owner.property.id_country == req.params.id_country;
+        console.log(owner.property.id_country);
+        // return owner.property.id_country == req.params.id_country;
     });
     return res.json(owners_by_country);
 }));

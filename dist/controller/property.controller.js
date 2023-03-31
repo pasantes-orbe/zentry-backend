@@ -111,6 +111,57 @@ class PropertyController {
             return res.json(response);
         });
     }
+    update(req, res) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const { name, number, address } = req.body;
+            let avatar = (_a = req.files) === null || _a === void 0 ? void 0 : _a.avatar;
+            let avatarEdit = "";
+            const { id } = req.params;
+            const property = yield property_model_1.default.findOne({
+                where: { "id_country": id }
+            });
+            try {
+                if (avatar) {
+                    const { tempFilePath } = (_b = req.files) === null || _b === void 0 ? void 0 : _b.avatar;
+                    const { secure_url } = yield new Uploader_1.default().uploadImage(tempFilePath);
+                    avatarEdit = secure_url;
+                }
+                console.log(avatar);
+                const property_update = yield property_model_1.default.update({
+                    name,
+                    number,
+                    address,
+                    avatar: avatarEdit
+                }, { where: { id } });
+                return res.json({
+                    msg: "Actualizado correctamente",
+                });
+            }
+            catch (error) {
+                return res.status(500).send({
+                    msg: "Error en el servidor",
+                    error
+                });
+            }
+        });
+    }
+    delete(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            try {
+                const deleted = yield property_model_1.default.destroy({
+                    where: { id }
+                });
+                return res.json({
+                    msg: "Eliminado correctamente"
+                });
+            }
+            catch (error) {
+                return res.status(500).send(error);
+            }
+        });
+    }
 }
 exports.default = PropertyController;
 //# sourceMappingURL=property.controller.js.map

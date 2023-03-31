@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const Country_1 = __importDefault(require("../classes/Country"));
-const isAdmin_middleware_1 = __importDefault(require("../middlewares/jwt/isAdmin.middleware"));
 const noErrors_middleware_1 = __importDefault(require("../middlewares/noErrors.middleware"));
 const Countries_1 = __importDefault(require("../classes/Countries"));
 const Uploader_1 = __importDefault(require("../classes/Uploader"));
@@ -24,7 +23,6 @@ router.get('/', [], (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     res.json(countries);
 }));
 router.get('/:id', [
-    isAdmin_middleware_1.default,
     noErrors_middleware_1.default
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const country = yield new Countries_1.default().getOne(Number(req.params.id));

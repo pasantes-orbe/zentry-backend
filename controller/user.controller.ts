@@ -137,7 +137,9 @@ class UserController {
 
         
 
-        const request = await passwordChangeRequest.findByPk(id_request);
+        const request = await passwordChangeRequest.findByPk(id_request, {
+            include: [User]
+        });
 
         if(!request){
             return res.status(404).send({
@@ -171,7 +173,8 @@ class UserController {
             }
         })
 
-        const mail = await new Mailer().send(generated_pass);
+
+       const mail = await new Mailer().send(generated_pass, request.user.email);
 
         return res.json({
             msg: "Reestablecimiento de contraseña exitoso",
@@ -182,6 +185,35 @@ class UserController {
 
     }
 
+    async updateUser(req: Request, res: Response){
+        const {id} = req.params
+
+        const {name, lastname, email, birthday, phone} = req.body
+
+        const user = await User.findByPk(id)
+
+        if(!user){
+            return res.status(404).send({
+                msg: `No existe ningun usuario con ese id ${id}`
+            });
+        }
+
+        const user_update = await user.update(
+            {
+                name,
+                lastname,
+                email,
+                phone,
+                birthday
+            }
+        )
+
+        return res.json({
+            msg: "Actualizado correctamente",
+            user: user_update
+        })
+
+    }
 
 }
 

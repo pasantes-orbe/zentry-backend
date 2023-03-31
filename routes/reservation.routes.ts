@@ -7,6 +7,8 @@ import reservationExists from "../middlewares/customs/reservationExists.middlewa
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import AmenityModel from "../models/amenity.model";
+import CheckInModel from "../models/checkin.model";
+import Invitation from "../models/invitations.model";
 import Reservation from "../models/reservation.model";
 import User from "../models/user.model";
 
@@ -51,32 +53,43 @@ router.post('/', [
     }
 
     const reservation = new Reservation(reservationBody);
-    reservation.save();
+
+    await reservation.save();
 
     return res.json(reservation);
 
 });
 
 /**
- * Get all Reservations
+ * Get all Reservations by Status and ID_Country
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/:id_country', async (req: Request, res: Response) => {
 
     const { status } = req.query;
+    const { id_country } = req.params
 
-    if(status){
+    console.log("ESTE ES EL ID DEL COUNTRY");
+    if (status) {
         const reservations = await Reservation.findAll({
             where: {
-                status
+                status,
             },
             include: AmenityModel
         });
 
-        return res.json(reservations);
+        const reservations_by_country = reservations.filter((reservation) => {
+            return reservation.amenity.id_country == id_country;
+        })
+
+        return res.json(reservations_by_country);
     }
 
     const reservations = await Reservation.findAll();
-    return res.json(reservations);
+    const reservations_by_country = reservations.filter((reservation) => {
+        return reservation.amenity.id_country == id_country;
+    })
+
+    return res.json(reservations_by_country);
 });
 
 /**
@@ -91,6 +104,12 @@ router.patch('/:id_reservation/:status', [
     noErrors
 ], async (req: Request, res: Response) => {
 
+
+
+
+    // return res.send({invitations_to_checkin, event, invitations});
+    // return res.send({event, invitations_to_checkin});
+
     let msg: string = "";
     let newStatus: string = "";
 
@@ -98,16 +117,16 @@ router.patch('/:id_reservation/:status', [
 
     const st = Boolean(status);
 
-    if(status == 'false') {
+    if (status == 'false') {
         msg = "Se cambió el estado de la reserva a 'Rechazado' ";
         newStatus = "rechazado";
     }
 
-    if(status == 'true'){
+    if (status == 'true') {
         msg = "Se cambió el estado de la reserva a 'Aprobado' ";
         newStatus = "aprobado";
-    } 
-    
+    }
+
 
     try {
         const update = Reservation.update({ status: newStatus }, {
@@ -115,7 +134,35 @@ router.patch('/:id_reservation/:status', [
                 id: id_reservation
             }
         });
-        
+
+
+        const event = await Reservation.findByPk(req.params.id_reservation);
+
+        const invitations = await Invitation.findAll({
+            where: {
+                id_reservation: req.params.id_reservation
+            }
+        });
+
+        const invitations_to_checkin = invitations.map(invitation => {
+
+            return {
+                guest_name: invitation.name,
+                guest_lastname: invitation.lastname,
+                DNI: invitation.dni,
+                confirmed_by_owner: true,
+                check_in: false,
+                check_out: false,
+                income_date: event.date,
+                id_owner: event.user.id,
+                id_country: event.id_amenity
+            }
+
+        });
+
+        const checkIn = await CheckInModel.bulkCreate(invitations_to_checkin);
+
+
     } catch (error) {
         return res.status(500).send({
             msg: "Error interno en el servidor"
@@ -130,12 +177,15 @@ router.patch('/:id_reservation/:status', [
  * Get All Reservations By User
  */
 
-router.get('/:id_user', [
+router.get('/get_by_user/:id_user', [
     check('id_user', "El campo 'id_user' debe ser numérico").isNumeric(),
     check('id_user').custom(userExists)
-] ,async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
+
 
     const { id_user } = req.params
+
+    console.log(id_user);
 
     const reservations = await Reservation.findAll({
         where: {
@@ -154,15 +204,15 @@ router.get('/country/get_by_id/:id_country', [
     check('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
     check('id_country', "El campo 'id_country' es obligatorio").notEmpty(),
     check('id_country').custom(countryExists)
-] ,async (req: Request, res: Response) => {
+], async (req: Request, res: Response) => {
 
     const { id_country } = req.params
 
     const reservations = await Reservation.findAll({
-        include: [ User, AmenityModel]
+        include: [User, AmenityModel]
     });
 
-    const reservations_by_country = reservations.filter( (reservation) => {
+    const reservations_by_country = reservations.filter((reservation) => {
         return reservation.amenity.id_country == id_country;
     })
 

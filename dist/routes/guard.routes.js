@@ -84,14 +84,73 @@ router.get('/schedule/all/:id_country', [
         const exit = guard.exit;
         const isInHournow = now.isBetween(start, exit);
         const isWorkDay = new Dates_1.default().getDay(now.day());
-        console.log(isWorkDay);
-        const isWorking = () => (isInHournow && isWorkDay) ? true : false;
+        console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
+        const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
+        console.log("GUARDIA", guard.user.id);
+        console.log("NOw", now);
+        console.log("start", start);
+        console.log("exit", exit);
+        console.log("@", isWorkDay == guard.week_day);
+        console.log("@@", isWorkDay);
+        console.log("@@@", guard.week_day);
         return {
             guard,
             guard, ['working']: isWorking()
         };
     });
     return res.json(object);
+}));
+// GET BY USER ID
+router.get('/schedule/:id_user', [
+    (0, express_validator_1.check)('id_user').isNumeric(),
+    (0, express_validator_1.check)('id_user').notEmpty(),
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const guards = yield guard_schedule_model_1.default.findAll({
+        where: {
+            id_user: req.params.id_user
+        },
+    });
+    console.log(guards);
+    const object = guards.map((x) => {
+        const guard = x;
+        const id = x.id;
+        const week_day = x.week_day;
+        const start = x.start;
+        const exit = x.exit;
+        const format_start = moment_1.default.utc(start).format();
+        const format_exit = moment_1.default.utc(exit).format();
+        return {
+            id,
+            week_day,
+            start: start,
+            exit: exit
+        };
+    });
+    return res.json(object);
+}));
+// Update Schedule By ID
+router.put(`/schedule/:id`, [
+    (0, express_validator_1.check)('id').isNumeric(),
+    (0, express_validator_1.check)('id').notEmpty(),
+    noErrors_middleware_1.default
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { newStart, newExit, week_day } = req.body;
+    console.log(newStart);
+    console.log(newExit);
+    console.log(week_day);
+    const { id } = req.params;
+    const schedule = yield guard_schedule_model_1.default.findByPk(id);
+    if (!schedule) {
+        return res.status(404).send('No se encontró calendario');
+    }
+    else {
+        const updatedSchedule = yield schedule.update({
+            'start': newStart,
+            'exit': newExit,
+            week_day
+        });
+        return res.json(updatedSchedule);
+    }
 }));
 /**
  * Assign Schedule

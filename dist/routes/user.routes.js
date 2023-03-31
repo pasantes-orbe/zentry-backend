@@ -53,6 +53,14 @@ router.patch('/change-password/:id_request', [
     isAdmin_middleware_1.default,
 ], controller.changePassword);
 /**
+ * Update User
+ */
+router.patch('/update-user/:id', [
+    (0, express_validator_1.check)('id').notEmpty(),
+    (0, express_validator_1.check)('id').isNumeric(),
+    noErrors_middleware_1.default
+], controller.updateUser);
+/**
  * All Password Change Requests
  */
 router.get('/requests/password-changes', controller.allPasswordChangeRequests);
