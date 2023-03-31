@@ -37,6 +37,7 @@ router.get('/get_by_country/:id_country', [
     (0, express_validator_1.check)('id_country').notEmpty(),
 ], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const guards = yield new Guard_1.default().getByCountry(+req.params.id_country);
+    console.log("ESTOS SON LOS GUARDIAS", guards);
     return res.json(guards);
 }));
 /**

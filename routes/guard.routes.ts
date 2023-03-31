@@ -34,6 +34,8 @@ router.get('/get_by_country/:id_country', [
 
     const guards = await new Guard().getByCountry(+req.params.id_country);
 
+    console.log("ESTOS SON LOS GUARDIAS", guards)
+    
     return res.json(guards);
 
 });
