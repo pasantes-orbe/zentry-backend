@@ -5,7 +5,7 @@ let db;
 console.log(process.env.PORT);
 // LOCAL
 try {
-    db = new sequelize_1.Sequelize('Countries', 'admin', 'admin', {
+    db = new sequelize_1.Sequelize('Countries', 'postgres', 'admin', {
         host: 'localhost',
         dialect: 'postgres',
     });
