@@ -44,5 +44,5 @@ db = new Sequelize('Countries', 'admin', 'admin', {
     host: 'localhost',
     dialect: 'postgres',
 });
-*/ 
+*/
 //# sourceMappingURL=connection.js.map
