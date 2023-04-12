@@ -58,7 +58,7 @@ router.get('/country/get_by_id/:id_country', [
 
         console.log(owner.property.id_country);
 
-        // return owner.property.id_country == req.params.id_country;
+        return owner.property.id_country == req.params.id_country;
     })
 
     return res.json(owners_by_country);
