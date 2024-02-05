@@ -17,10 +17,10 @@ let db;
 // }
 // PRODUCTION ORBE COUNTRIES
 try {
-    db = new sequelize_1.Sequelize('railway', 'postgres', 'dFAE11e-21451Age5AeFgF6612Gba3cF', {
-        host: 'viaduct.proxy.rlwy.net',
+    db = new sequelize_1.Sequelize('railway', 'postgres', 'ggf6F15Fg636F1BDc3A6Ba1Dda3eB5Db', {
+        host: 'roundhouse.proxy.rlwy.net',
         dialect: 'postgres',
-        port: 35230
+        port: 39877
     });
 }
 catch (error) {
