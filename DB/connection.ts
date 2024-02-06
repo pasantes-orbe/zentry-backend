@@ -22,10 +22,10 @@ let db: Sequelize;
 
 // PRODUCTION ORBE COUNTRIES
 try {
-    db = new Sequelize('railway', 'postgres', 'ggf6F15Fg636F1BDc3A6Ba1Dda3eB5Db', {
-         host: 'roundhouse.proxy.rlwy.net',
+    db = new Sequelize('railway', 'postgres', 'dFAE11e-21451Age5AeFgF6612Gba3cF', {
+         host: 'viaduct.proxy.rlwy.net',
          dialect: 'postgres',
-         port: 39877 
+         port: 35230 
      });
 } catch (error) {
     throw new Error("No se pudo conectar con la base de datos")
