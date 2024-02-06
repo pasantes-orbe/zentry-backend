@@ -51,4 +51,17 @@ db = new Sequelize('Countries', 'admin', 'admin', {
 //     },
 //     timezone: "+05:30"
 // });
+// try { 
+//     db = new Sequelize('railway', 'postgres', 'T3NknWUQAruiKf9aNEWi', {
+//         host: 'containers-us-west-148.railway.app',
+//         dialect: 'postgres',
+//         dialectOptions: {
+//             useUTC: false, // -->Add this line. for reading from database
+//         },
+//         port: 7001,
+//         timezone: "+05:30"
+//     });
+// } catch (error) {
+//     throw new Error("No se pudo conectar con la base de datos")
+// }
 //# sourceMappingURL=connection.js.map
