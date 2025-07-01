@@ -88,10 +88,10 @@ class Server {
         });
     }
     middlewares() {
-        // Cors
+        // Cors: permite o restringe el acceso desde diferentes dominios 
         const corsOptions = {
             credentials: true,
-            origin: '*'
+            origin: '*' // permitir que cualquier origen (origin: '*') acceda a los recursos del servidor.
         };
         this.app.use((0, cors_1.default)(corsOptions));
         this.app.use(express_1.default.json());
