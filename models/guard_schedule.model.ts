@@ -15,7 +15,6 @@ const GuardSchedule = db.define('guard_schedule', {
     exit: { type: DataTypes.DATE },
 },
 {
-    
     defaultScope: {
         include: [
             {
@@ -29,10 +28,7 @@ const GuardSchedule = db.define('guard_schedule', {
         }
     },
     timestamps: false
-
 }
 );
-
-
 
 export default GuardSchedule;

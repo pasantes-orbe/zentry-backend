@@ -10,7 +10,6 @@ import GuardCountry from "../models/guard_country.model";
 import GuardSchedule from "../models/guard_schedule.model";
 import Role from "../models/roles.model";
 import User from "../models/user.model";
-
 import moment from "moment";
 import DatesHelper from "../classes/Dates";
 
@@ -31,11 +30,8 @@ router.get('/get_by_country/:id_country', [
     check('id_country').isNumeric(),
     check('id_country').notEmpty(),
 ], async (req: Request, res: Response) => {
-
     const guards = await new Guard().getByCountry(+req.params.id_country);
-
     return res.json(guards);
-
 });
 
 /**
@@ -45,17 +41,13 @@ router.get('/get_country/:id_user', [
     check('id_user').isNumeric(),
     check('id_user').notEmpty(),
 ], async (req: Request, res: Response) => {
-
     const country = await new Guard().getCountry(+req.params.id_user)
-
     return res.json(country);
-
 });
 
 /**
  * Assign Country
  */
-
 router.post('/assign', [
     check('id_user').notEmpty(),
     check('id_user').isNumeric(),
@@ -65,12 +57,46 @@ router.post('/assign', [
     check('id_user').custom(isGuard),
     noErrors
 ], async (req: Request, res: Response) => {
-
     const guard = req.body;
     const assign = await new Guard().assignCountry(guard);
     res.json(assign);
-
 });
+
+/*  Get Schedule by Country 14-7-25
+
+router.get('/schedule/all/:id_country', [
+    check('id_country').isNumeric(),
+    check('id_country').notEmpty(),
+], async (req: Request, res: Response) => {
+    const guards = await GuardSchedule.findAll({
+        where: {
+            id_country: req.params.id_country
+        }
+    })
+
+    const object = guards.map(x => {
+        const guard = x;
+        const now = moment();
+        const start = guard.start;
+        const exit = guard.exit;
+        const isInHournow = now.isBetween(start, exit);
+        const isWorkDay = new DatesHelper().getDay(now.day());
+        console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
+        const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
+        console.log("GUARDIA", guard.user.id);
+        console.log("NOw", now);
+        console.log("start", start);
+        console.log("exit", exit);
+        console.log("@", isWorkDay == guard.week_day);
+        console.log("@@", isWorkDay);
+        console.log("@@@", guard.week_day);
+        return {
+            guard,
+            guard['working']: isWorking()
+        }
+    })
+    return res.json(object);
+});*/
 
 /**
  * Get Schedule by Country
@@ -79,73 +105,50 @@ router.get('/schedule/all/:id_country', [
     check('id_country').isNumeric(),
     check('id_country').notEmpty(),
 ], async (req: Request, res: Response) => {
-
     const guards = await GuardSchedule.findAll({
         where: {
             id_country: req.params.id_country
-        }
-    })
+        },
+        include: [{ model: User, as: 'user' }] // incluimos la relación con alias
+    });
 
-    const object = guards.map(x => {
+    const now = moment();
+    const isWorkDay = new DatesHelper().getDay(now.day());
 
-        const guard = x;
-        const now = moment();
+    const object = guards.map((guard: any) => {
         const start = guard.start;
         const exit = guard.exit;
+        const week_day = guard.week_day;
         const isInHournow = now.isBetween(start, exit);
-        
-        const isWorkDay = new DatesHelper().getDay(now.day());
-
-        console.log("ESTE ES EL DIA LABORAL", isWorkDay, "Este es si esta en horario", isInHournow);
-        const isWorking = () => (isInHournow && (isWorkDay == guard.week_day)) ? true : false;
-
-        console.log("GUARDIA", guard.user.id);
-        console.log("NOw", now);
-        console.log("start", start);
-        console.log("exit", exit);
-        console.log("@", isWorkDay == guard.week_day);
-        console.log("@@", isWorkDay);
-        console.log("@@@", guard.week_day);
-
+        const isWorking = isInHournow && isWorkDay === week_day;
         return {
             guard,
-            guard['working']: isWorking()
-        }
-    })
-
+            working: isWorking
+        };
+    });
 
     return res.json(object);
-
 });
 
 // GET BY USER ID
-
-
 router.get('/schedule/:id_user', [
     check('id_user').isNumeric(),
     check('id_user').notEmpty(),
 ], async (req: Request, res: Response) => {
-
     const guards = await GuardSchedule.findAll({
         where: {
             id_user: req.params.id_user
         },
     })
-
     console.log(guards);
-
     const object = guards.map((x: any) => {
-
         const guard = x;
         const id = x.id
         const week_day = x.week_day
         const start = x.start
         const exit = x.exit
-
         const format_start = moment.utc(start).format();
         const format_exit = moment.utc(exit).format();
-
-
         return {
             id,
             week_day,
@@ -153,29 +156,22 @@ router.get('/schedule/:id_user', [
             exit: exit
         }
     })
-
-
     return res.json(object);
-
 });
 
 // Update Schedule By ID
-
 router.put(`/schedule/:id`, [
     check('id').isNumeric(),
     check('id').notEmpty(),
     noErrors
 ], async (req: Request, res: Response) => {
-
-    const {newStart, newExit, week_day} = req.body
-
+    const { newStart, newExit, week_day } = req.body
     console.log(newStart);
     console.log(newExit);
     console.log(week_day)
     const { id } = req.params
     const schedule = await GuardSchedule.findByPk(id)
-
-    if(!schedule){
+    if (!schedule) {
         return res.status(404).send('No se encontró calendario')
     } else {
         const updatedSchedule = await schedule.update({
@@ -185,9 +181,26 @@ router.put(`/schedule/:id`, [
         })
         return res.json(updatedSchedule)
     }
-
 });
 
+/** Assign Schedule 14-7-25
+
+router.post('/schedule', [
+    check('id_country').isNumeric(),
+    check('id_country').notEmpty(),
+    check('week_day').notEmpty(),
+    check('week_day').isString(),
+    check('start').notEmpty(),
+    check('exit').notEmpty(),
+    check('id_user').notEmpty(),
+    check('id_user').isNumeric(),
+    noErrors
+], async (req: Request, res: Response) => {
+    req.body.week_day = req.body.week_day.toLowerCase();
+    const schedule = new GuardSchedule(req.body)
+    schedule.save();
+    return res.json(schedule);
+});*/
 
 /**
  * Assign Schedule
@@ -203,17 +216,15 @@ router.post('/schedule', [
     check('id_user').isNumeric(),
     noErrors
 ], async (req: Request, res: Response) => {
-
     req.body.week_day = req.body.week_day.toLowerCase();
 
-    const schedule = new GuardSchedule(req.body)
-    schedule.save();
-
-    return res.json(schedule);
-
+    try {
+        const schedule = await GuardSchedule.create(req.body); // ✅ Usar .create()
+        return res.json(schedule);
+    } catch (error) {
+        console.error("Error al crear horario:", error);
+        return res.status(500).json({ message: "Error al asignar horario" });
+    }
 });
-
-
-
 
 export default router;

@@ -122,11 +122,6 @@ passwordChangeRequest.belongsTo(User, {
     targetKey: 'id'
 })
 
-User.hasMany(passwordChangeRequest, {
-    foreignKey: 'id_user',
-    sourceKey: 'id'
-});
-
 Reservation.belongsTo(User, {
     foreignKey: 'id_user',
     targetKey: 'id'
@@ -139,16 +134,15 @@ Reservation.belongsTo(AmenityModel, {
 
 GuardSchedule.belongsTo(User, {
     foreignKey: 'id_user',
-    targetKey: 'id'
+    targetKey: 'id',
+    as: 'user' //14-7-25
 })
 
 GuardSchedule.belongsTo(CountryModel, {
     foreignKey: 'id_country',
-    targetKey: 'id'
+    targetKey: 'id',
+    as: 'country' //14-7-25
 });
-
-
-
 
 CheckInModel.belongsTo(User, {
     foreignKey: 'id_guard',
@@ -159,7 +153,6 @@ CheckInModel.belongsTo(User, {
     foreignKey: 'id_owner',
     targetKey: 'id'
 })
-
 
 CheckInModel.belongsTo(User, {
     as: 'guard',

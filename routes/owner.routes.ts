@@ -11,12 +11,13 @@ import User from "../models/user.model";
 import UserProperties from "../models/user_properties.model";
 
 const router = Router();
-
 /**
  * Get All
  */
-router.get('/', async(req: Request, res: Response) => {
-    const keys = await UserProperties.findAll();
+router.get('/', async (req: Request, res: Response) => {
+    const keys = await UserProperties.findAll({
+        include: [Property] //14-7-25
+    });
     return res.json(keys);
 });
 
@@ -28,13 +29,12 @@ router.get('/:id_owner', [
     check('id_owner').custom(userExists),
     noErrors
 ], async (req: Request, res: Response) => {
-
     const property = await UserProperties.findOne({
         where: {
-            id_user: req.params.id_owner
-        }
+            id_user: req.params.id_owner,
+        },
+        include: [Property] //14-7-25
     })
-
     return res.json(property);
 
 });
@@ -49,95 +49,79 @@ router.get('/country/get_by_id/:id_country', [
     check('id_country').custom(countryExists),
     noErrors
 ], async (req: Request, res: Response) => {
-
-    const owners = await UserProperties.findAll();  
-
+    const owners = await UserProperties.findAll({
+        include: [Property] //14-7
+    });
+    /* 14-7
     console.log("ESTO ES LO QUE SE RECIBE", req.params.id_country);
-
     const owners_by_country = owners.filter( (owner) => {
-
         console.log(owner.property.id_country);
-
         return owner.property.id_country == req.params.id_country;
-    })
-
+    })*/
+    //14-7
+    const owners_by_country = owners.filter(owner => {
+        const ownerData: any = owner.get({ plain: true }); // convierte a objeto plano con las relaciones incluidas
+        return ownerData.property?.id_country == +req.params.id_country;
+    });
     return res.json(owners_by_country);
 });
 
 
-/**
- * Relation with property
- */
-router.post('/', [
-    check('id_user', "Id de usuario obligatorio").notEmpty(),
-    check('id_user', "El id de usuario debe ser numerico").isNumeric(),
-    check('id_user').custom(userExists),
-    check('id_property', "Id de propiedad obligatorio").notEmpty(),
-    check('id_property', "El id de propiedad debe ser numerico").isNumeric(),
-    check('id_property').custom(propertyExists),
-    noErrors
-] , async(req: Request, res: Response) => {
-    const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
-
-    const alreadyExists = await UserProperties.findOne({
-        where: {
-            id_user: req.body.id_user,
-            id_property: req.body.id_property
+    /**
+     * Relation with property
+     */
+    router.post('/', [
+        check('id_user', "Id de usuario obligatorio").notEmpty(),
+        check('id_user', "El id de usuario debe ser numerico").isNumeric(),
+        check('id_user').custom(userExists),
+        check('id_property', "Id de propiedad obligatorio").notEmpty(),
+        check('id_property', "El id de propiedad debe ser numerico").isNumeric(),
+        check('id_property').custom(propertyExists),
+        noErrors
+    ], async (req: Request, res: Response) => {
+        const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
+        const alreadyExists = await UserProperties.findOne({
+            where: {
+                id_user: req.body.id_user,
+                id_property: req.body.id_property
+            }
+        })
+        if (alreadyExists) {
+            return res.status(400).send({ msg: "Este propietario ya tiene asignada esta propiedad"})
         }
-    })
+        const key = UserProperties.build(req.body);//14-7
+        await key.save();
+        return res.json(key);
+    });
 
-    if(alreadyExists){
-
-        return res.status(400).send({
-            msg: "Este propietario ya tiene asignada esta propiedad"
-        })
-    }
-
-    const key = new UserProperties(req.body);
-    key.save();
-    return res.json(key);
-});
-
-/**
- * ASSIGN COUNTRY
- */
-router.post('/assign', [
-    check('id_user', "Id de usuario obligatorio").notEmpty(),
-    check('id_user', "El id de usuario debe ser numerico").isNumeric(),
-    check('id_user').custom(userExists),
-    check('id_country', "Id de country obligatorio").notEmpty(),
-    check('id_country', "El id de country debe ser numerico").isNumeric(),
-    check('id_country').custom(countryExists),
-    noErrors
-], async(req: Request, res: Response) => {
-    const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
-
-    if(!isOwnerRole){
-        return res.status(400).send({
-            msg: "No es un usuario propietario"
-        })
-    }
-
-    const alreadyExists = await OwnerCountry.findOne({
-        where: {
-            id_user: req.body.id_user,
-            id_country: req.body.id_country
+    /**
+     * ASSIGN COUNTRY
+     */
+    router.post('/assign', [
+        check('id_user', "Id de usuario obligatorio").notEmpty(),
+        check('id_user', "El id de usuario debe ser numerico").isNumeric(),
+        check('id_user').custom(userExists),
+        check('id_country', "Id de country obligatorio").notEmpty(),
+        check('id_country', "El id de country debe ser numerico").isNumeric(),
+        check('id_country').custom(countryExists),
+        noErrors
+    ], async (req: Request, res: Response) => {
+        const isOwnerRole = await new UserClass().is("propietario", +req.body.id_user);
+        if (!isOwnerRole) {
+            return res.status(400).send({ msg: "No es un usuario propietario"})
         }
-    })
-
-    if(alreadyExists){
-        return res.status(400).send({
-            msg: "Este propietario ya tiene asignado un country"
+        const alreadyExists = await OwnerCountry.findOne({
+            where: {
+                id_user: req.body.id_user,
+                id_country: req.body.id_country
+            }
         })
-    }
+        if (alreadyExists) {
+            return res.status(400).send({ msg: "Este propietario ya tiene asignado un country"})
+        }
+        const ownerCountry = OwnerCountry.build(req.body); //build 17-7-25
+        ownerCountry.save();
+        return res.json(ownerCountry);
+    });
 
-    const ownerCountry = new OwnerCountry(req.body);
-    ownerCountry.save();
-    return res.json(ownerCountry);
-} );
-
-
-
-
-
-export default router;
+    export default router;
