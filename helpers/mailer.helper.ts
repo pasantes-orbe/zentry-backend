@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 class Mailer {
 
 
-    public async send(message, email:string) {
+    public async send(message: string, email:string) {
 
         console.log("Este es el email ", email);
 

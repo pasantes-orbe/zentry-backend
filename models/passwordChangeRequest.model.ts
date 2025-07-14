@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import db from "../DB/connection";
-import User from "./user.model";
 
 const passwordChangeRequest = db.define('password_change_request', {
     id: {
@@ -8,14 +7,19 @@ const passwordChangeRequest = db.define('password_change_request', {
         primaryKey: true,
         autoIncrement: true
     },
-    changed: {type: DataTypes.BOOLEAN},
-    date: {type: DataTypes.DATE}
-},
-{
+    id_user: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+        // La asociación se hace en otro archivo
+    },
+    changed: {
+        type: DataTypes.BOOLEAN
+    },
+    date: {
+        type: DataTypes.DATE
+    }
+}, {
     timestamps: false
-}
-);
-
-
+});
 
 export default passwordChangeRequest;

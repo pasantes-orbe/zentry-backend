@@ -3,22 +3,17 @@ import Role from "../models/roles.model";
 import User from "../models/user.model";
 
 class UserClass {
-
     public async getAll() {
-
         const users = await User.findAll({
             attributes: { exclude: ['password', 'role_id'] },
             include: {
                 model: Role
             },
         });
-
         return users;
-
     }
 
     public async getAllByRole(role: string) {
-
         const users = await User.findAll({
             where: {
                 '$role.name$': role
@@ -28,24 +23,17 @@ class UserClass {
                 model: Role
             },
         });
-
         return users;
-
     }
 
     public async is(role: string, id: number){
-
         const user = await User.findByPk(id, {
             attributes: {exclude: ['password', 'role_id']},
             include: {
                 model: Role
             },
         });
-
-        return user.role.name == role;
-        
+        return (user as any).role.name === role;
     }
-
 }
-
 export default UserClass;

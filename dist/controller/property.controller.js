@@ -57,8 +57,8 @@ class PropertyController {
         });
     }
     create(req, res) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const { body } = req;
             const propertyNumber = yield property_model_1.default.findOne({
                 where: {
@@ -112,8 +112,8 @@ class PropertyController {
         });
     }
     update(req, res) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             const { name, number, address } = req.body;
             let avatar = (_a = req.files) === null || _a === void 0 ? void 0 : _a.avatar;
             let avatarEdit = "";

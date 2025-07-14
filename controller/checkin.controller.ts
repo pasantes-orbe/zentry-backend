@@ -1,19 +1,15 @@
-import { Request, response, Response } from "express";
+/*import { Request, response, Response } from "express";
 import { check } from "express-validator";
 import { Sequelize } from "sequelize";
 import { Op } from "sequelize";
-
 import CheckIn from "../classes/CheckIn";
 import Guard from "../classes/Guard";
 import CheckInModel from "../models/checkin.model";
 import CheckOutModel from "../models/checkout.model";
 import Server from "../models/server";
 import User from "../models/user.model";
-
 class checkInController {
-
     public async create(req: Request, res: Response){
-
         const {
             guest_name,
             guest_lastname,
@@ -29,7 +25,6 @@ class checkInController {
             check_out
         } = req.body
 
-        //TODO: Cuando "confirmed_by_owner" no venga en la request hacerlo FALSE
 
         if(!confirmed_by_owner){
             req.body.confirmed_by_owner = false
@@ -42,7 +37,7 @@ class checkInController {
         } else {
             req.body.check_out = null
         }
-       
+    
 
         if(patent){
             req.body.patent = req.body.patent.toUpperCase();
@@ -58,10 +53,6 @@ class checkInController {
             }
 
         }
-
-      
-
-
         req.body.check_in = false;
 
         const checkIn = new CheckInModel(req.body);
@@ -90,7 +81,7 @@ class checkInController {
             })
         }
 
-        // Emitir socket TODO: Debería enviarle SOLO al propietario que le interesa la notificación.
+        
         const server = Server.instance;
 
         res.send(update);
@@ -109,7 +100,7 @@ class checkInController {
             })
         }
 
-        // Emitir socket TODO: Debería enviarle solo a los guardias esta notificación
+        
         const server = Server.instance;
         server.io.emit('checkin-confirmado-por-propietario', {msg: `Check-in de ${update.guest_name} ${update.guest_lastname} confirmado`, update});
 
@@ -230,35 +221,24 @@ class checkInController {
         return res.send(checkins);
 
     }
-
-
-
     public async checkOutConfirmed(req: Request, res: Response){
-
         const { id_checkin } = req.params;
         
         const update = await new CheckIn().checkOutConfirm(+id_checkin)
-
         if(!update){
             return res.status(404).send({
                 msg: "Check-in no existe"
             })
         } 
-
         res.send({
             msg: "Check-out confirmado",
             update
         });
-
-    }
-
-    
+    } 
     public async getcheckInsToday(req: Request, res: Response){
         const {id_owner} = req.params;
-
         const TODAY_START = new Date().setHours(0, 0, 0, 0);
         const NOW = new Date().setHours(23,59)
-
         const checkins = await CheckInModel.findAll({
             where: {
                 id_owner,
@@ -266,7 +246,6 @@ class checkInController {
                     [Op.gt]: TODAY_START,
                     [Op.lt]: NOW
                 }
-
             },
             include: [{
                 model: User,
@@ -278,12 +257,65 @@ class checkInController {
             }]
         })
             res.send(checkins);        
+    }
+}
+export default checkInController*/
 
+import { Request, Response } from "express";
+import CheckIn from "../models/checkin.model";
 
+class CheckInController {
+
+    public async create(req: Request, res: Response) {
+        try {
+            const checkIn = await CheckIn.create(req.body);
+            return res.json({ msg: "Check-In registrado exitosamente", checkIn });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ msg: "Error al crear Check-In" });
+        }
     }
 
+    public async approve(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id_checkin);
+            const checkIn = await CheckIn.findByPk(id);
 
+            if (!checkIn) {
+                return res.status(404).json({ msg: "Check-In no existe" });
+            }
+
+            await checkIn.approve();
+
+            return res.json({ msg: "Check-In aprobado", checkIn });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ msg: "Error al aprobar Check-In" });
+        }
+    }
+
+    public async ownerConfirm(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id_checkin);
+            const checkIn = await CheckIn.findByPk(id);
+
+            if (!checkIn) {
+                return res.status(404).json({ msg: "Check-In no existe" });
+            }
+
+            await checkIn.ownerConfirm();
+
+            return res.json({ msg: "Check-In confirmado por propietario", checkIn });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ msg: "Error al confirmar Check-In" });
+        }
+    }
+
+    // Agregá más métodos acá de forma similar...
 
 }
 
-export default checkInController
+export default new CheckInController();

@@ -122,6 +122,10 @@ passwordChangeRequest.belongsTo(User, {
     targetKey: 'id'
 })
 
+User.hasMany(passwordChangeRequest, {
+    foreignKey: 'id_user',
+    sourceKey: 'id'
+});
 
 Reservation.belongsTo(User, {
     foreignKey: 'id_user',

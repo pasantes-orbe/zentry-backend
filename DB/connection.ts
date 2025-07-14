@@ -1,11 +1,5 @@
-import { Sequelize } from 'sequelize';
-
-
-
-let db: Sequelize;
-
-
-
+//import { Sequelize } from 'sequelize';
+//let db: Sequelize;
     // // LOCAL
     // try {
     //     db = new Sequelize('postgres', 'admindb', 'bu38kuZUpa', {
@@ -21,7 +15,7 @@ let db: Sequelize;
     // }
 
 // PRODUCTION ORBE COUNTRIES
-try {
+/*try {
     db = new Sequelize('railway', 'postgres', 'dFAE11e-21451Age5AeFgF6612Gba3cF', {
          host: 'viaduct.proxy.rlwy.net',
          dialect: 'postgres',
@@ -29,7 +23,7 @@ try {
      });
 } catch (error) {
     throw new Error("No se pudo conectar con la base de datos")
-}
+}*/
 
 
 
@@ -44,7 +38,7 @@ try {
      throw new Error("No se pudo conectar con la base de datos")
  }
 */
-export default db;  
+//export default db;  
 /*
 db = new Sequelize('Countries', 'admin', 'admin', {
     host: 'localhost',
@@ -61,3 +55,27 @@ db = new Sequelize('Countries', 'admin', 'admin', {
 //     },
 //     timezone: "+05:30"
 // });
+
+import { Sequelize } from 'sequelize';
+
+const db = new Sequelize('countryapp', 'postgres', '12345', {
+  host: 'localhost',
+  dialect: 'postgres',
+  port: 5432,
+  logging: false
+});
+
+// Función para probar conexión y mostrar errores concretos
+async function conectarDB() {
+  try {
+    await db.authenticate();
+    console.log('Conexión a la base de datos exitosa');
+  } catch (error) {
+    console.error('Error al conectar a la base de datos:', error);
+    process.exit(1); // Termina el proceso si no se conecta
+  }
+}
+
+conectarDB();
+
+export default db;
