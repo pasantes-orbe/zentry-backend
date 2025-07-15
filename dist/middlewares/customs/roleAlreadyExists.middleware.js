@@ -13,8 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const roles_model_1 = __importDefault(require("../../models/roles.model"));
-function roleAlreadyExists(role = "") {
-    return __awaiter(this, void 0, void 0, function* () {
+function roleAlreadyExists() {
+    return __awaiter(this, arguments, void 0, function* (role = "") {
         const exists = yield roles_model_1.default.findOne({
             where: {
                 name: role.toLowerCase()

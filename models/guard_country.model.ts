@@ -12,8 +12,7 @@ const GuardCountry = db.define('guard_country', {
         autoIncrement: true
     }
 
-},
-{
+}, {
     
     defaultScope: {
         include: [
@@ -28,10 +27,7 @@ const GuardCountry = db.define('guard_country', {
         }
     },
     timestamps: false
-
 }
 );
-
-
 
 export default GuardCountry;

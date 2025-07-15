@@ -10,13 +10,9 @@ const Role = db.define('role', {
     },
     name: {type: DataTypes.STRING},
     avatar: {type: DataTypes.STRING}
-
 },
 {
     timestamps: false
 }
 );
-
-
-
 export default Role;

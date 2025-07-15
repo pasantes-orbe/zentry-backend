@@ -21,7 +21,7 @@ class Mailer {
             let transporter = nodemailer_1.default.createTransport({
                 host: "c2301030.ferozo.com",
                 port: 465,
-                secure: true,
+                secure: true, // upgrade later with STARTTLS
                 auth: {
                     user: "contacto@orbesoftware.com.ar",
                     pass: "Orb3Erios142",

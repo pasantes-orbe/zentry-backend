@@ -3,16 +3,120 @@ import AntipanicModel from "../models/antipanic.model";
 import User from "../models/user.model";
 
 class AntipanicController {
-
     public async getAllByCountry(req: Request, res: Response) {
+        const { id_country } = req.params;
 
+        try {
+            const registroAntipanicos = await AntipanicModel.findAll({
+                where: { id_country },
+                include: [
+                    { model: User, as: 'owner' },
+                    { model: User, as: 'guard' }
+                ]
+            });
+
+            res.json(registroAntipanicos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ msg: "Error al obtener registros" });
+        }
+    }
+
+    public async newAntipanic(req: Request, res: Response) {
+        const { id_owner, address, id_country, propertyNumber } = req.body;
+        const state = true;
+
+        try {
+            const antipanic = await AntipanicModel.create({
+                ownerId: id_owner, // este campo debe coincidir con el definido en el modelo
+                address,
+                state,
+                id_country,
+                propertyNumber
+            });
+
+            res.json({
+                msg: "Antipánico activado",
+                antipanic
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                msg: "No se pudo crear el registro, intente de nuevo."
+            });
+        }
+    }
+
+    public async guardConfirm(req: Request, res: Response) {
+        const { id } = req.params;
+        const { guardId, details, finishAt } = req.body;
+
+        try {
+            const alertAntipanic = await AntipanicModel.findByPk(id);
+
+            if (!alertAntipanic) {
+                return res.status(404).json({ msg: "El id no es válido" });
+            }
+
+            const antipanicUpdated = await alertAntipanic.update({
+                guardId,
+                details,
+                state: false,
+                finishAt
+            });
+
+            res.json({
+                msg: "Antipánico actualizado correctamente",
+                antipanic: antipanicUpdated
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ msg: "Error al actualizar el antipanico" });
+        }
+    }
+
+    public async desactivateAntipanic(req: Request, res: Response) {
+        const { id } = req.params;
+        const { details } = req.body;
+
+        try {
+            const alertAntipanic = await AntipanicModel.findByPk(id);
+
+            if (!alertAntipanic) {
+                return res.status(404).json({ msg: "El id no es válido" });
+            }
+
+            const antipanicUpdated = await alertAntipanic.update({
+                state: false,
+                details
+            });
+
+            res.json({
+                msg: "Estado actualizado correctamente",
+                antipanic: antipanicUpdated
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ msg: "Error al actualizar el estado" });
+        }
+    }
+}
+
+export default AntipanicController;
+
+
+/* 15/7/25
+import { Request, Response } from "express";
+import AntipanicModel from "../models/antipanic.model";
+import User from "../models/user.model";
+
+class AntipanicController {
+    public async getAllByCountry(req: Request, res: Response) {
         const {id_country} = req.params
         const registroAntipanicos = await AntipanicModel.findAll({
-
         where: {
             id_country
         },
-
         include: [{
             model: User,
             as: 'owner'
@@ -23,14 +127,12 @@ class AntipanicController {
         }]
         })
         res.json(registroAntipanicos);
-
     }
 
     public async newAntipanic(req: Request, res: Response){
 
         const {id_owner, address, id_country, propertyNumber} = req.body;
         const state = true;
-
         try {
             const antipanic = new AntipanicModel({
             ownerId: id_owner,
@@ -40,8 +142,6 @@ class AntipanicController {
             propertyNumber
         })
             const antipanicGuardado = await antipanic.save();
-
-        
             res.json({
                 msg: "Antipanico activado",
                 antipanic: antipanicGuardado,
@@ -52,15 +152,11 @@ class AntipanicController {
                 msg: "No se pudo crear el rol, intente de nuevo."
             })
         }
-
-
     }
 
     public async guardConfirm(req: Request, res: Response){
         const {id} = req.params
         const {guardId, details, finishAt} = req.body
-
-
         const alertAntipanic = await AntipanicModel.findByPk(id)
 
         if(!alertAntipanic){
@@ -69,36 +165,25 @@ class AntipanicController {
             }
             )
         } else{
-
             const antipanicUpdated = await alertAntipanic.update({
                 guardId,
                 details,
                 state: false,
                 finishAt
             })
-
             res.json({
                 msg: "Antipanico actualizado correctamente",
                 antipanic: antipanicUpdated
             }
             )
         }
-
-       
-
     }
 
 
     public async desactivateAntipanic(req: Request, res: Response){
-
         const {id} = req.params
-
         const {details} = req.body
-
-
         const alertAntipanic = await AntipanicModel.findByPk(id)
-
-        
         if(!alertAntipanic){
             res.json({
                 msg: "El id de la alarma antipanico no es correcto",
@@ -110,23 +195,13 @@ class AntipanicController {
                 state: false,
                 details,
             })
-
-
             res.json({
                 msg: "Estado cambiado correctamente",
                 antipanic: antipanicUpdated,
             }
             )
-
         }
-
-        
-
     }
-
-
-
 }
 
-
-export default AntipanicController
+export default AntipanicController*/

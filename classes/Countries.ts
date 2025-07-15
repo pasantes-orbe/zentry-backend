@@ -2,38 +2,46 @@ import CountryModel from '../models/country.model';
 import Country from './Country';
 
 class Countries {
-
-    public async getAll(){
+    public async getAll() {
         try {
-            
             return await CountryModel.findAll();
-
         } catch (error) {
             return false
         }
     }
 
-    public async getOne(id: number): Promise<Country>{
-
+    /*  14-7-25  public async getOne(id: number): Promise<Country>{
+            try {
+                const c = await CountryModel.findByPk(id);
+                
+                const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
+                const country = new Country(name, latitude, longitude, avatar, countryId);
+                return country;
+            } catch (error) {
+                console.log(error);
+                return new Promise((resolve, reject) => {
+                    reject(false)
+                })
+            }
+        }
+    }*/
+    public async getOne(id: number): Promise<Country | null> {
         try {
             const c = await CountryModel.findByPk(id);
 
+            if (!c) {
+                // No se encontró el país con ese id
+                return null;  // O también podés lanzar un error si preferís
+            }
+
             const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
-
             const country = new Country(name, latitude, longitude, avatar, countryId);
-
             return country;
 
         } catch (error) {
             console.log(error);
-            return new Promise((resolve, reject) => {
-                reject(false)
-            })
+            return Promise.reject(false);
         }
-
     }
-
-
 }
-
 export default Countries;

@@ -1,53 +1,59 @@
 import { NextFunction, Request, Response } from "express";
+import { RoleInterface } from "../../interfaces/role.interface";
 import jwt from "jsonwebtoken";
 import User from "../../models/user.model";
-import Role from '../../models/roles.model';
+import Role from "../../models/roles.model";
 
-async function isAdmin(req:Request, res:Response, next:NextFunction) {
-
+async function isAdmin(req: Request, res: Response, next: NextFunction) {
     const token = req.header("Authorization");
 
-    if(!token){
+    if (!token) {
         return res.status(401).json({
-            msg: "No hay token de autorización"
+            msg: "No hay token de autorización",
         });
     }
 
     try {
-
-        const { uid } = jwt.verify( token, "SUPER_SECRET_PASSWORD" );
+        const { uid } = jwt.verify(token, "SUPER_SECRET_PASSWORD") as { uid: number };
 
         const user = await User.findByPk(uid, {
             include: {
-                model: Role
-            }
+                model: Role,
+                attributes: ["name"],
+            },
+            attributes: { exclude: ["password", "role_id"] },
         });
 
-        if(!user){
-            return res.status(404).send({
-                "msg": "El usuario no existe"
-            })
+        if (!user) {
+            return res.status(404).json({
+                msg: "El usuario no existe",
+            });
         }
 
-        const role: string = user.role.dataValues.name;
+        // Accedemos a la asociación role con get()
+        const roleRaw = user.get('role');
 
-        if(role == "administrador"){
-            next();
+        // casteamos primero a unknown para evitar error TS
+        const role = roleRaw as unknown as RoleInterface | null;
+
+        if (!role || !role.name) {
+            return res.status(403).json({
+                msg: "No se encontró el rol del usuario",
+            });
+        }
+
+        if (role.name === "administrador") {
+            return next();
         } else {
-            return res.status(403).send({
-                "msg": "No tenés acceso a esta funcionalidad"
-            })
+            return res.status(403).json({
+                msg: "No tenés acceso a esta funcionalidad",
+            });
         }
-        
-        
-        
     } catch (error) {
-        return res.status(403).send({
-            "msg": "Token inválido"
-        })
+        return res.status(403).json({
+            msg: "Token inválido",
+        });
     }
-
-   
 }
 
 export default isAdmin;

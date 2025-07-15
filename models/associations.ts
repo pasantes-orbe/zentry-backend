@@ -34,15 +34,15 @@ passwordChangeRequest.sync();
 AppId.sync();
 Invitation.sync();
 
-
-Role.hasOne(User, {
+Role.hasMany(User, {
     foreignKey: 'role_id',
     sourceKey: 'id'
 });
 
 User.belongsTo(Role, {
     foreignKey: 'role_id',
-    targetKey: 'id'
+    targetKey: 'id',
+    as: 'role' //15/7 alias para que user.controller funcione sin error
 });
 
 Property.belongsTo(Country, {
@@ -122,7 +122,6 @@ passwordChangeRequest.belongsTo(User, {
     targetKey: 'id'
 })
 
-
 Reservation.belongsTo(User, {
     foreignKey: 'id_user',
     targetKey: 'id'
@@ -135,16 +134,15 @@ Reservation.belongsTo(AmenityModel, {
 
 GuardSchedule.belongsTo(User, {
     foreignKey: 'id_user',
-    targetKey: 'id'
+    targetKey: 'id',
+    as: 'user' //14-7-25
 })
 
 GuardSchedule.belongsTo(CountryModel, {
     foreignKey: 'id_country',
-    targetKey: 'id'
+    targetKey: 'id',
+    as: 'country' //14-7-25
 });
-
-
-
 
 CheckInModel.belongsTo(User, {
     foreignKey: 'id_guard',
@@ -155,7 +153,6 @@ CheckInModel.belongsTo(User, {
     foreignKey: 'id_owner',
     targetKey: 'id'
 })
-
 
 CheckInModel.belongsTo(User, {
     as: 'guard',
@@ -169,7 +166,7 @@ CheckInModel.belongsTo(User, {
     targetKey: 'id'
 })
 
-CheckInModel.belongsTo(Country,{
+CheckInModel.belongsTo(Country, {
     foreignKey: 'id_country',
     targetKey: 'id'
 })
@@ -181,7 +178,7 @@ CheckOutModel.belongsTo(CheckInModel, {
 
 AntipanicModel.belongsTo(User, { as: 'owner' })
 
-AntipanicModel.belongsTo (User, { as: 'guard' })
+AntipanicModel.belongsTo(User, { as: 'guard' })
 
 AntipanicModel.belongsTo(Country, {
     foreignKey: 'id_country',
@@ -193,9 +190,9 @@ AppId.belongsTo(User, {
     targetKey: 'id'
 })
 
-Notifcation.belongsTo(User,{
+Notifcation.belongsTo(User, {
     foreignKey: 'id_user',
-    targetKey:'id'
+    targetKey: 'id'
 })
 
 User.hasMany(AppId, {

@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { where } from "sequelize";
 import CountryModel from "../models/country.model";
 import Property from "../models/property.model";
 import Recurrent from "../models/recurrent.model";
@@ -7,135 +6,113 @@ import Recurrent from "../models/recurrent.model";
 class RecurrentController {
 
     public async getAll(req: Request, res: Response) {
-
-        const recurrents = await Recurrent.findAll({
-            include: [Property],
-            attributes: ['id','status','guest_name','guest_lastname','dni']
-        });
-        res.json(recurrents);
-
+        try {
+            const recurrents = await Recurrent.findAll({
+                include: [Property],
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+            });
+            return res.json(recurrents);
+        } catch (error) {
+            return res.status(500).json({ msg: "Error al obtener invitados recurrentes", error });
+        }
     }
 
     public async getByID(req: Request, res: Response) {
+        const id = Number(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ msg: "ID inválido" });
 
-        const { id } = req.params;
-
-        const recurrent = await Recurrent.findByPk(id, {
-            include: Property,
-            attributes: ['id','status','guest_name','guest_lastname','dni']
-        });
-
-        if (recurrent) {
-            return res.json(recurrent);
+        try {
+            const recurrent = await Recurrent.findByPk(id, {
+                include: Property,
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+            });
+            if (recurrent) {
+                return res.json(recurrent);
+            }
+            return res.status(404).json({ msg: `No existe el invitado recurrente con el id ${id}` });
+        } catch (error) {
+            return res.status(500).json({ msg: "Error al obtener invitado recurrente", error });
         }
-
-        res.status(404).json({
-            msg: `No existe el invitado recurrente con el id ${id}`,
-        });
-
     }
 
     public async getByCountry(req: Request, res: Response) {
+        const id_country = Number(req.params.id_country);
+        if (isNaN(id_country)) return res.status(400).json({ msg: "ID de country inválido" });
 
-        const country = req.params.id_country;
-
-        const recurrent = await Recurrent.findAll({
-            include: [Property]
-        });
-
-        const recurrents_by_country = recurrent.filter( (rec) => {
-            return rec.property.id_country == country;
-        })
-
-        return res.json(recurrents_by_country);
-        
+        try {
+            const recurrents_by_country = await Recurrent.findAll({
+                include: [{
+                    model: Property,
+                    where: { id_country }
+                }]
+            });
+            return res.json(recurrents_by_country);
+        } catch (error) {
+            return res.status(500).json({ msg: "Error al obtener recurrentes por country", error });
+        }
     }
 
     public async getByProperty(req: Request, res: Response) {
-
-        const id_property = req.params.id_property;
-
-        const recurrent = await Recurrent.findAll({
-            where: {
-                id_property
-            }
-        });
-
-
-        return res.json(recurrent);
-        
-    }
-
-    
-
-    public async create(req: Request, res: Response) {
-
-        const { body } = req;
-
-        // Chequear si no existe el recurrente a la misma propiedad por DNI
-        const exists = await Recurrent.findOne({
-            where: {
-                dni: body.dni,
-                id_property: body.id_property
-            },
-            include: Property
-        })
-
-
-        if(exists){
-            return res.status(400).send({
-                msg: `Ya existe un invitado recurrente con el dni ${body.dni} para el country ${exists.property.name}`,
-                guest: exists
-            });
-
-        }
-
-        // Si no existe guardarlo en la BD
+        const id_property = Number(req.params.id_property);
+        if (isNaN(id_property)) return res.status(400).json({ msg: "ID de propiedad inválido" });
 
         try {
+            const recurrent = await Recurrent.findAll({
+                where: { id_property }
+            });
+            return res.json(recurrent);
+        } catch (error) {
+            return res.status(500).json({ msg: "Error al obtener recurrentes por propiedad", error });
+        }
+    }
 
-            body['status']=true;
-            const recurrent = new Recurrent(body);
-            await recurrent.save();
-            
-            res.json({
-                msg: "El invitado recurrente se cargo con exito",
+    public async create(req: Request, res: Response) {
+        const { body } = req;
+        try {
+            // Chequear si no existe el recurrente a la misma propiedad por DNI
+            const exists = await Recurrent.findOne({
+                where: {
+                    dni: body.dni,
+                    id_property: body.id_property
+                },
+                include: Property
+            });
+            if (exists) {
+                // Accedemos a la propiedad incluida usando get() y forzamos tipo a cualquier
+                const property = exists.get('property') as any;
+                return res.status(400).send({
+                    msg: `Ya existe un invitado recurrente con el dni ${body.dni} para el country ${property?.name || 'desconocido'}`,
+                    guest: exists
+                });
+            }
+
+            // Crear recurrente con status true
+            const recurrent = await Recurrent.create({ ...body, status: true });
+            return res.json({
+                msg: "El invitado recurrente se cargó con éxito",
                 recurrent
-            })
-
+            });
         } catch (error) {
             console.log(error);
-            res.status(500).json({
+            return res.status(500).json({
                 msg: "No se pudo insertar el invitado recurrente, intente de nuevo.",
                 error
-            })
+            });
         }
     }
 
     public async changeStatus(req: Request, res: Response) {
-        const { id_recurrent: recurrentID } = req.params;
+        const recurrentID = Number(req.params.id_recurrent);
         const { status } = req.body;
-
+        if (isNaN(recurrentID)) return res.status(400).json({ msg: "ID de recurrente inválido" });
         try {
-
-            // const r = await Recurrent.findByPk(recurrentID);
-            // await r?.update({status});
-
-            // return res.json(r);
-
             const changed = await Recurrent.update({ status }, {
-                where: {
-                    id: recurrentID
-                }
+                where: { id: recurrentID }
             });
             return res.json(changed);
         } catch (error) {
             return res.status(500).send(error);
         }
-
     }
-
 }
-
 export default RecurrentController;
-

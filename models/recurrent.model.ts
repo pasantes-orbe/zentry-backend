@@ -11,13 +11,9 @@ const Recurrent = db.define('recurrent', {
     guest_name: {type: DataTypes.STRING},
     guest_lastname: {type: DataTypes.STRING},
     dni: {type: DataTypes.INTEGER},
-
-},
-{
+},{
     timestamps: false
 }
 );
-
-
 
 export default Recurrent;
