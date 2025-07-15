@@ -1,13 +1,12 @@
+//15/7/25 role.interface corregido
 import { DataTypes, Model, Optional } from "sequelize";
 import db from "../DB/connection";
-import Role from "./roles.model";
 import { UserInterface } from "../interfaces/user.interface";
 
-// Para definir los campos opcionales en creación (id es opcional)
-interface UserCreationAttributes extends Optional<UserInterface, "id"> { }
+interface UserCreationAttributes extends Optional<UserInterface, "id" | "role"> { }
 
 class User extends Model<UserInterface, UserCreationAttributes> implements UserInterface {
-    public id?: number;
+    public id!: number;
     public email!: string;
     public name!: string;
     public lastname!: string;
@@ -16,7 +15,8 @@ class User extends Model<UserInterface, UserCreationAttributes> implements UserI
     public birthday!: string;
     public dni!: number;
     public avatar!: string;
-    public role!: number;
+    public role_id!: number;
+    public role?: any; // Sequelize no mapea automáticamente el tipo del include
 }
 
 User.init(
@@ -30,11 +30,11 @@ User.init(
         name: { type: DataTypes.STRING },
         lastname: { type: DataTypes.STRING },
         password: { type: DataTypes.STRING },
-        phone: { type: DataTypes.INTEGER },       // según tu interfaz es number
-        birthday: { type: DataTypes.STRING },     // también string según interfaz
+        phone: { type: DataTypes.INTEGER },
+        birthday: { type: DataTypes.STRING },
         dni: { type: DataTypes.INTEGER },
         avatar: { type: DataTypes.STRING },
-        role: { type: DataTypes.INTEGER },        // debe estar para respetar tu interfaz
+        role_id: { type: DataTypes.INTEGER }, // clave foránea
     },
     {
         sequelize: db,
@@ -44,6 +44,7 @@ User.init(
 );
 
 export default User;
+
 
 
 /* 12-7-25import { DataTypes } from "sequelize";

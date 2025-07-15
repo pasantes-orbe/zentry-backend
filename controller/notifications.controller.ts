@@ -1,24 +1,24 @@
 import { Request, Response } from "express";
-import Notifcation from "../models/notification.model";
-import Role from "../models/roles.model";
+import Notification from "../models/notification.model";
 
 class NotificationsController {
-
     public async getAllByIdUser(req: Request, res: Response) {
-        
-        const {id_user} = req.params
-        console.log(id_user);
-        const noti = await Notifcation.findAll({
-            where: {
-                id_user
-            }
-        })
-        
+        const { id_user } = req.params;
 
-        res.json(noti)
-    }   
+        try {
+            const notifications = await Notification.findAll({
+                where: { id_user },
+                order: [["id", "DESC"]] // opcional: muestra las más recientes primero
+            });
 
-
+            return res.status(200).json(notifications);
+        } catch (error) {
+            console.error("Error getting notifications:", error);
+            return res.status(500).json({
+                msg: "Error interno al obtener las notificaciones",
+            });
+        }
+    }
 }
 
 export default NotificationsController;
