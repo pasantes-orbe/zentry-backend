@@ -2,81 +2,74 @@ import AmenityModel from "../models/amenity.model";
 import Country from "./Country";
 
 class Amenity {
+  private name!: string;
+  private avatar!: string;
+  private address!: string;
+  private country!: Country;
 
-    private name: string;
-    private avatar: string;
-    private address: string;
-    private country: Country;
+  constructor(country: Country, name: string, avatar: string = "", address: string = "") {
+    this.setName(name);
+    this.setAvatar(avatar);
+    this.setAddress(address);
+    this.setCountry(country);
+  }
 
+  public async save() {
+    try {
+      console.log("AAAAAAAA", this.getCountry().getId());
+      console.log(this.getName());
+      console.log(this.getAvatar());
+      console.log(this.getAddress());
 
+      // Si AmenityModel es un modelo Sequelize, usa build() o create()
+      const amenityToSave = AmenityModel.build({
+        name: this.getName(),
+        image: this.getAvatar(),
+        address: this.getAddress(),
+        id_country: this.getCountry().getId()
+      });
 
-    constructor(country: Country, name: string, avatar: string = "", address: string = ""){
-        this.setName(name);
-        this.setAvatar(avatar);
-        this.setAddress(address);
-        this.setCountry(country);
+      return await amenityToSave.save();
+
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
+  }
 
-    public async save(){
+  // Accesors
 
-        try {
-            //TODO: Crear modelo de Amenity
+  public getName(): string {
+    return this.name;
+  }
 
-            console.log("AAAAAAAA", this.getCountry().getId());
-            console.log(this.getName());
-            console.log(this.getAvatar());
-            console.log(this.getAddress());
+  public setName(name: string): void {
+    this.name = name;
+  }
 
-            const amenityToSave = new AmenityModel({
-                name: this.getName(),
-                image: this.getAvatar(),
-                address: this.getAddress(),
-                id_country: this.getCountry().getId()
-            });
+  public getAvatar(): string {
+    return this.avatar;
+  }
 
-            return await amenityToSave.save();
+  public setAvatar(avatar: string): void {
+    this.avatar = avatar;
+  }
 
-        } catch (error) {
-            
-        }
+  public getAddress(): string {
+    return this.address;
+  }
 
-    }
+  public setAddress(address: string): void {
+    this.address = address;
+  }
 
-    //Accesors
+  public getCountry(): Country {
+    return this.country;
+  }
 
-    public getName(): string {
-        return this.name;
-    }
-
-    public setName(name: string): void {
-        this.name = name;
-    }
-
-    public getAvatar(): string {
-        return this.avatar;
-    }
-
-    public setAvatar(avatar: string): void {
-        this.avatar = avatar;
-    }
-
-    public getAddress(): string {
-        return this.address;
-    }
-
-    public setAddress(address: string): void {
-        this.address = address;
-    }
-
-    public getCountry(): Country {
-        return this.country;
-    }
-
-    public setCountry(country: Country): void {
-        this.country = country;
-    }
-
-
+  public setCountry(country: Country): void {
+    this.country = country;
+  }
 }
 
 export default Amenity;
