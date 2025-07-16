@@ -26,3 +26,4 @@ export interface UserInterface {
     avatar: string,
     role: number
 }*/
+

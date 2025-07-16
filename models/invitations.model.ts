@@ -2,6 +2,7 @@ import { Model, Optional, DataTypes } from 'sequelize';
 import db from '../DB/connection';
 
 interface InvitationAttributes {
+  id_reservation: number;  
   id: number;
   name: string;
   lastname: string;
@@ -12,6 +13,7 @@ interface InvitationAttributes {
 interface InvitationCreationAttributes extends Optional<InvitationAttributes, 'id'> {}
 
 class Invitation extends Model<InvitationAttributes, InvitationCreationAttributes> implements InvitationAttributes {
+  public id_reservation!: number;    
   public id!: number;
   public name!: string;
   public lastname!: string;
@@ -29,6 +31,10 @@ Invitation.init({
     autoIncrement: true,
     primaryKey: true,
   },
+   id_reservation: {  // <-- agregar esta propiedad
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: false,
+  },  
   fullname: { type: DataTypes.STRING },
   dni: { type: DataTypes.STRING },
   lastname: { type: DataTypes.STRING },

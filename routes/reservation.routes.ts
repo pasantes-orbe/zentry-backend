@@ -13,6 +13,8 @@ import User from "../models/user.model";
 import { Model } from "sequelize";
 import { DataTypes } from "sequelize";
 import db from "../DB/connection";
+import { ReservationAttributes } from '../interfaces/reservation.interface'; // ajusta la ruta
+
 
 const router = Router();
 
@@ -116,9 +118,10 @@ router.patch('/:id_reservation/:status', [
             where: { id: id_reservation }
         });
 
+        //Objeto: Event
         const event = await Reservation.findByPk(id_reservation, {
             include: [{ model: User, as: 'user' }]
-        });
+        }) as (Model<ReservationAttributes> & ReservationAttributes) | null;; 
 
         if (!event) {
             return res.status(404).json({ msg: "Reserva no encontrada." });
