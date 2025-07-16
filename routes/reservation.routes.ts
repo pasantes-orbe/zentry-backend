@@ -120,16 +120,32 @@ router.patch('/:id_reservation/:status', [
 
         //Objeto: Event
         const event = await Reservation.findByPk(id_reservation, {
-            include: [{ model: User, as: 'user' }]
-        }) as (Model<ReservationAttributes> & ReservationAttributes) | null;; 
+            include: [
+                { model: User, as: 'user' },
+                { model: AmenityModel, as: 'amenity' }
+            ]
+        }) as any;
 
         if (!event) {
-            return res.status(404).json({ msg: "Reserva no encontrada." });
+            return res.status(404).json({ msg: "Reserva no encontrada" });
         }
 
-        const invitations = await Invitation.findAll({
-            where: { id_reservation }
-        });
+        if (!event.user) {
+            return res.status(404).json({ msg: "Usuario asociado no encontrado" });
+        }
+
+        if (!event.amenity) {
+            return res.status(404).json({ msg: "Amenidad asociada no encontrada" });
+        }
+
+        const id_owner = event.user.id;
+        const id_country = event.amenity.id_country;
+
+        if (!event.date) {
+            return res.status(400).json({ msg: "La reserva no tiene fecha definida" });
+        }
+
+        const invitations = await Invitation.findAll({ where: { id_reservation } });
 
         const invitations_to_checkin = invitations.map(invitation => ({
             guest_name: invitation.name,
@@ -139,11 +155,12 @@ router.patch('/:id_reservation/:status', [
             check_in: false,
             check_out: false,
             income_date: event.date,
-            id_owner: event.user?.id,
-            id_country: event.id_amenity
+            id_owner,
+            id_country
         }));
 
-        await CheckInModel.bulkCreate(invitations_to_checkin);
+    await CheckInModel.bulkCreate(invitations_to_checkin);
+
 
     } catch (error) {
         return res.status(500).send({
