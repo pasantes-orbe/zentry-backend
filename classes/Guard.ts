@@ -1,5 +1,7 @@
 import CountryModel from "../models/country.model";
 import GuardCountry from "../models/guard_country.model";
+import { GuardInterface } from '../interfaces/guard.interface';
+
 import Role from "../models/roles.model";
 import User from "../models/user.model";
 
@@ -48,26 +50,22 @@ class Guard {
     }
 
 
-    public async assignCountry(guard){
-
+    public async assignCountry(guard: GuardInterface) {
         try {
+            if (await this.alreadyAssigned(guard)) {
+                return "Este vigilador ya fue asignado a este country";
+        }
 
-            if(await this.alreadyAssigned(guard)){
-                return "Este vigilador ya fue asignado a este country"
-            }
+        await GuardCountry.create(guard);
 
-            const guard_to_country = new GuardCountry(guard);
-            guard_to_country.save();
-    
-            return "Vigilador asignado con éxito al country";
-            
+        return "Vigilador asignado con éxito al country";
         } catch (error) {
             return error;
         }
-
     }
+
     
-    private async alreadyAssigned(guard){
+    private async alreadyAssigned(guard: GuardInterface){
         const alreadyAssigned = await GuardCountry.findOne({
             where: {
                 id_user: guard.id_user,

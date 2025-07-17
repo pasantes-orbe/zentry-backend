@@ -10,24 +10,30 @@ const GuardCountry = db.define('guard_country', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
+    },
+    id_user: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    id_country: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
-
 }, {
-    
     defaultScope: {
         include: [
             {
                 model: User,
                 include: [Role]
             },
-            {model: CountryModel}
+            { model: CountryModel }
         ],
         attributes: {
             exclude: ['id_user', 'id_country']
         }
     },
     timestamps: false
-}
-);
+});
+
 
 export default GuardCountry;
