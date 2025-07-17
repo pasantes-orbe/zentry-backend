@@ -6,6 +6,8 @@ import User from "../models/user.model";
 import CheckIn from "../classes/CheckIn"; // Clase lógica con métodos como approve(), ownerConfirm(), etc.
 import Server from "../models/server";
 import Guard from "../classes/Guard";
+import { CheckoutInterface } from "../interfaces/checkout.interface";
+
 
 class CheckInController {
 

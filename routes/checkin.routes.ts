@@ -6,6 +6,8 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import checkinController from "../controller/checkin.controller";
+import { CheckoutInterface } from "../interfaces/checkout.interface";
+
 
 const router = Router();
 //const checkinController = new CheckInController(); // instancia

@@ -1,76 +1,52 @@
-/* 12-7-25
-mport { DataTypes } from "sequelize";
-import db from "../DB/connection";
-import CheckInModel from "./checkin.model";
-
-const CheckOutModel = db.define('checkout', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-
-    details: { type: DataTypes.TEXT }
-
-},
-{
-    // timestamps: false
-    defaultScope: {
-        include: [CheckInModel]
-    },
-    createdAt: 'out_date',
-    updatedAt: false
-}
-);
-export default CheckOutModel;*/
+// models/checkout.model.ts
 
 import { DataTypes, Model, Optional } from "sequelize";
 import db from "../DB/connection";
 import CheckInModel from "./checkin.model";
-import { CheckoutInterface } from "../interfaces/checkout.interface"
-// Para crear, id es opcional
-interface CheckoutCreationAttributes extends Optional<CheckoutInterface, "id"> { }
+import { CheckoutInterface } from "../interfaces/checkout.interface";
 
-class CheckOutModel extends Model<CheckoutInterface, CheckoutCreationAttributes> implements CheckoutInterface {
-    public id!: number;
-    public idCheckin!: number;
-    public date!: string;
-    public observation!: string;
+// Para creación, el campo id es opcional
+interface CheckoutCreationAttributes extends Optional<CheckoutInterface, "id"> {}
 
-    // aquí podés definir métodos si querés
+class CheckOutModel extends Model<CheckoutInterface, CheckoutCreationAttributes>
+  implements CheckoutInterface {
+  public id!: number;
+  public id_checkin!: number;
+  public date!: string;
+  public observation!: string;
 }
 
 CheckOutModel.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        idCheckin: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "id_checkin", // si la DB usa snake_case
-        },
-        date: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            field: "out_date",
-        },
-        observation: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-            field: "details", // si en tu tabla la columna es "details" y en interfaz "observation", mapea acá
-        },
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        sequelize: db,
-        tableName: "checkout",
-        timestamps: false,
-        defaultScope: {
-            include: [CheckInModel],
-        },
-    }
+    id_checkin: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      // No hace falta usar 'field' si el nombre es igual a la columna
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      field: "out_date", // si en la DB la columna se llama así
+    },
+    observation: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "details", // si en la DB la columna se llama así
+    },
+  },
+  {
+    sequelize: db,
+    tableName: "checkout",
+    timestamps: false,
+    defaultScope: {
+      include: [CheckInModel],
+    },
+  }
 );
 
 export default CheckOutModel;
