@@ -58,7 +58,7 @@ db = new Sequelize('Countries', 'admin', 'admin', {
 
 import { Sequelize } from 'sequelize';
 
-const db = new Sequelize('countryapp', 'postgres', '12345', {
+const db = new Sequelize('countryapp', 'postgres', '1234', {
   host: 'localhost',
   dialect: 'postgres',
   port: 5432,
