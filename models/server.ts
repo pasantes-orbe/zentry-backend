@@ -186,7 +186,7 @@ class Server {
 
     private constructor() {
         this.app = express();
-        this.port = process.env.PORT || "3000";
+        this.port = process.env.PORT || "3002";
 
         this.server = createServer(this.app);
 
