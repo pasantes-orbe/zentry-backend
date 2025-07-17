@@ -1,4 +1,4 @@
-i/* 12-7-25
+/* 12-7-25
 mport { DataTypes } from "sequelize";
 import db from "../DB/connection";
 import CheckInModel from "./checkin.model";

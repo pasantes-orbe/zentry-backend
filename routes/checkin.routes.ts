@@ -5,9 +5,10 @@ import CheckInController from "../controller/checkin.controller";
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import checkinController from "../controller/checkin.controller";
 
 const router = Router();
-const checkinController = new CheckInController(); // instancia
+//const checkinController = new CheckInController(); // instancia
 
 router.post('/', [
     check('guest_name', "Campo 'guest_name' es obligatorio").notEmpty(),
