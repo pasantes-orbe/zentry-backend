@@ -163,7 +163,7 @@ class Server {
     private server: HTTPServer;
     public io: SocketIOServer;
     private app: Application;
-    private port: string;
+    private port: number;
 
     private apiPaths = {
         users: "/api/users",
@@ -186,7 +186,7 @@ class Server {
 
     private constructor() {
         this.app = express();
-        this.port = process.env.PORT || "3002";
+        this.port = Number(process.env.PORT) || 3003;
 
         this.server = createServer(this.app);
 
