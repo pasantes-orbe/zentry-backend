@@ -29,7 +29,7 @@ class SocketController{
             console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
             this.notifications.notifyAExternal_User_By_ID(String(id_owner),
                 `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`,
-                `${user.name}`, 
+                `${user?.name}`, 
                 'Nueva Solicitud de Check-in')
             
 
@@ -117,7 +117,7 @@ class SocketController{
 
             const notificationSend = await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
             `El Vigilador confirmó la salida de ${guest_name} ${guest_lastname} - ${dni}`,
-            `${owner.name}`, 
+            `${owner?.name}`, 
             'Nuevo Check-out')
 
             if(notificationSend){
@@ -162,7 +162,7 @@ class SocketController{
 
                 const notificationSend = await this.notifications.notifyAExternal_User_By_ID(String(id_owner),
                 `El Vigilador confirmó la entrada de ${guest_name} ${guest_lastname} - ${dni}`,
-                `${owner.name}`, 
+                `${owner?.name}`, 
                 'Nuevo Check-in'
 
                 )
