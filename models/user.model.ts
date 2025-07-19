@@ -11,9 +11,9 @@ class User extends Model<UserInterface, UserCreationAttributes> implements UserI
     public name!: string;
     public lastname!: string;
     public password!: string;
-    public phone!: number;
+    public phone!: string;
     public birthday!: string;
-    public dni!: number;
+    public dni!: string;
     public avatar!: string;
     public role_id!: number;
     public role?: any; // Sequelize no mapea automáticamente el tipo del include
@@ -30,9 +30,9 @@ User.init(
         name: { type: DataTypes.STRING },
         lastname: { type: DataTypes.STRING },
         password: { type: DataTypes.STRING },
-        phone: { type: DataTypes.INTEGER },
+        phone: { type: DataTypes.STRING },
         birthday: { type: DataTypes.STRING },
-        dni: { type: DataTypes.INTEGER },
+        dni: { type: DataTypes.STRING },
         avatar: { type: DataTypes.STRING },
         role_id: { type: DataTypes.INTEGER }, // clave foránea
     },

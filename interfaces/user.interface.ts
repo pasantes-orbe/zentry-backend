@@ -6,9 +6,9 @@ export interface UserInterface {
     name: string;
     lastname: string;
     password: string;
-    phone: number;
+    phone: string;
     birthday: string;
-    dni: number;
+    dni: string;
     avatar: string;
     role_id: number;              // ✅ nombre de la clave foránea en DB
     role?: RoleInterface;        // ✅ asociación (objeto Role completo, opcional)
