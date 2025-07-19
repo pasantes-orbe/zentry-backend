@@ -36,9 +36,8 @@ class UserController {
         if (user) {
             return res.json(user);
         }
-        res.status(404).json({
-            msg: `No existe usuario con el id ${id}`
-        });
+        res.status(404);
+        return res.json({ msg: `No existe usuario con el id ${id}`});
 
     }
 
