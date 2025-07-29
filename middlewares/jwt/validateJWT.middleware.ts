@@ -2,6 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../../models/user.model";
 
+const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; 
+
+
 async function validateJWT(req: Request, res: Response, next: NextFunction) {
     const token = req.header("Authorization");
 
@@ -13,7 +16,7 @@ async function validateJWT(req: Request, res: Response, next: NextFunction) {
 
     try {
         // Declaramos el tipo explícitamente para que TypeScript no se queje
-        const decoded = jwt.verify(token, "SUPER_SECRET_PASSWORD") as JwtPayload;
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
         // uid puede venir como string o number, depende de cómo guardaste el token
         // Por eso hacemos casting a string para usarlo con findByPk

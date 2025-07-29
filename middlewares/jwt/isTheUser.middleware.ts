@@ -3,6 +3,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../../models/user.model";
 import Role from '../../models/roles.model';
 
+const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; // <--- AÑADE ESTA LÍNEA
+
+
 async function isTheUser(req: Request, res: Response, next: NextFunction) {
 
     const token = req.header("Authorization");
@@ -14,7 +17,7 @@ async function isTheUser(req: Request, res: Response, next: NextFunction) {
     }
 
     try {
-        const decoded = jwt.verify(token, "SUPER_SECRET_PASSWORD") as JwtPayload;
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
         const uid = decoded.uid as string;
 
         const user = await User.findByPk(uid, {
@@ -37,7 +40,7 @@ async function isTheUser(req: Request, res: Response, next: NextFunction) {
         }
 
         // id_user viene como string por ser parámetro de URL, por eso convertimos idLoggedUser a string también
-        if (idLoggedUser.toString() === id_user || user.role.name === "administrador") {
+        if (idLoggedUser.toString() === id_user || user.role.name === "Admin") {
             next();
         } else {
             return res.status(403).send({

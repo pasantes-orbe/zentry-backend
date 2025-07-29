@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import User from "../../models/user.model";
 import Role from "../../models/roles.model";
 
+const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; // <--- AÑADE ESTA LÍNEA
+
+
 async function isAdmin(req: Request, res: Response, next: NextFunction) {
     const token = req.header("Authorization");
 
@@ -14,7 +17,7 @@ async function isAdmin(req: Request, res: Response, next: NextFunction) {
     }
 
     try {
-        const { uid } = jwt.verify(token, "SUPER_SECRET_PASSWORD") as { uid: number };
+        const { uid } = jwt.verify(token, JWT_SECRET) as { uid: number };
 
         const user = await User.findByPk(uid, {
             include: {
@@ -42,7 +45,7 @@ async function isAdmin(req: Request, res: Response, next: NextFunction) {
             });
         }
 
-        if (role.name === "administrador") {
+        if (role.name === "Admin") {
             return next();
         } else {
             return res.status(403).json({
