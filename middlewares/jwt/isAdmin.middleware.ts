@@ -5,7 +5,7 @@ import User from "../../models/user.model";
 import Role from "../../models/roles.model";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; // <--- AÑADE ESTA LÍNEA
-console.log("JWT_SECRET siendo utilizado:", JWT_SECRET);
+console.log("JWT_SECRET siendo utilizado en isAdmin.middleware:", JWT_SECRET);
 
 
 async function isAdmin(req: Request, res: Response, next: NextFunction) {
@@ -46,6 +46,7 @@ async function isAdmin(req: Request, res: Response, next: NextFunction) {
             });
         }
 
+        console.log("Rol del usuario en isAdmin.middleware.ts:", role.name);
         if (role.name === "Admin") {
             return next();
         } else {

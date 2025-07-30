@@ -9,6 +9,7 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import OwnerCountry from "../models/owner_country.model";
 import CountryModel from "../models/country.model";
 import User from "../models/user.model";
+import validateJWT from "../middlewares/jwt/validateJWT.middleware";
 
 const router = Router();
 
@@ -42,9 +43,13 @@ router.post('/request-change-password', [
 /**
  * Change Password
  */
-router.patch('/change-password/:id_request', [
-    isAdmin,
-], controller.changePassword);
+router.patch('/change-password/:id', [validateJWT, isTheUser],
+    controller.changePassword);
+
+
+//router.patch('/change-password/:id_request', [
+//    isAdmin,
+//], controller.changePassword);
 
 /**
  * Update User

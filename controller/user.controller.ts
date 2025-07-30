@@ -1,7 +1,9 @@
+// src/controller/user.controller.ts
+
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import Role from "../models/roles.model";
-import PasswordHelper from "../helpers/password.helper";
+import PasswordHelper from "../helpers/password.helper"; 
 import UserClass from "../classes/UserClass";
 import passwordChangeRequest from "../models/passwordChangeRequest.model";
 import Mailer from "../helpers/mailer.helper";
@@ -37,7 +39,7 @@ class UserController {
             return res.json(user);
         }
         res.status(404);
-        return res.json({ msg: `No existe usuario con el id ${id}`});
+        return res.json({ msg: `No existe usuario con el id ${id}` });
 
     }
 
@@ -97,48 +99,55 @@ class UserController {
         return res.json(requests);
     }
 
+    /**
+     * MÉTODO DE CAMBIO DE CONTRASEÑA (PARA PROPIETARIO CAMBIANDO SU PROPIA CONTRASEÑA)
+     * Este método permite a un usuario cambiar su propia contraseña.
+     * La ruta asociada es '/change-password/:id' donde :id es el ID del usuario.
+     * El middleware 'isTheUser' asegura que el usuario logueado sea el mismo que el ID en la URL.
+     */
     public async changePassword(req: Request, res: Response) {
-        const { id_request } = req.params;
-        const request = await passwordChangeRequest.findByPk(id_request, {
-            include: [User]
-        });
-        if (!request) {
-            return res.status(404).send({
-                msg: `No existe ninguna solicitud con id ${id_request}`
-            });
-        }
-        if (request.dataValues.changed) {
-            return res.status(403).send({
-                msg: `Ya se reestableció la contraseña para esta solicitud`
-            });
-        }
-        const passHelper = new PasswordHelper();
-        const generated_pass = passHelper.generate(6);
-        const new_password = passHelper.hash(generated_pass);
-        const userId = Number(request.get('id_user'));
-        const user_update = await User.update({
-            password: new_password
-        }, {
-            where: {
-                id: userId
-            }
-        });
+        // Obtenemos el ID del usuario de los parámetros de la URL
+        const { id } = req.params;
+        // Obtenemos la nueva contraseña del cuerpo de la solicitud (JSON)
+        const { newPassword } = req.body;
 
-        const request_update = await passwordChangeRequest.update({
-            changed: true
-        }, {
-            where: {
-                id: id_request
+        // Validar que la nueva contraseña no esté vacía
+        if (!newPassword) {
+            return res.status(400).json({ msg: "La nueva contraseña es obligatoria." });
+        }
+
+        try {
+            // Buscar al usuario en la base de datos por el ID obtenido de la URL
+            const user = await User.findByPk(id);
+
+            // Si el usuario no existe, enviamos un error 404
+            if (!user) {
+                return res.status(404).json({ msg: "Usuario no encontrado." });
             }
-        })
-        const mail = await new Mailer().send(generated_pass, request.dataValues.user.email);
-        //const mail = await new Mailer().send(generated_pass, request.get('user').email);
-        return res.json({
-            msg: "Reestablecimiento de contraseña exitoso",
-            new_password: generated_pass
-        });
+
+            // El middleware 'isTheUser' ya debería haber verificado que el 'id' de la URL
+            // coincide con el 'uid' del token. No necesitamos una verificación adicional aquí
+            // a menos que quieras una capa extra de seguridad.
+
+            // Instanciamos tu PasswordHelper para cifrar la nueva contraseña
+            const passHelper = new PasswordHelper();
+            const hashedPassword = passHelper.hash(newPassword); // Ciframos la nueva contraseña
+
+            // Actualizamos la contraseña del usuario en la base de datos
+            await user.update({ password: hashedPassword });
+
+            // Enviamos una respuesta de éxito
+            return res.status(200).json({ msg: "Contraseña actualizada exitosamente." });
+
+        } catch (error) {
+            // Capturamos y registramos cualquier error que ocurra durante el proceso
+            console.error("Error al cambiar la contraseña del usuario:", error);
+            // Enviamos una respuesta de error interno del servidor
+            return res.status(500).json({ msg: "Error interno del servidor al cambiar la contraseña." });
+        }
     }
-    async updateUser(req: Request, res: Response) {
+
+    public async updateUser(req: Request, res: Response) {
         const { id } = req.params
         const { name, lastname, email, birthday, phone } = req.body
         const user = await User.findByPk(id)
