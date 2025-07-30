@@ -13,6 +13,7 @@ export default generateToken;*/
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
+console.log("JWT_SECRET siendo utilizado:", JWT_SECRET);
 
 const generateToken = async (uid: string | number): Promise<string> => {
     const payload = { uid: String(uid) };

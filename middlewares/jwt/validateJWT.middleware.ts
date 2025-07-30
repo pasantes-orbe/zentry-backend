@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../../models/user.model";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; 
+console.log("JWT_SECRET siendo utilizado:", JWT_SECRET);
 
 
 async function validateJWT(req: Request, res: Response, next: NextFunction) {

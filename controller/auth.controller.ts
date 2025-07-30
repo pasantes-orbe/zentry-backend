@@ -6,6 +6,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import Role from "../models/roles.model";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
+console.log("JWT_SECRET siendo utilizado:", JWT_SECRET);
 
 interface TokenPayload extends JwtPayload {
     uid: string;

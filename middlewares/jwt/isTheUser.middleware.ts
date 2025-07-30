@@ -4,6 +4,7 @@ import User from "../../models/user.model";
 import Role from '../../models/roles.model';
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; // <--- AÑADE ESTA LÍNEA
+console.log("JWT_SECRET siendo utilizado:", JWT_SECRET);
 
 
 async function isTheUser(req: Request, res: Response, next: NextFunction) {
