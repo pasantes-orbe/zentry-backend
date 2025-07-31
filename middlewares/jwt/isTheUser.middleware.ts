@@ -86,10 +86,7 @@
 
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-// Estas importaciones ya NO son necesarias para este middleware,
-// ya que no se realiza ninguna búsqueda en la base de datos aquí.
-// import User from "../../models/user.model";
-// import Role from '../../models/roles.model';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
 console.log("JWT_SECRET siendo utilizado en isTheUser.middleware:", JWT_SECRET);
@@ -115,7 +112,7 @@ async function isTheUser(req: Request, res: Response, next: NextFunction) {
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-        // Asegúrate de que tu payload del token realmente tenga una propiedad 'uid'.
+        // Payload del token realmente tenga una propiedad 'uid'.
         // Si es 'id' o cualquier otro nombre, cámbialo aquí.
         // Convertimos a número para asegurar la comparación de tipos.
         const uid = parseInt(decoded.uid as string, 10);
@@ -124,7 +121,7 @@ async function isTheUser(req: Request, res: Response, next: NextFunction) {
         // La ruta es '/change-password/:id', por eso usamos req.params.id
         const idUserInParams = parseInt(req.params.id, 10);
 
-        // Comprobación: ¿El ID del token es igual al ID de la URL?
+        // El ID del token es igual al ID de la URL
         if (uid === idUserInParams) {
             next(); // Los IDs coinciden, el usuario está autorizado a modificar su propio recurso.
         } else {
@@ -147,9 +144,6 @@ async function isTheUser(req: Request, res: Response, next: NextFunction) {
 
         return res.status(403).send({
             msg: errorMessage,
-            // Eliminamos el objeto 'error' directamente en la respuesta para evitar exponer detalles internos
-            // y mantener el mensaje más limpio y estándar para el cliente.
-            // Si necesitas depurar, usa el console.error en el servidor.
         });
     }
 }

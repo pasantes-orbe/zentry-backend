@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../../models/user.model";
 import Role from "../../models/roles.model";
 
-const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; // <--- AÑADE ESTA LÍNEA
+const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD"; 
 console.log("JWT_SECRET siendo utilizado en isAdmin.middleware:", JWT_SECRET);
 
 

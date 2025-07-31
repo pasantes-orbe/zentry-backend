@@ -19,7 +19,7 @@ router.get('/', controller.getAllUsers);
 router.get('/:id', controller.getUser);
 
 router.post('/', [
-    //TODO: Comprobar que el usuario que quiere registrar un nuevo usuario sea de ROL "administrador (id: 1)" 
+    
     check('email', 'El email es obligatorio').notEmpty(),
     check('email', 'El correo no es válido').isEmail(),
     check('email').custom( emailAlreadyExists ),
