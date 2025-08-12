@@ -1,8 +1,10 @@
+// classes/Notifications.ts
 import axios from "axios";
-import GuardCountry from "../models/guard_country.model";
-import Notification from "../models/notification.model";
-import User from "../models/user.model"; // necesario para el include tipado
-import Role from "../models/roles.model"; // opcional si querés incluir roles
+import db from "../models";
+import { Op } from "sequelize";
+
+// Desestructuramos los modelos con sus nombres en minúscula
+const { notification, guard_country, user, role } = db;
 
 class Notifications {
     private _app_id: string = "df4ae4bb-9ade-4eba-9d09-06da4069a8c7";
@@ -28,9 +30,9 @@ class Notifications {
                     },
                 }
             );
-            
+
             if (send.status === 200) {
-                await Notification.create({
+                await notification.create({
                     title: heading,
                     content: msg,
                     id_user: id,
@@ -47,13 +49,13 @@ class Notifications {
 
     async notifyAllGuards(id_country: any, msg: string, heading: string, name: string) {
         try {
-            const guards = await GuardCountry.findAll({
+            const guards = await guard_country.findAll({
                 where: { id_country },
                 include: [
                     {
-                        model: User,
+                        model: user,
                         as: "user",
-                        include: [Role] // opcional, si querés los roles del usuario
+                        include: [role]
                     }
                 ]
             });
@@ -63,7 +65,7 @@ class Notifications {
                 const id_user = guard.user ? String(guard.user.id) : null;
                 if (id_user) {
                     guardsIDS.push(id_user);
-                    await Notification.create({
+                    await notification.create({
                         title: heading,
                         content: msg,
                         id_user,

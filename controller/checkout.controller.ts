@@ -1,17 +1,18 @@
-// controllers/checkout.controller.ts
-
 import { Request, Response } from "express";
-import CheckOutModel from "../models/checkout.model";
-import CheckInModel from "../models/checkin.model";
+// Importamos el objeto 'db' centralizado
+import db from "../models";
 import Server from "../models/server";
 import { CheckoutInterface } from "../interfaces/checkout.interface";
+
+// Desestructuramos los modelos necesarios del objeto 'db' con los nombres correctos
+const { checkout, checkin } = db;
 
 class checkOutController {
   public async create(req: Request, res: Response) {
     const { id_checkin, observation } = req.body;
 
     try {
-      const checkout_exists = await CheckOutModel.findOne({
+      const checkout_exists = await checkout.findOne({
         where: { id_checkin }
       });
 
@@ -21,19 +22,19 @@ class checkOutController {
         });
       }
 
-      const checkout: CheckoutInterface = await CheckOutModel.create({
+      const newCheckout: CheckoutInterface = await checkout.create({
         id_checkin,
         observation,
         date: new Date().toISOString()
       });
 
-      const data = await CheckOutModel.findByPk(checkout.id, {
-        include: [{ model: CheckInModel, as: "checkin" }]
+      const data = await checkout.findByPk(newCheckout.id, {
+        include: [{ model: checkin, as: "checkin" }]
       });
 
       const server = Server.instance;
       server.io.emit("notificar-checkout", {
-        msg: `Check-Out registrado - Detalles: ${checkout.observation}`,
+        msg: `Check-Out registrado - Detalles: ${newCheckout.observation}`,
         data,
       });
 

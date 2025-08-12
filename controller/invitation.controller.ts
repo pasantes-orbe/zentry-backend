@@ -26,8 +26,13 @@ class InvitationController {
 }
 export default InvitationController;*/
 
+
 import { Request, Response } from "express";
-import Invitation from "../models/invitations.model";
+// Importamos el objeto 'db' centralizado
+import db from "../models";
+
+// Desestructuramos el modelo invitation del objeto 'db' con el nombre correcto
+const { invitation } = db;
 
 class InvitationController {
 
@@ -47,7 +52,7 @@ class InvitationController {
                 fullname: `${guest.name} ${guest.lastname}`.trim()
             }));
 
-            const invitations = await Invitation.bulkCreate(guests);
+            const invitations = await invitation.bulkCreate(guests);
 
             return res.status(201).json({ msg: "Invitados agregados con éxito", invitations });
         } catch (error) {
@@ -64,7 +69,7 @@ class InvitationController {
                 return res.status(400).json({ msg: "id_reservation es obligatorio" });
             }
 
-            const invitations = await Invitation.findAll({
+            const invitations = await invitation.findAll({
                 where: { id_reservation }
             });
 

@@ -8,17 +8,18 @@ const router = Router();
 const role: RoleController = new RoleController();
 
 //TODO: ADMIN only
-router.get('/', role.getAll);
+router.get('/', role.getAllRoles);
 
-//TODO: ADMIN only
-router.get('/:id', role.getByID);
+// TODO: ADMIN only
+// Corregido: se cambió 'getRoleByID' a 'getRoleById' para que coincida con el controlador
+router.get('/:id', role.getRoleById);
 
 //TODO: ADMIN only
 router.post('/',[
     check('name', 'El nombre de rol es obligatorio').notEmpty(),
     check('name').custom(roleAlreadyExists),
     noErrors
-], role.create);
+], role.createRole);
 
 
 export default router;

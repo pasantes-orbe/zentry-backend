@@ -1,13 +1,15 @@
+// controller/checkin.controller.ts
 import { Request, Response } from "express";
 import { Op } from "sequelize";
-import CheckInModel from "../models/checkin.model";
-import CheckOutModel from "../models/checkout.model";
-import User from "../models/user.model";
-import CheckIn from "../classes/CheckIn"; // Clase lógica con métodos como approve(), ownerConfirm(), etc.
+// Importamos el objeto 'db' centralizado para acceder a todos los modelos
+import db from "../models";
+import CheckIn from "../classes/CheckIn";
 import Server from "../models/server";
 import Guard from "../classes/Guard";
 import { CheckoutInterface } from "../interfaces/checkout.interface";
 
+// Desestructuramos los modelos necesarios del objeto 'db' con los nombres correctos
+const { checkin, checkout, user } = db;
 
 class CheckInController {
 
@@ -34,15 +36,15 @@ class CheckInController {
 
             req.body.check_in = false; // Estado inicial
 
-            const checkIn = await CheckInModel.create(req.body);
+            const newCheckIn = await checkin.create(req.body);
 
             // Emitir socket notificando nuevo check-in
             const server = Server.instance;
-            server.io.emit('notificar-checkin', { msg: `${req.body.guest_lastname} ${req.body.guest_name} está solicitando check-in`, checkIn });
+            server.io.emit('notificar-checkin', { msg: `${req.body.guest_lastname} ${req.body.guest_name} está solicitando check-in`, checkIn: newCheckIn });
 
             return res.json({
                 msg: "Check-In registrado exitosamente",
-                checkIn
+                checkIn: newCheckIn
             });
         } catch (error) {
             console.error(error);
@@ -53,7 +55,7 @@ class CheckInController {
     public async approve(req: Request, res: Response) {
         try {
             const id = Number(req.params.id_checkin);
-            const checkIn = await CheckInModel.findByPk(id);
+            const checkIn = await checkin.findByPk(id);
 
             if (!checkIn) {
                 return res.status(404).json({ msg: "Check-In no existe" });
@@ -72,7 +74,7 @@ class CheckInController {
     public async ownerConfirm(req: Request, res: Response) {
         try {
             const id = Number(req.params.id_checkin);
-            const checkIn = await CheckInModel.findByPk(id);
+            const checkIn = await checkin.findByPk(id);
 
             if (!checkIn) {
                 return res.status(404).json({ msg: "Check-In no existe" });
@@ -110,9 +112,9 @@ class CheckInController {
     public async getApproved(req: Request, res: Response) {
         try {
             const { id_country } = req.params;
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: { id_country, check_in: true },
-                include: [User]
+                include: [user]
             });
             return res.json(checkins);
         } catch (error) {
@@ -124,9 +126,9 @@ class CheckInController {
     public async getConfirmedByOwner(req: Request, res: Response) {
         try {
             const { id_country } = req.params;
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: { confirmed_by_owner: true, check_in: false, id_country },
-                include: [User]
+                include: [user]
             });
             return res.json(checkins);
         } catch (error) {
@@ -140,16 +142,16 @@ class CheckInController {
             const { id_country } = req.params;
             const responseArray: any[] = [];
 
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: { id_country, check_in: true }
             });
 
             for (const checkin of checkins) {
-                const checkout = await CheckOutModel.findOne({
+                const checkedOut = await checkout.findOne({
                     where: { id_checkin: checkin.id }
                 });
 
-                responseArray.push({ checkin, checkout });
+                responseArray.push({ checkin, checkout: checkedOut });
             }
 
             return res.json(responseArray);
@@ -161,9 +163,9 @@ class CheckInController {
 
     public async getCheckOutFalse(req: Request, res: Response) {
         try {
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: { check_out: false, check_in: true, confirmed_by_owner: true },
-                include: [User]
+                include: [user]
             });
             return res.json(checkins);
         } catch (error) {
@@ -175,7 +177,7 @@ class CheckInController {
     public async getByOwner(req: Request, res: Response) {
         try {
             const { id_owner } = req.params;
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: { id_owner },
                 include: [{ all: true }]
             });
@@ -205,7 +207,7 @@ class CheckInController {
             const { id_owner } = req.params;
             const TODAY_START = new Date().setHours(0, 0, 0, 0);
             const NOW = new Date().setHours(23, 59);
-            const checkins = await CheckInModel.findAll({
+            const checkins = await checkin.findAll({
                 where: {
                     id_owner,
                     income_date: {
@@ -214,8 +216,8 @@ class CheckInController {
                     }
                 },
                 include: [
-                    { model: User, as: 'owner' },
-                    { model: User, as: 'guard' }
+                    { model: user, as: 'owner' },
+                    { model: user, as: 'guard' }
                 ]
             });
             return res.json(checkins);
@@ -228,6 +230,7 @@ class CheckInController {
 }
 
 export default new CheckInController();
+
 
 
 /*import { Request, response, Response } from "express";

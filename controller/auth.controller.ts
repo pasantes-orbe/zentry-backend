@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import User from "../models/user.model";
+// Importamos el objeto 'db' centralizado
+import db from "../models";
 import generateToken from "../helpers/jwt/generateToken";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import Role from "../models/roles.model";
+
+// Corregimos la desestructuración de los modelos a minúsculas
+const { user, role } = db;
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
 console.log("JWT_SECRET siendo utilizado auth.controller:", JWT_SECRET);
@@ -23,22 +26,23 @@ class AuthController {
 
             const emailMinusculas = email.toLowerCase();
 
-            const user = await User.findOne({
+            // Usamos los modelos corregidos 'user' y 'role'
+            const foundUser = await user.findOne({
                 where: { email: emailMinusculas },
-                include: [{ model: Role, as: 'role' }],
+                include: [{ model: role, as: 'role' }],
             });
 
-            if (!user || !user.password) {
+            if (!foundUser || !foundUser.password) {
                 return res.status(404).json({ msg: "Usuario o contraseña inválido" });
             }
 
-            const validPassword = await bcrypt.compare(password, user.password);
+            const validPassword = await bcrypt.compare(password, foundUser.password);
             if (!validPassword) {
                 return res.status(404).json({ msg: "Usuario o contraseña inválido" });
             }
 
-            const token = await generateToken(String(user.id));
-            return res.status(200).json({ user, token });
+            const token = await generateToken(String(foundUser.id));
+            return res.status(200).json({ user: foundUser, token });
 
         } catch (error) {
             console.error("Login error:", error);
@@ -47,15 +51,18 @@ class AuthController {
     }
 
     public async jwtValidate(req: Request, res: Response) {
-        const token = req.header("Authorization");
+        const authHeader = req.header("Authorization");
+        const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+
         if (!token) {
             return res.status(401).json({ msg: "No hay token de autorización" });
         }
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            const user = await User.findByPk(uid);
-            if (!user) {
+            // Usamos el modelo 'user' corregido
+            const foundUser = await user.findByPk(uid);
+            if (!foundUser) {
                 return res.status(404).json({ msg: "El usuario no existe" });
             }
             return res.status(200).json(true);
@@ -65,8 +72,9 @@ class AuthController {
     }
 
     public async isRole(req: Request, res: Response) {
-        const { role } = req.params;
-        const token = req.header("Authorization");
+        const { role: requiredRole } = req.params;
+        const authHeader = req.header("Authorization");
+        const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
         if (!token) {
             return res.status(401).json({ msg: "No hay token de autorización" });
@@ -74,13 +82,14 @@ class AuthController {
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            const user = await User.findByPk(uid, {
-                include: [{ model: Role, as: "role" }],
+            // Usamos los modelos corregidos 'user' y 'role'
+            const foundUser = await user.findByPk(uid, {
+                include: [{ model: role, as: "role" }],
             });
 
-            if (!user) return res.status(404).json({ msg: "El usuario no existe" });
+            if (!foundUser) return res.status(404).json({ msg: "El usuario no existe" });
 
-            if (user.role?.name === role) {
+            if (foundUser.role?.name === requiredRole) {
                 return res.status(200).json(true);
             }
 
@@ -92,6 +101,7 @@ class AuthController {
 }
 
 export default AuthController;
+
 
 
 

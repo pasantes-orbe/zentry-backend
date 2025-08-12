@@ -2,19 +2,20 @@ import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import Amenity from "../classes/Amenity";
 import Countries from "../classes/Countries";
-import Country from "../classes/Country";
 import Uploader from "../classes/Uploader";
 import amenityExists from "../middlewares/customs/amenityExists.middleware";
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import AmenityModel from "../models/amenity.model";
+import db from "../models"; // Importamos el objeto 'db' centralizado
+
+const { amenity } = db; // Desestructuramos el modelo 'amenity'
 
 const router = Router();
 
 // Obtener todos los amenities
 router.get('/', async (req: Request, res: Response) => {
-    const amenities = await AmenityModel.findAll();
+    const amenities = await amenity.findAll();
     res.json(amenities);
 });
 
@@ -25,7 +26,7 @@ router.get('/country/:id_country', [
     check('id_country').custom(countryExists),
     noErrors
 ], async (req: Request, res: Response) => {
-    const amenities = await AmenityModel.findAll({
+    const amenities = await amenity.findAll({
         where: { id_country: req.params.id_country }
     });
     res.json(amenities);
@@ -40,13 +41,13 @@ router.get('/country/:id_country/:id', [
     check('id', 'El id de amenity debe ser numérico').isNumeric(),
     noErrors
 ], async (req: Request, res: Response) => {
-    const amenity = await AmenityModel.findOne({
+    const foundAmenity = await amenity.findOne({
         where: {
             id: req.params.id,
             id_country: req.params.id_country
         }
     });
-    res.json(amenity);
+    res.json(foundAmenity);
 });
 
 // Obtener amenity por id
@@ -55,8 +56,8 @@ router.get('/:id', [
     check('id', 'El id de amenity debe ser numérico').isNumeric(),
     noErrors
 ], async (req: Request, res: Response) => {
-    const amenity = await AmenityModel.findByPk(req.params.id);
-    res.json(amenity);
+    const foundAmenity = await amenity.findByPk(req.params.id);
+    res.json(foundAmenity);
 });
 
 router.post('/country/:id', [
@@ -67,8 +68,8 @@ router.post('/country/:id', [
     noErrors
 ], async (req: Request, res: Response) => {
 
-    const country = await new Countries().getOne(+req.params.id);
-    if (!country) {
+    const countryInstance = await new Countries().getOne(+req.params.id);
+    if (!countryInstance) {
         return res.status(404).json({ msg: "El país no existe" });
     }
 
@@ -90,9 +91,9 @@ router.post('/country/:id', [
     // Ahora podés seguir con la lógica para subir la imagen y crear el amenity
     const { secure_url } = await new Uploader().uploadImage(tempFilePath);
 
-    const amenity: Amenity = new Amenity(country, name, secure_url, address);
+    const newAmenity: Amenity = new Amenity(countryInstance, name, secure_url, address);
 
-    const amenitySaved = await amenity.save();
+    const amenitySaved = await newAmenity.save();
 
     res.json({
         msg: "Amenity agregado con éxito!",
@@ -109,7 +110,7 @@ router.delete('/:id', [
 ], async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-        await AmenityModel.destroy({
+        await amenity.destroy({
             where: { id }
         });
         return res.json({ msg: "Eliminado correctamente" });

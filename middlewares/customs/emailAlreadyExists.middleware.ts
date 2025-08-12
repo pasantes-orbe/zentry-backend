@@ -1,17 +1,22 @@
-import { NextFunction, Request, Response } from "express";
-import User from "../../models/user.model";
+import db from "../../models";
 
-async function emailAlreadyExists(email: string = ""){
+const { user } = db;
 
-    const exists = await User.findOne({
-        where: {
-            email
-        }
+// Corregimos la función para que funcione como un validador de Express Validator
+const emailAlreadyExistsValidator = async (email: string) => {
+    // Usamos el modelo 'user' del objeto 'db'
+    const exists = await user.findOne({
+        where: { email }
     });
 
-    if(exists){
-        throw new Error(`El email ${email} ya existe`);
+    if (exists) {
+        // Si el email ya existe, lanzamos un error que Express Validator capturará
+        throw new Error(`El email ${email} ya se encuentra registrado`);
     }
+
+    // Si no existe, la validación pasa
+    return true;
 }
 
-export default emailAlreadyExists;
+export default emailAlreadyExistsValidator;
+

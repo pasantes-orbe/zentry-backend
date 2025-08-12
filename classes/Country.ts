@@ -83,7 +83,9 @@ class Country {
 }
 export default Country;*/
 
-import CountryModel from '../models/country.model';
+import db from '../models';
+const { country } = db;
+
 
 class Country {
     private id?: number;
@@ -106,7 +108,7 @@ class Country {
     // Método asincrónico para guardar correctamente en Sequelize
     public async save(): Promise<boolean> {
         try {
-            await CountryModel.create({
+            await country.create({
                 name: this.name,
                 avatar: this.image,
                 latitude: this.latitude,

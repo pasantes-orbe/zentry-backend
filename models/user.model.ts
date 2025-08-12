@@ -1,49 +1,69 @@
-//15/7/25 role.interface corregido
-import { DataTypes, Model, Optional } from "sequelize";
-import db from "../DB/connection";
-import { UserInterface } from "../interfaces/user.interface";
+// models/user.model.ts
+import { DataTypes } from "sequelize";
 
-interface UserCreationAttributes extends Optional<UserInterface, "id" | "role"> { }
+export default (sequelize: any, DataTypes: any) => {
 
-class User extends Model<UserInterface, UserCreationAttributes> implements UserInterface {
-    public id!: number;
-    public email!: string;
-    public name!: string;
-    public lastname!: string;
-    public password!: string;
-    public phone!: string;
-    public birthday!: string;
-    public dni!: string;
-    public avatar!: string;
-    public role_id!: number;
-    public role?: any; // Sequelize no mapea automáticamente el tipo del include
-}
-
-User.init(
-    {
+    const User = sequelize.define('user', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        email: { type: DataTypes.STRING },
-        name: { type: DataTypes.STRING },
-        lastname: { type: DataTypes.STRING },
-        password: { type: DataTypes.STRING },
-        phone: { type: DataTypes.STRING },
-        birthday: { type: DataTypes.STRING },
-        dni: { type: DataTypes.STRING },
-        avatar: { type: DataTypes.STRING },
-        role_id: { type: DataTypes.INTEGER }, // clave foránea
-    },
-    {
-        sequelize: db,
-        tableName: "user",
+        email: { 
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
+        },
+        name: { 
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        lastname: { 
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        password: { 
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        phone: { 
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        birthday: { 
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        dni: { 
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        avatar: { 
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        role_id: { 
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+    }, {
+        tableName: "users",
         timestamps: false,
-    }
-);
+    });
 
-export default User;
+    User.associate = (models: any) => {
+        User.belongsTo(models.role, { foreignKey: 'role_id', as: 'userRole' });
+        User.hasMany(models.user_properties, { foreignKey: 'id_user', as: 'userProperties' });
+        User.hasMany(models.guard_country, { foreignKey: 'id_user', as: 'guardCountries' });
+        User.hasMany(models.appid, { foreignKey: 'id_user', sourceKey: 'id' });
+        User.hasMany(models.notification, { foreignKey: 'id_user', as: 'notifications' });
+        User.hasMany(models.password_change_request, { foreignKey: 'id_user', as: 'passwordChangeRequests' });
+    };
+
+    return User;
+};
+
+
 
 
 

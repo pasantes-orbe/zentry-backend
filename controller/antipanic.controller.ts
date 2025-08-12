@@ -1,17 +1,22 @@
+// controller/antipanic.controller.ts
 import { Request, Response } from "express";
-import AntipanicModel from "../models/antipanic.model";
-import User from "../models/user.model";
+// Importamos el objeto 'db' centralizado
+import db from "../models";
+import Server from "../models/server";
+
+// Desestructuramos los modelos necesarios del objeto 'db' con los nombres correctos
+const { antipanic, user } = db;
 
 class AntipanicController {
     public async getAllByCountry(req: Request, res: Response) {
         const { id_country } = req.params;
 
         try {
-            const registroAntipanicos = await AntipanicModel.findAll({
+            const registroAntipanicos = await antipanic.findAll({
                 where: { id_country },
                 include: [
-                    { model: User, as: 'owner' },
-                    { model: User, as: 'guard' }
+                    { model: user, as: 'owner' },
+                    { model: user, as: 'guard' }
                 ]
             });
 
@@ -27,7 +32,7 @@ class AntipanicController {
         const state = true;
 
         try {
-            const antipanic = await AntipanicModel.create({
+            const newAntipanic = await antipanic.create({
                 ownerId: id_owner, // este campo debe coincidir con el definido en el modelo
                 address,
                 state,
@@ -35,9 +40,15 @@ class AntipanicController {
                 propertyNumber
             });
 
+            const server = Server.instance;
+            server.io.emit('new-antipanic', {
+                msg: `Nuevo antipánico activado en el country ${id_country}`,
+                antipanic: newAntipanic
+            });
+
             res.json({
                 msg: "Antipánico activado",
-                antipanic
+                antipanic: newAntipanic
             });
         } catch (error) {
             console.error(error);
@@ -52,7 +63,7 @@ class AntipanicController {
         const { guardId, details, finishAt } = req.body;
 
         try {
-            const alertAntipanic = await AntipanicModel.findByPk(id);
+            const alertAntipanic = await antipanic.findByPk(id);
 
             if (!alertAntipanic) {
                 return res.status(404).json({ msg: "El id no es válido" });
@@ -80,7 +91,7 @@ class AntipanicController {
         const { details } = req.body;
 
         try {
-            const alertAntipanic = await AntipanicModel.findByPk(id);
+            const alertAntipanic = await antipanic.findByPk(id);
 
             if (!alertAntipanic) {
                 return res.status(404).json({ msg: "El id no es válido" });
@@ -103,6 +114,7 @@ class AntipanicController {
 }
 
 export default AntipanicController;
+
 
 
 /* 15/7/25

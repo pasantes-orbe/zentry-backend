@@ -1,35 +1,33 @@
-import CountryModel from "../models/country.model";
-import GuardCountry from "../models/guard_country.model";
+import { Model } from "sequelize";
+import db from "../models";
 import { GuardInterface } from '../interfaces/guard.interface';
 
-import Role from "../models/roles.model";
-import User from "../models/user.model";
+// Desestructuramos los modelos desde el objeto 'db'
+const { user, role, guard_country, country } = db;
 
 class Guard {
 
     public async getAll(){
-        const guards = await User.findAll({
+        const guards = await user.findAll({
             where: {'$role.name$': 'vigilador'},
-            include: Role
+            include: role
         });
 
         return guards;
     }
 
     public async exists(id_user: number){
-        const exists = await User.findByPk(id_user, {
-            include: [Role]
+        const exists = await user.findByPk(id_user, {
+            include: [role]
         });
 
-        if(!exists || exists.role.name != "vigilador") return false
+        if(!exists || (exists as any).role.name != "vigilador") return false
 
         return true;
-
     }
 
     public async getByCountry(id_country: number){
-        
-        const guards = await GuardCountry.findAll({
+        const guards = await guard_country.findAll({
             where: {id_country}
         });
 
@@ -37,36 +35,37 @@ class Guard {
     }
 
     public async getCountry(id_user: number){
-
-        const country = await GuardCountry.findOne({
+        // Renombramos la variable local a 'foundCountry' para evitar colisiones
+        const foundCountry = await guard_country.findOne({
             where: {
                 id_user
             },
-            include: [CountryModel]
+            include: [country] // Ahora TypeScript sabe que nos referimos al modelo 'country'
         })
 
-        return country;
-
+        return foundCountry;
     }
-
 
     public async assignCountry(guard: GuardInterface) {
         try {
             if (await this.alreadyAssigned(guard)) {
                 return "Este vigilador ya fue asignado a este country";
-        }
-
-        await GuardCountry.create(guard);
-
-        return "Vigilador asignado con éxito al country";
+            }
+            
+            await guard_country.create({
+                id_user: guard.id_user,
+                id_country: guard.id_country
+            });
+            
+            return "Vigilador asignado con éxito al country";
         } catch (error) {
-            return error;
+            console.error(error);
+            return "Error al asignar el vigilador.";
         }
     }
 
-    
     private async alreadyAssigned(guard: GuardInterface){
-        const alreadyAssigned = await GuardCountry.findOne({
+        const alreadyAssigned = await guard_country.findOne({
             where: {
                 id_user: guard.id_user,
                 id_country: guard.id_country
@@ -75,7 +74,6 @@ class Guard {
 
         return (alreadyAssigned) ? true : false;
     }
-
 }
 
 export default Guard;

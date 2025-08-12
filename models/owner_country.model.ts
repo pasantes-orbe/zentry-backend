@@ -1,15 +1,17 @@
-import { DataTypes } from "sequelize";
-import db from "../DB/connection";
+//import { DataTypes } from "sequelize";
+//import { getDbInstance } from "../DB/connection";
 
-const OwnerCountry = db.define('owner_country', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    }
+//const db = getDbInstance();
 
-},
-{
+//const OwnerCountry = db.define('owner_country', {
+//    id: {
+//        type: DataTypes.INTEGER,
+//        primaryKey: true,
+//        autoIncrement: true
+//    }
+
+//},
+//{
     
     // defaultScope: {
     //     include: [
@@ -23,11 +25,43 @@ const OwnerCountry = db.define('owner_country', {
     //         exclude: ['id_user', 'id_country']
     //     }
     // },
-    timestamps: false
+//    timestamps: false
 
-}
-);
+//}
+//);
 
+//export default OwnerCountry;
 
+//07/08/25
+// models/owner_country.model.ts
+import { DataTypes } from "sequelize";
 
-export default OwnerCountry;
+export default (sequelize: any, DataTypes: any) => {
+
+    const OwnerCountry = sequelize.define('owner_country', {
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        }
+    },
+    {
+        tableName: 'owner_countries', // Se recomienda usar el nombre de la tabla en plural
+        timestamps: false
+    });
+
+    OwnerCountry.associate = (models: any) => {
+        // CORRECCIÓN: Nombres de modelos en minúsculas para que coincidan con el resto del proyecto
+        OwnerCountry.belongsTo(models.user, {
+            foreignKey: 'id_user',
+            targetKey: 'id'
+        });
+
+        OwnerCountry.belongsTo(models.country, {
+            foreignKey: 'id_country',
+            targetKey: 'id'
+        });
+    };
+
+    return OwnerCountry;
+};

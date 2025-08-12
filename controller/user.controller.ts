@@ -1,12 +1,12 @@
-// src/controller/user.controller.ts
-
 import { Request, Response } from "express";
-import User from "../models/user.model";
-import Role from "../models/roles.model";
+// Importamos el objeto 'db' centralizado que contiene todos los modelos inicializados.
+import db from "../models"; 
 import PasswordHelper from "../helpers/password.helper"; 
 import UserClass from "../classes/UserClass";
-import passwordChangeRequest from "../models/passwordChangeRequest.model";
 import Mailer from "../helpers/mailer.helper";
+
+// Desestructuramos los modelos necesarios del objeto 'db' para usarlos fácilmente.
+const { user, role, passwordChangeRequest } = db;
 
 class UserController {
     public async getAllUsers(req: Request, res: Response) {
@@ -27,20 +27,19 @@ class UserController {
 
     public async getUser(req: Request, res: Response) {
         const { id } = req.params;
-        const user = await User.findByPk(id, {
+        const foundUser = await user.findByPk(id, {
             attributes: { exclude: ['password', 'role_id'] },
             include: {
-                model: Role,
-                as: 'role'
+                model: role,
+                as: 'userRole'
             },
         });
 
-        if (user) {
-            return res.json(user);
+        if (foundUser) {
+            return res.json(foundUser);
         }
         res.status(404);
         return res.json({ msg: `No existe usuario con el id ${id}` });
-
     }
 
     public async register(req: Request, res: Response) {
@@ -49,10 +48,10 @@ class UserController {
         try {
             // Cifrar password
             body.password = new PasswordHelper().hash(body.password);
-            const user = await User.create(body);
+            const createdUser = await user.create(body);
             res.json({
                 msg: "El usuario se creo con exito",
-                user
+                user: createdUser
             })
         } catch (error) {
             console.log(error);
@@ -64,7 +63,7 @@ class UserController {
 
     public async RequestChangePassword(req: Request, res: Response) {
         const { email } = req.body;
-        const exists = await User.findOne({
+        const exists = await user.findOne({
             where: { email }
         })
         if (!exists) {
@@ -91,7 +90,7 @@ class UserController {
                 where: {
                     changed: false
                 },
-                include: User
+                include: user
             })
             return res.json(requests);
         }
@@ -118,10 +117,10 @@ class UserController {
 
         try {
             // Buscar al usuario en la base de datos por el ID obtenido de la URL
-            const user = await User.findByPk(id);
+            const foundUser = await user.findByPk(id);
 
             // Si el usuario no existe, enviamos un error 404
-            if (!user) {
+            if (!foundUser) {
                 return res.status(404).json({ msg: "Usuario no encontrado." });
             }
 
@@ -134,7 +133,7 @@ class UserController {
             const hashedPassword = passHelper.hash(newPassword); // Ciframos la nueva contraseña
 
             // Actualizamos la contraseña del usuario en la base de datos
-            await user.update({ password: hashedPassword });
+            await foundUser.update({ password: hashedPassword });
 
             // Enviamos una respuesta de éxito
             return res.status(200).json({ msg: "Contraseña actualizada exitosamente." });
@@ -150,13 +149,13 @@ class UserController {
     public async updateUser(req: Request, res: Response) {
         const { id } = req.params
         const { name, lastname, email, birthday, phone } = req.body
-        const user = await User.findByPk(id)
-        if (!user) {
+        const foundUser = await user.findByPk(id)
+        if (!foundUser) {
             return res.status(404).send({
                 msg: `No existe ningun usuario con ese id ${id}`
             });
         }
-        const user_update = await user.update(
+        const user_update = await foundUser.update(
             {
                 name,
                 lastname,

@@ -1,14 +1,19 @@
 import { Request, Response } from "express";
-import CountryModel from "../models/country.model";
-import Property from "../models/property.model";
-import Recurrent from "../models/recurrent.model";
+// Importamos el objeto 'db' centralizado para acceder a todos los modelos
+import db from "../models";
+import { RecurrentInterface } from "../interfaces/recurrent.interface";
+import { PropertyInterface } from "../interfaces/property.interface";
+
+// Corregimos la desestructuración para usar 'recurrent' y 'property' en minúsculas
+const { recurrent, property } = db;
 
 class RecurrentController {
 
     public async getAll(req: Request, res: Response) {
         try {
-            const recurrents = await Recurrent.findAll({
-                include: [Property],
+            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            const recurrents = await recurrent.findAll({
+                include: [property],
                 attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
             });
             return res.json(recurrents);
@@ -22,12 +27,13 @@ class RecurrentController {
         if (isNaN(id)) return res.status(400).json({ msg: "ID inválido" });
 
         try {
-            const recurrent = await Recurrent.findByPk(id, {
-                include: Property,
+            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            const foundRecurrent = await recurrent.findByPk(id, {
+                include: property,
                 attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
             });
-            if (recurrent) {
-                return res.json(recurrent);
+            if (foundRecurrent) {
+                return res.json(foundRecurrent);
             }
             return res.status(404).json({ msg: `No existe el invitado recurrente con el id ${id}` });
         } catch (error) {
@@ -40,9 +46,10 @@ class RecurrentController {
         if (isNaN(id_country)) return res.status(400).json({ msg: "ID de country inválido" });
 
         try {
-            const recurrents_by_country = await Recurrent.findAll({
+            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            const recurrents_by_country = await recurrent.findAll({
                 include: [{
-                    model: Property,
+                    model: property,
                     where: { id_country }
                 }]
             });
@@ -57,10 +64,11 @@ class RecurrentController {
         if (isNaN(id_property)) return res.status(400).json({ msg: "ID de propiedad inválido" });
 
         try {
-            const recurrent = await Recurrent.findAll({
+            // Usamos el modelo corregido: 'recurrent'
+            const foundRecurrent = await recurrent.findAll({
                 where: { id_property }
             });
-            return res.json(recurrent);
+            return res.json(foundRecurrent);
         } catch (error) {
             return res.status(500).json({ msg: "Error al obtener recurrentes por propiedad", error });
         }
@@ -69,28 +77,27 @@ class RecurrentController {
     public async create(req: Request, res: Response) {
         const { body } = req;
         try {
-            // Chequear si no existe el recurrente a la misma propiedad por DNI
-            const exists = await Recurrent.findOne({
+            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            const exists = await recurrent.findOne({
                 where: {
                     dni: body.dni,
                     id_property: body.id_property
                 },
-                include: Property
+                include: property
             });
             if (exists) {
-                // Accedemos a la propiedad incluida usando get() y forzamos tipo a cualquier
-                const property = exists.get('property') as any;
+                const propertyName = exists.get('property') as unknown as PropertyInterface;
                 return res.status(400).send({
-                    msg: `Ya existe un invitado recurrente con el dni ${body.dni} para el country ${property?.name || 'desconocido'}`,
+                    msg: `Ya existe un invitado recurrente con el dni ${body.dni} para el country ${propertyName?.name || 'desconocido'}`,
                     guest: exists
                 });
             }
 
-            // Crear recurrente con status true
-            const recurrent = await Recurrent.create({ ...body, status: true });
+            // Usamos el modelo corregido: 'recurrent'
+            const newRecurrent = await recurrent.create({ ...body, status: true });
             return res.json({
                 msg: "El invitado recurrente se cargó con éxito",
-                recurrent
+                recurrent: newRecurrent
             });
         } catch (error) {
             console.log(error);
@@ -106,7 +113,8 @@ class RecurrentController {
         const { status } = req.body;
         if (isNaN(recurrentID)) return res.status(400).json({ msg: "ID de recurrente inválido" });
         try {
-            const changed = await Recurrent.update({ status }, {
+            // Usamos el modelo corregido: 'recurrent'
+            const changed = await recurrent.update({ status }, {
                 where: { id: recurrentID }
             });
             return res.json(changed);

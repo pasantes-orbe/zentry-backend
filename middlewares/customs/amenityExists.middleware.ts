@@ -1,10 +1,13 @@
+// middlewares/customs/amenityExists.middleware.ts
 import { NextFunction, Request, Response } from "express";
-import AmenityModel from "../../models/amenity.model";
-import CountryModel from "../../models/country.model";
+import db from "../../models"; // Importamos el objeto 'db' centralizado
+
+const { amenity } = db; // Desestructuramos el modelo 'amenity'
 
 async function amenityExists(id: number){
 
-    const exists = await AmenityModel.findByPk(id);
+    // Usamos el modelo 'amenity' corregido para la consulta
+    const exists = await amenity.findByPk(id);
 
     if(!exists){
         throw new Error(`El amenity con ID ${id} no existe`);

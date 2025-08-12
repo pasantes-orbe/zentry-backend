@@ -7,11 +7,13 @@ import checkInApproved from "../middlewares/customs/checkInApproved.middleware";
 import checkInExists from "../middlewares/customs/checkInExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import CheckInModel from "../models/checkin.model";
-import CheckOutModel from "../models/checkout.model";
 import Server from "../models/server";
+import db from "../models"; // Importamos el objeto db centralizado
 
 const router = Router();
+
+// Desestructuramos los modelos desde el objeto 'db'
+const { checkout, checkin } = db;
 
 const controller: checkOutController = new checkOutController();
 
@@ -21,24 +23,19 @@ router.post('/', [
     check('id_checkin').custom(checkInApproved),
 
     noErrors
-] ,controller.create);
+], controller.create);
 
 router.post('/socket', async (req: Request, res: Response) => {
 
-
-    const checkouts = await CheckOutModel.findAll({
-        include: [CheckInModel]
+    const checkouts = await checkout.findAll({ // Usamos el modelo 'checkout' de db
+        include: [checkin] // Usamos el modelo 'checkin' de db
     });
-
 
     const server = Server.instance;
     server.io.emit('mensaje', checkouts);
 
-    
-
     res.send(checkouts);
 
 })
-
 
 export default router;

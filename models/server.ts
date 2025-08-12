@@ -134,11 +134,14 @@ class Server {
 
 export default Server;*/
 
+
+//server.ts
 import express, { Application } from "express";
 import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import cors from "cors";
 import fileUpload from "express-fileupload";
+
 import userRoutes from "../routes/user.routes";
 import roleRoutes from "../routes/role.routes";
 import propertyRoutes from "../routes/property.routes";
@@ -155,7 +158,13 @@ import antipanic from "../routes/antipanic.routes";
 import pushNotifications from "../routes/push_notifications.routes";
 import notificationRoutes from "../routes/notification.routes";
 import invitationRoutes from "../routes/invitations.routes";
-import db from "../DB/connection";
+
+import { authenticateDb } from "../DB/connection";
+import { getDbInstance } from "../DB/connection";
+
+const db = getDbInstance();
+const dbModels = require('./index') as any;
+
 import SocketController from "../sockets/controller";
 
 class Server {
@@ -196,28 +205,14 @@ class Server {
             },
         });
 
-        this.dbConnection();
         this.middlewares();
-        this.sync();
         this.routes();
         this.sockets();
+        //this.startServer();
     }
 
     public static get instance(): Server {
         return this._instance || (this._instance = new this());
-    }
-
-    async sync() {
-        await db.sync({ alter: true });
-    }
-
-    async dbConnection() {
-        try {
-            await db.authenticate();
-            console.log("Database Online");
-        } catch (error: any) {
-            throw new Error(error);
-        }
     }
 
     middlewares() {
@@ -226,9 +221,7 @@ class Server {
             origin: "*",
         };
         this.app.use(cors(corsOptions));
-
         this.app.use(express.json());
-
         this.app.use(
             fileUpload({
                 useTempFiles: true,
@@ -268,15 +261,62 @@ class Server {
             controller.escucharAntipanicoFinalizado(socket);
             controller.escucharNuevaPosicionGuardia(socket);
             controller.escucharGuardDisconnected(socket);
-            // controller.disconnect(socket);
         });
     }
 
-    listen() {
-        this.server.listen(this.port, () => {
-            console.log(`Servidor corriendo en http://localhost:${this.port}`);
+    async startServer() {
+        try {
+            await authenticateDb();
+            console.log('Database Online: Autenticación exitosa.');
 
-        });
+            
+
+            // Sincronización de tablas MANUAL
+            //await dbModels.role.sync({ force: true });
+            //console.log('Tabla "role" sincronizada.');
+            //await dbModels.country.sync({ force: true });
+            //console.log('Tabla "country" sincronizada.');
+            //await dbModels.property.sync({ force: true });
+            //console.log('Tabla "property" sincronizada.');
+            //await dbModels.amenity.sync({ force: true });
+            //console.log('Tabla "amenity" sincronizada.');
+            //await dbModels.user.sync({ force: true });
+            //console.log('Tabla "user" sincronizada.');
+            //await dbModels.owner_country.sync({ force: true });
+            //console.log('Tabla "owner_country" sincronizada.');
+            //await dbModels.guard_country.sync({ force: true });
+            //console.log('Tabla "guard_country" sincronizada.');
+            //await dbModels.user_properties.sync({ force: true });
+            //console.log('Tabla "user_properties" sincronizada.');
+            //await dbModels.guard_schedule.sync({ force: true });
+            //console.log('Tabla "guard_schedule" sincronizada.');
+            //await dbModels.antipanic.sync({ force: true });
+            //console.log('Tabla "antipanic" sincronizada.');
+            //await dbModels.reservation.sync({ force: true });
+            //console.log('Tabla "reservation" sincronizada.');
+            //await dbModels.password_change_request.sync({ force: true }); 
+            //console.log('Tabla "password_change_request" sincronizada.');
+            //await dbModels.notification.sync({ force: true });
+            //console.log('Tabla "notification" sincronizada.');
+            //await dbModels.invitation.sync({ force: true });
+            //console.log('Tabla "invitation" sincronizada.'); 
+            //await dbModels.appid.sync({ force: true });
+            //console.log('Tabla "appid" sincronizada.');
+            //await dbModels.recurrent.sync({ force: true });
+            //console.log('Tabla "recurrent" sincronizada.');
+            //await dbModels.checkin.sync({ force: true });
+            //console.log('Tabla "checkin" sincronizada.');
+            //await dbModels.checkout.sync({ force: true });
+            //console.log('Tabla "checkout" sincronizada.');
+
+
+            this.server.listen(this.port, () => {
+                console.log(`Servidor corriendo en http://localhost:${this.port}`);
+            });
+        } catch (error) {
+            console.error("Error al sincronizar la base de datos:", error);
+            process.exit(1);
+        }
     }
 }
 

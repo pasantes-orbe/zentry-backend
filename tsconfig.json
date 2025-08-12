@@ -1,17 +1,27 @@
 {
     "compilerOptions": {
-        "target": "es2016", // Compatible con Node 18
+        "target": "es2016",// Compatible con Node 18
         "module": "commonjs", // Necesario para Node
         "moduleResolution": "node", // Resolución de módulos por defecto en Node
-        "outDir": "./dist", // Carpeta de salida
-        "sourceMap": true, // Mapea errores al .ts original
-        "esModuleInterop": true, // Permite importar librerías CommonJS como default
+        //"outDir": "./dist", // Carpeta de salida
+
+        "sourceMap": true,  // Mapea errores al .ts original
+        "esModuleInterop": true,    // Permite importar librerías CommonJS como default
         "allowSyntheticDefaultImports": true, // Importar como default aunque no lo sea (ej: import express from "express")
         "resolveJsonModule": true, // Para poder importar archivos .json
-        "forceConsistentCasingInFileNames": true, // Asegura que las mayúsculas en imports coincidan
+        "forceConsistentCasingInFileNames": true,   // Asegura que las mayúsculas en imports coincidan
         "strict": true, // Activa chequeo estricto (puede desactivarse si da muchos errores)
         "skipLibCheck": true, // Ignora errores en definiciones de terceros
         "experimentalDecorators": true, // Necesario si usás decoradores (Sequelize con @Table, etc.)
-        "emitDecoratorMetadata": true // Necesario para algunos ORMs (como Sequelize con decoradores)
-    }
+        "emitDecoratorMetadata": true   // Necesario para algunos ORMs (como Sequelize con decoradores)
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.test.ts"
+        
+    ]
 }

@@ -1,45 +1,36 @@
-import CountryModel from '../models/country.model';
+import db from '../models'; // Importamos el objeto 'db'
 import Country from './Country';
+
+// Desestructuramos el modelo 'country' del objeto 'db'
+const { country } = db;
 
 class Countries {
     public async getAll() {
         try {
-            return await CountryModel.findAll();
+            // Usamos el modelo 'country' corregido para la consulta
+            return await country.findAll();
         } catch (error) {
-            return false
+            console.error("Error al obtener todos los países:", error);
+            return false;
         }
     }
 
-    /*  14-7-25  public async getOne(id: number): Promise<Country>{
-            try {
-                const c = await CountryModel.findByPk(id);
-                
-                const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
-                const country = new Country(name, latitude, longitude, avatar, countryId);
-                return country;
-            } catch (error) {
-                console.log(error);
-                return new Promise((resolve, reject) => {
-                    reject(false)
-                })
-            }
-        }
-    }*/
     public async getOne(id: number): Promise<Country | null> {
         try {
-            const c = await CountryModel.findByPk(id);
+            // Usamos el modelo 'country' corregido para la consulta
+            const c = await country.findByPk(id);
 
             if (!c) {
                 // No se encontró el país con ese id
-                return null;  // O también podés lanzar un error si preferís
+                return null;
             }
 
             const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
-            const country = new Country(name, latitude, longitude, avatar, countryId);
-            return country;
+            const newCountry = new Country(name, latitude, longitude, avatar, countryId);
+            return newCountry;
 
         } catch (error) {
-            console.log(error);
+            console.error("Error al obtener un país:", error);
             return Promise.reject(false);
         }
     }

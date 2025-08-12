@@ -1,45 +1,46 @@
+import db from "../models"; // Importa el objeto db completo
 import { Op } from "sequelize";
-import Role from "../models/roles.model";
-import User from "../models/user.model";
+
+const { user, role } = db; // Extrae los modelos que necesitas
 
 class UserClass {
     public async getAll() {
-        const users = await User.findAll({
+        const users = await user.findAll({
             attributes: { exclude: ['password', 'role_id'] },
             include: [{
-                model: Role,
-                as: 'role' // alias que usaste en associations.ts
+                model: role,
+                as: 'userRole'
             }],
         });
         return users;
     }
 
-    public async getAllByRole(role: string) {
-        const users = await User.findAll({
+    public async getAllByRole(roleName: string) {
+        const users = await user.findAll({
             where: {
-                '$role.name$': role
+                '$userRole.name$': roleName
             },
             attributes: { exclude: ['password', 'role_id'] },
             include: [{
-                model: Role,
-                as: 'role' // necesario para que '$role.name$' funcione
+                model: role,
+                as: 'userRole'
             }],
         });
         return users;
     }
 
-    public async is(role: string, id: number) {
-        const user = await User.findByPk(id, {
+    public async is(roleName: string, id: number) {
+        const foundUser = await user.findByPk(id, {
             attributes: { exclude: ['password', 'role_id'] },
             include: [{
-                model: Role,
-                as: 'role'
+                model: role,
+                as: 'userRole'
             }],
         });
 
-        if (!user || !user.role) return false;
+        if (!foundUser || !foundUser.role) return false;
 
-        return user.role.name === role;
+        return foundUser.role.name === roleName;
     }
 }
 

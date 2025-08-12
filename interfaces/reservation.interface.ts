@@ -1,13 +1,18 @@
+import { Model, Optional } from 'sequelize';
 import { UserInterface } from './user.interface';
-import { AmenityInterface } from './amenity.interface'; // crea esta interfaz si no la tienes
+import { AmenityInterface } from './amenity.interface';
 
+// Exportamos la interfaz de atributos de la reserva
 export interface ReservationAttributes {
-  id: number;
-  date: Date;
-  details?: string;       // opcional, porque en el modelo puede ser null
-  status?: string;        // opcional, porque en el modelo puede ser null
-  id_user: number;
-  id_amenity: number;
-  user?: UserInterface;       // asociación opcional con User
-  amenity?: AmenityInterface; // asociación opcional con Amenity
+    id?: number; 
+    date: Date;
+    details?: string;
+    status?: string;
+    id_user: number;
+    id_amenity: number;
+    user?: UserInterface;
+    amenity?: AmenityInterface;
 }
+
+// Exportamos el tipo de atributos de creación, donde 'id' es opcional.
+export type ReservationCreationAttributes = Optional<ReservationAttributes, 'id'>;

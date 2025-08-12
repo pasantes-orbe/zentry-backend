@@ -5,16 +5,13 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import reservationExists from "../middlewares/customs/reservationExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import AmenityModel from "../models/amenity.model";
-import CheckInModel from "../models/checkin.model";
-import Invitation from "../models/invitations.model";
-import Reservation from "../models/reservation.model";
-import User from "../models/user.model";
+import db from "../models";
 import { Model } from "sequelize";
-import { DataTypes } from "sequelize";
-import db from "../DB/connection";
-import { ReservationAttributes } from '../interfaces/reservation.interface'; // ajusta la ruta
+import { ReservationAttributes } from '../interfaces/reservation.interface';
 
+
+// Desestructuramos los modelos necesarios del objeto 'db'
+const { reservation, invitation, checkin, amenity, user } = db;
 
 const router = Router();
 
@@ -38,7 +35,7 @@ router.post('/', [
         status: "pendiente"
     };
 
-    const isPending = await Reservation.findOne({
+    const isPending = await reservation.findOne({
         where: {
             id_user,
             id_amenity,
@@ -50,8 +47,8 @@ router.post('/', [
         return res.status(400).send("Ya tenés una reserva pendiente de aprobación para este lugar de reserva.");
     }
 
-    const reservation = await Reservation.create(reservationBody);
-    return res.json(reservation);
+    const newReservation = await reservation.create(reservationBody);
+    return res.json(newReservation);
 });
 
 router.get('/:id_country', async (req: Request, res: Response) => {
@@ -60,31 +57,34 @@ router.get('/:id_country', async (req: Request, res: Response) => {
     const idCountryNum = Number(id_country);
 
     if (status) {
-        const reservations = await Reservation.findAll({
-            where: { status },
-            include: {
-                model: AmenityModel,
-                as: 'amenity'
-            }
-        });
+        if (typeof status === 'string') {
+            const reservations = await reservation.findAll({
+                where: { status },
+                include: {
+                    model: amenity,
+                    as: 'amenity'
+                }
+            });
 
-        const filtered = reservations.filter(reservation => {
-            const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
-            return amenity?.id_country === idCountryNum;
-        });
+            const filtered = reservations.filter((reservation: any) => {
+                const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
+                return amenity?.id_country === idCountryNum;
+            });
 
-        return res.json(filtered);
+            return res.json(filtered);
+        } else {
+            return res.status(400).json({ msg: "El parámetro 'status' debe ser un string" });
+        }
     }
 
-    // Sin filtro por status
-    const reservations = await Reservation.findAll({
+    const reservations = await reservation.findAll({
         include: {
-            model: AmenityModel,
+            model: amenity,
             as: 'amenity'
         }
     });
 
-    const filtered = reservations.filter(reservation => {
+    const filtered = reservations.filter((reservation: any) => {
         const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
         return amenity?.id_country === idCountryNum;
     });
@@ -95,9 +95,9 @@ router.get('/:id_country', async (req: Request, res: Response) => {
 router.patch('/:id_reservation/:status', [
     check('id_reservation', "El campo 'id_reservation' no puede estar vacío").notEmpty(),
     check('id_reservation', "El campo 'id_reservation' debe ser numérico").isNumeric(),
-    check('id_reservation').custom(reservationExists),
     check('status', "El campo 'status' no puede estar vacío").notEmpty(),
     check('status', "El campo 'status' debe ser booleano").isBoolean(),
+    reservationExists, // Aquí se usa el middleware correctamente
     noErrors
 ], async (req: Request, res: Response) => {
     let msg = "";
@@ -114,15 +114,14 @@ router.patch('/:id_reservation/:status', [
     }
 
     try {
-        await Reservation.update({ status: newStatus }, {
+        await reservation.update({ status: newStatus }, {
             where: { id: id_reservation }
         });
 
-        //Objeto: Event
-        const event = await Reservation.findByPk(id_reservation, {
+        const event = await reservation.findByPk(id_reservation, {
             include: [
-                { model: User, as: 'user' },
-                { model: AmenityModel, as: 'amenity' }
+                { model: user, as: 'user' },
+                { model: amenity, as: 'amenity' }
             ]
         }) as any;
 
@@ -145,9 +144,9 @@ router.patch('/:id_reservation/:status', [
             return res.status(400).json({ msg: "La reserva no tiene fecha definida" });
         }
 
-        const invitations = await Invitation.findAll({ where: { id_reservation } });
+        const invitations = await invitation.findAll({ where: { id_reservation } });
 
-        const invitations_to_checkin = invitations.map(invitation => ({
+        const invitations_to_checkin = invitations.map((invitation: any) => ({
             guest_name: invitation.name,
             guest_lastname: invitation.lastname,
             DNI: invitation.dni,
@@ -159,7 +158,7 @@ router.patch('/:id_reservation/:status', [
             id_country
         }));
 
-    await CheckInModel.bulkCreate(invitations_to_checkin);
+        await checkin.bulkCreate(invitations_to_checkin);
 
 
     } catch (error) {
@@ -176,7 +175,7 @@ router.get('/get_by_user/:id_user', [
     check('id_user').custom(userExists)
 ], async (req: Request, res: Response) => {
     const { id_user } = req.params;
-    const reservations = await Reservation.findAll({
+    const reservations = await reservation.findAll({
         where: { id_user }
     });
     return res.json(reservations);
@@ -190,14 +189,14 @@ router.get('/country/get_by_id/:id_country', [
     const { id_country } = req.params;
     const idCountryNum = Number(id_country);
 
-    const reservations = await Reservation.findAll({
+    const reservations = await reservation.findAll({
         include: [
-            { model: User, as: 'user' },
-            { model: AmenityModel, as: 'amenity' }
+            { model: user, as: 'user' },
+            { model: amenity, as: 'amenity' }
         ]
     });
 
-    const filtered = reservations.filter(reservation => {
+    const filtered = reservations.filter((reservation: any) => {
         const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
         return amenity?.id_country === idCountryNum;
     });

@@ -2,34 +2,34 @@ import { Request, Response, Router } from "express";
 import UserController from "../controller/user.controller";
 import { check } from "express-validator";
 import noErrors from "../middlewares/noErrors.middleware";
-import emailAlreadyExists from "../middlewares/customs/emailAlreadyExists.middleware";
+// Importamos el validador adaptado con el nombre correcto
+import emailAlreadyExistsValidator from "../middlewares/customs/emailAlreadyExists.middleware";
 import isTheUser from "../middlewares/jwt/isTheUser.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import countryExists from "../middlewares/customs/countryExists.middleware";
-import OwnerCountry from "../models/owner_country.model";
-import CountryModel from "../models/country.model";
-import User from "../models/user.model";
 import validateJWT from "../middlewares/jwt/validateJWT.middleware";
 
-const router = Router();
+// Importamos el objeto 'db' centralizado de forma correcta para TypeScript
+import db from '../models';
 
+const router = Router();
 const controller: UserController = new UserController();
 
 router.get('/', controller.getAllUsers);
 router.get('/:id', controller.getUser);
 
 router.post('/', [
-    
     check('email', 'El email es obligatorio').notEmpty(),
     check('email', 'El correo no es válido').isEmail(),
-    check('email').custom( emailAlreadyExists ),
+    // Usamos el validador adaptado con el nombre correcto
+    check('email').custom(emailAlreadyExistsValidator),
     check('name', 'El nombre es obligatorio').notEmpty(),
     check('lastname', 'El apellido es obligatorio').notEmpty(),
     check('password', 'La contraseña es obligatoria').notEmpty(),
     check('dni', 'El DNI es obligatorio').notEmpty(),
     check('role_id', 'El rol es obligatorio').notEmpty(),
     noErrors
-] ,controller.register);
+], controller.register);
 
 /**
  * Request Change Password
@@ -37,8 +37,8 @@ router.post('/', [
 router.post('/request-change-password', [
     check('email', "Campo 'email' obligatorio").notEmpty(),
     check('email', "El email no es valido").isEmail(),
-    noErrors    
-] , controller.RequestChangePassword);
+    noErrors
+], controller.RequestChangePassword);
 
 /**
  * Change Password
@@ -46,9 +46,8 @@ router.post('/request-change-password', [
 router.patch('/change-password/:id', [validateJWT, isTheUser],
     controller.changePassword);
 
-
 //router.patch('/change-password/:id_request', [
-//    isAdmin,
+//    isAdmin,
 //], controller.changePassword);
 
 /**
@@ -75,11 +74,12 @@ router.get('/owners/get_by_country/:id_country', [
     check('id_country').custom(countryExists),
     noErrors
 ], async (req: Request, res: Response) => {
-    const propietarios = await OwnerCountry.findAll({
+    // Usamos los nombres de los modelos en minúsculas
+    const propietarios = await db.owner_country.findAll({
         where: {
             id_country: req.params.id_country
         },
-        include: [User, CountryModel]
+        include: [db.user, db.country] // Usamos los nombres de los modelos en minúsculas
     })
 
     return res.json(propietarios);

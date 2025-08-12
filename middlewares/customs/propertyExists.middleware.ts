@@ -1,15 +1,20 @@
-import { NextFunction, Request, Response } from "express";
-import CountryModel from "../../models/country.model";
-import Property from "../../models/property.model";
-import User from "../../models/user.model";
+import db from "../../models";
 
-async function propertyExists(id: number){
+// Desestructuramos el modelo 'property' del objeto 'db'
+const { property } = db;
 
-    const exists = await Property.findByPk(id);
+// La función debe recibir solo el valor a validar si se usa con `check().custom()`
+async function propertyExists(id: number) {
 
-    if(!exists){
+    // Usamos el modelo correcto 'property' para buscar por clave primaria
+    const exists = await property.findByPk(id);
+
+    if (!exists) {
+        // Si no existe, lanzamos un error que Express Validator capturará
         throw new Error(`La propiedad con ID ${id} no existe`);
     }
+
+    // Si existe, la validación pasa y no es necesario devolver nada
 }
 
 export default propertyExists;

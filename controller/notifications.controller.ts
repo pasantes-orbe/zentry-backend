@@ -1,12 +1,16 @@
 import { Request, Response } from "express";
-import Notification from "../models/notification.model";
+// Importamos el objeto 'db' centralizado
+import db from "../models"; 
+
+// Desestructuramos el modelo notification del objeto 'db' con el nombre correcto
+const { notification } = db;
 
 class NotificationsController {
     public async getAllByIdUser(req: Request, res: Response) {
         const { id_user } = req.params;
 
         try {
-            const notifications = await Notification.findAll({
+            const notifications = await notification.findAll({
                 where: { id_user },
                 order: [["id", "DESC"]] // opcional: muestra las más recientes primero
             });
