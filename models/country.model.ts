@@ -16,7 +16,7 @@ const CountryModel = db.define('country', {
     timestamps: false
 }
 );
-export default CountryModel;*/
+module.exports = CountryModel;*/
 
 //import { DataTypes, Model, Optional } from "sequelize";
 //import { getDbInstance } from "../DB/connection";
@@ -75,12 +75,12 @@ export default CountryModel;*/
 //    CountryModel.hasMany(models.GuardCountry, { foreignKey: 'id_country', as: 'guardCountries' });
 //};
 
-//export default CountryModel;
+//module.exports = CountryModel;
 
 
 // models/country.model.ts
 import { DataTypes } from "sequelize";
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Country = sequelize.define('country', {
         id: {

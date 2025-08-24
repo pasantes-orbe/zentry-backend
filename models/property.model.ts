@@ -22,12 +22,12 @@
 
 
 
-//export default Property;
+//module.exports = Property;
 
 // models/property.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Property = sequelize.define('property', {
         id: {

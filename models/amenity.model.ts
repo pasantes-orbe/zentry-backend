@@ -22,12 +22,12 @@
 
 
 
-//export default AmenityModel;
+//module.exports = AmenityModel;
 
 // models/amenity.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const AmenityModel = sequelize.define('amenity', {
         id: {

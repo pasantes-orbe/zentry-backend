@@ -1,37 +1,46 @@
+// auth.controller.ts
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-// Importamos el objeto 'db' centralizado
-import db from "../models";
-import generateToken from "../helpers/jwt/generateToken";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-// Corregimos la desestructuración de los modelos a minúsculas
-const { user, role } = db;
+// Cambiar la importación a 'require' para asegurar la compatibilidad con el archivo index.js
+const db = require("../models");
+const generateToken = require("../helpers/jwt/generateToken").default; // Asumiendo que generateToken es un export default
 
+// Obtenemos el secreto JWT del entorno o usamos un valor por defecto
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
-console.log("JWT_SECRET siendo utilizado auth.controller:", JWT_SECRET);
 
+// Definimos una interfaz para la carga útil del token
 interface TokenPayload extends JwtPayload {
     uid: string;
 }
 
 class AuthController {
-    public async login(req: Request, res: Response) {
+    /**
+     * Maneja la lógica de inicio de sesión de un usuario.
+     * Valida las credenciales y devuelve un token JWT y los datos del usuario.
+     */
+    public login = async (req: Request, res: Response) => {
+        console.log('🔐 Login controller ejecutado');
+        console.log('Body recibido:', req.body);
         try {
             const { email, password } = req.body;
 
+            // Validación básica de la entrada
             if (!email || !password) {
                 return res.status(400).json({ msg: "Email y contraseña son obligatorios" });
             }
 
             const emailMinusculas = email.toLowerCase();
 
-            // Usamos los modelos corregidos 'user' y 'role'
-            const foundUser = await user.findOne({
+            // Buscamos el usuario en la base de datos, incluyendo su rol.
+            // Accedemos a los modelos directamente desde el objeto 'db'
+            const foundUser = await db.user.findOne({
                 where: { email: emailMinusculas },
-                include: [{ model: role, as: 'role' }],
+                include: [{ model: db.role, as: 'userRole' }],
             });
 
+            // Verificamos si el usuario existe y si la contraseña es válida
             if (!foundUser || !foundUser.password) {
                 return res.status(404).json({ msg: "Usuario o contraseña inválido" });
             }
@@ -41,16 +50,34 @@ class AuthController {
                 return res.status(404).json({ msg: "Usuario o contraseña inválido" });
             }
 
+            // Generamos el token de autenticación
             const token = await generateToken(String(foundUser.id));
-            return res.status(200).json({ user: foundUser, token });
+            
+            // Creamos un nuevo objeto para la respuesta al cliente
+            const userResponse = {
+                // Copiamos todas las propiedades del usuario encontrado
+                ...foundUser.get({ plain: true }),
+                // Asignamos el rol a una propiedad 'role' para que el frontend lo pueda leer
+                role: foundUser.userRole.get({ plain: true })
+            };
+            
+            // Eliminamos la propiedad 'userRole' para evitar duplicados en la respuesta
+            delete userResponse.userRole;
+
+            // Devolvemos la respuesta exitosa
+            return res.status(200).json({ user: userResponse, token });
 
         } catch (error) {
+            // Manejo de errores
             console.error("Login error:", error);
             return res.status(500).json({ msg: "Error al iniciar sesión" });
         }
-    }
+    };
 
-    public async jwtValidate(req: Request, res: Response) {
+    /**
+     * Valida si un token JWT es válido.
+     */
+    public jwtValidate = async (req: Request, res: Response) => {
         const authHeader = req.header("Authorization");
         const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
@@ -60,8 +87,7 @@ class AuthController {
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            // Usamos el modelo 'user' corregido
-            const foundUser = await user.findByPk(uid);
+            const foundUser = await db.user.findByPk(uid);
             if (!foundUser) {
                 return res.status(404).json({ msg: "El usuario no existe" });
             }
@@ -69,9 +95,12 @@ class AuthController {
         } catch (error) {
             return res.status(403).json({ msg: "Token inválido" });
         }
-    }
+    };
 
-    public async isRole(req: Request, res: Response) {
+    /**
+     * Verifica si el usuario autenticado tiene un rol específico.
+     */
+    public isRole = async (req: Request, res: Response) => {
         const { role: requiredRole } = req.params;
         const authHeader = req.header("Authorization");
         const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
@@ -82,14 +111,17 @@ class AuthController {
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            // Usamos los modelos corregidos 'user' y 'role'
-            const foundUser = await user.findByPk(uid, {
-                include: [{ model: role, as: "role" }],
+            // Buscamos el usuario por su ID e incluimos su rol
+            const foundUser = await db.user.findByPk(uid, {
+                // Alias correcto para la consulta
+                include: [{ model: db.role, as: "userRole" }],
             });
 
             if (!foundUser) return res.status(404).json({ msg: "El usuario no existe" });
 
-            if (foundUser.role?.name === requiredRole) {
+            // Verificamos si el nombre del rol coincide con el rol requerido
+            // Importante: Usamos el alias 'userRole' para acceder a los datos del rol
+            if (foundUser.userRole?.name === requiredRole) {
                 return res.status(200).json(true);
             }
 
@@ -97,11 +129,10 @@ class AuthController {
         } catch (error) {
             return res.status(403).json({ msg: "Token inválido" });
         }
-    }
+    };
 }
 
 export default AuthController;
-
 
 
 

@@ -34,12 +34,12 @@
 //}
 //);
 
-//export default GuardSchedule;
+//module.exports = GuardSchedule;
 
 // models/guard_schedule.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const GuardSchedule = sequelize.define('guard_schedule', {
         id: {

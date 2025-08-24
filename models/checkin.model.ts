@@ -26,7 +26,7 @@ const CheckInModel = db.define('checkin', {
 }
 );
 
-export default CheckInModel;*/
+module.exports = CheckInModel;*/
 
 // models/checkin.model.ts
 //import { Model, DataTypes, Optional } from "sequelize";
@@ -157,12 +157,12 @@ export default CheckInModel;*/
 //    }
 //);
 
-//export default CheckIn;
+//module.exports = CheckIn;
 
 // models/checkin.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const CheckIn = sequelize.define('checkin', {
         id: {

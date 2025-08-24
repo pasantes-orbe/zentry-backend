@@ -19,14 +19,14 @@
 //}
 //);
 
-//export default Notifcation;
+//module.exports = Notifcation;
 
 
 
 // models/notification.model.ts
 import { DataTypes } from 'sequelize';
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Notification = sequelize.define('notification', {
         id: {

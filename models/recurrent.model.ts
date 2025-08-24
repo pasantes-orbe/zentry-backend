@@ -18,12 +18,12 @@
 //}
 //);
 
-//export default Recurrent;
+//module.exports = Recurrent;
 
 // models/recurrent.model.ts
 import { DataTypes } from 'sequelize';
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Recurrent = sequelize.define('recurrent', {
         id: {

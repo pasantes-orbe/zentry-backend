@@ -195,7 +195,7 @@ class Server {
 
     private constructor() {
         this.app = express();
-        this.port = Number(process.env.PORT) || 3003;
+        this.port = Number(process.env.PORT) || 3000;
 
         this.server = createServer(this.app);
 
@@ -215,10 +215,15 @@ class Server {
         return this._instance || (this._instance = new this());
     }
 
+    //Conexion al servidor localhost:4200, lo que hay que tener en cuenta es que el puerto del front y del back son diferentes.
+    //ademas hay que cambiar cuando se suba a produccion.
     middlewares() {
         const corsOptions = {
             credentials: true,
-            origin: "*",
+            origin: "http://localhost:4200", //esto hay que cambiarlo cuando se suba a produccion.
+            //Especifico para mi front que esta en el puerto 4200
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            allowedHeaders: ['Content-Type', 'Authorization']
         };
         this.app.use(cors(corsOptions));
         this.app.use(express.json());
@@ -235,7 +240,12 @@ class Server {
         this.app.use(this.apiPaths.roles, roleRoutes);
         this.app.use(this.apiPaths.properties, propertyRoutes);
         this.app.use(this.apiPaths.recurrents, recurrentRoutes);
+        
+        console.log('🔧 Registrando rutas...');
+        console.log('Auth route path:', this.apiPaths.auth); // Debe mostrar: /api/auth
         this.app.use(this.apiPaths.auth, authRoutes);
+        console.log('✅ Ruta auth registrada');
+
         this.app.use(this.apiPaths.countries, countriesRoutes);
         this.app.use(this.apiPaths.amenities, amenityRoutes);
         this.app.use(this.apiPaths.owners, ownersRoutes);

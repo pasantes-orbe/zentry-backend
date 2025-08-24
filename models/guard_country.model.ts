@@ -72,13 +72,13 @@
 //     }
 // },
 
-//export default GuardCountry;
+//module.exports = GuardCountry;
 
 
 // models/guard_country.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const GuardCountry = sequelize.define('guard_country', {
         id: {

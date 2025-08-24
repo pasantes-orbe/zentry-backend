@@ -2,7 +2,7 @@
 // models/antipanic.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const AntipanicModel = sequelize.define('antipanic', {
         id: {
@@ -63,7 +63,7 @@ export default (sequelize: any, DataTypes: any) => {
 //    updatedAt: false
 //});
 
-//export default AntipanicModel;
+//module.exports = AntipanicModel;
 
 
 /*15/7/25
@@ -88,4 +88,4 @@ const AntipanicModel = db.define('antipanic', {
 }
 );
 
-export default AntipanicModel;*/
+module.exports = AntipanicModel;*/

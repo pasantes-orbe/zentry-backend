@@ -1,7 +1,7 @@
 // models/user.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const User = sequelize.define('user', {
         id: {
@@ -90,7 +90,7 @@ const User = db.define('user', {
     timestamps: false
 }
 );
-export default User;*/
+module.exports = User;*/
 
 
 // const Role = db.define('role', {

@@ -30,13 +30,13 @@
 //}
 //);
 
-//export default OwnerCountry;
+//module.exports = OwnerCountry;
 
 //07/08/25
 // models/owner_country.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const OwnerCountry = sequelize.define('owner_country', {
         id: {

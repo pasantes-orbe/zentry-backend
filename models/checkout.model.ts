@@ -54,7 +54,7 @@
 //  }
 //);
 
-//export default CheckOutModel;
+//module.exports = CheckOutModel;
 
 
 // models/checkout.model.ts
@@ -67,7 +67,7 @@
 // models/checkout.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const CheckOut = sequelize.define('checkout', {
         id: {

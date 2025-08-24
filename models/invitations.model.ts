@@ -47,13 +47,13 @@
 //  timestamps: false,
 //});
 
-//export default Invitation;
+//module.exports = Invitation;
 
 // models/invitation.model.ts
 
 import { Model, Optional, DataTypes } from 'sequelize';
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Invitation = sequelize.define('invitation', {
         id: {

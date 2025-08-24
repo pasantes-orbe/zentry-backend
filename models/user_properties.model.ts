@@ -28,13 +28,13 @@
 
 //}
 //);
-//export default UserProperties;
+//module.exports = UserProperties;
 
 // models/user_properties.model.ts
 // Este modelo ya estaba bien, pero lo unificamos al patrón con un par de ajustes para evitar errores
 import { DataTypes, Model } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const UserProperties = sequelize.define('user_properties', {
         id: {

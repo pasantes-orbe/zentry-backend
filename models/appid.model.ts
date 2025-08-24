@@ -25,12 +25,12 @@
 
 
 
-//export default AppId;
+//module.exports = AppId;
 
 // models/appid.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const AppId = sequelize.define('appid', {
         id: {

@@ -24,12 +24,12 @@
 //    timestamps: false
 //});
 
-//export default passwordChangeRequest;
+//module.exports = passwordChangeRequest;
 
 //models/passwordChangeRequest.model.ts
 import { DataTypes } from "sequelize";
 
-export default (sequelize: any, DataTypes: any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const PasswordChangeRequest = sequelize.define('password_change_request', {
         id: {

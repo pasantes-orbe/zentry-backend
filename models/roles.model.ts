@@ -1,7 +1,8 @@
 // models/roles.model.ts
 import { DataTypes } from 'sequelize';
 
-export default (sequelize: any, DataTypes: any) => {
+//antes module.exports = (sequelize: any, DataTypes: any) => { 
+module.exports = (sequelize: any, DataTypes: any) => {
 
     const Role = sequelize.define('role', {
         id: {

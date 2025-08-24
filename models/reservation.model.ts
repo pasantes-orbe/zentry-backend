@@ -26,7 +26,7 @@ Reservation.belongsTo(User, {
     foreignKey: 'id_user',
     as: 'user'
 });
-export default Reservation;*/
+module.exports = Reservation;*/
 
 //import { DataTypes } from "sequelize";
 //import AmenityModel from "./amenity.model";
@@ -78,14 +78,14 @@ export default Reservation;*/
 //    as: 'user'
 //});
 
-//export default Reservation;
+//module.exports = Reservation;
 
 
 // models/reservation.model.ts
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { ReservationAttributes, ReservationCreationAttributes } from '../interfaces/reservation.interface';
 
-export default (sequelize: Sequelize) => {
+module.exports = (sequelize: Sequelize) => {
     // Definimos la interfaz del modelo, especificando sus atributos y los atributos de creación.
     // Esto es lo que soluciona los errores de tipado.
     const Reservation = sequelize.define<Model<ReservationAttributes, ReservationCreationAttributes>>('reservation', {
