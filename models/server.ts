@@ -220,7 +220,7 @@ class Server {
     middlewares() {
         const corsOptions = {
             credentials: true,
-            origin: "http://localhost:4200", //esto hay que cambiarlo cuando se suba a produccion.
+            origin: ["http://localhost:4200","http://localhost:8100"], //esto hay que cambiarlo cuando se suba a produccion.
             //Especifico para mi front que esta en el puerto 4200
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: ['Content-Type', 'Authorization']

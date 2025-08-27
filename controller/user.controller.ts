@@ -1,3 +1,4 @@
+//controller/user.controller.ts
 import { Request, Response } from "express";
 // Importamos el objeto 'db' centralizado que contiene todos los modelos inicializados.
 import db from "../models"; 
@@ -171,3 +172,4 @@ class UserController {
     }
 }
 export default UserController;
+

@@ -1,4 +1,4 @@
-// auth.controller.ts
+// controller/auth.controller.ts
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
