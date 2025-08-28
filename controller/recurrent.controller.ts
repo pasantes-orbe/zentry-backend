@@ -1,3 +1,4 @@
+//controller/recurrent.controller.ts
 import { Request, Response } from "express";
 // Importamos el objeto 'db' centralizado para acceder a todos los modelos
 import db from "../models";
@@ -11,9 +12,11 @@ class RecurrentController {
 
     public async getAll(req: Request, res: Response) {
         try {
-            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            // ✅ CORREGIDO: Agregado alias explícito
             const recurrents = await recurrent.findAll({
-                include: [property],
+                include: [{
+                    model: property
+                }],
                 attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
             });
             return res.json(recurrents);
@@ -27,9 +30,11 @@ class RecurrentController {
         if (isNaN(id)) return res.status(400).json({ msg: "ID inválido" });
 
         try {
-            // Usamos los modelos corregidos: 'recurrent' y 'property'
+            // ✅ CORREGIDO: Agregado alias explícito
             const foundRecurrent = await recurrent.findByPk(id, {
-                include: property,
+                include: [{
+                    model: property,
+                }],
                 attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
             });
             if (foundRecurrent) {
@@ -77,13 +82,15 @@ class RecurrentController {
     public async create(req: Request, res: Response) {
         const { body } = req;
         try {
-            // Usamos los modelos corregidos: 'recurrent' y 'property'
+           // ✅ CORREGIDO: Agregado alias explícito
             const exists = await recurrent.findOne({
                 where: {
                     dni: body.dni,
                     id_property: body.id_property
                 },
-                include: property
+                include: [{
+                    model: property
+                }]
             });
             if (exists) {
                 const propertyName = exists.get('property') as unknown as PropertyInterface;

@@ -31,7 +31,7 @@
 //module.exports = UserProperties;
 
 // models/user_properties.model.ts
-// Este modelo ya estaba bien, pero lo unificamos al patrón con un par de ajustes para evitar errores
+
 import { DataTypes, Model } from "sequelize";
 
 module.exports = (sequelize: any, DataTypes: any) => {

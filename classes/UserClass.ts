@@ -1,3 +1,4 @@
+//classes/UserClass.ts
 import db from "../models"; // Importa el objeto db completo
 import { Op } from "sequelize";
 

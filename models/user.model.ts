@@ -53,6 +53,15 @@ module.exports = (sequelize: any, DataTypes: any) => {
 
     User.associate = (models: any) => {
         User.belongsTo(models.role, { foreignKey: 'role_id', as: 'userRole' });
+
+        // ✅ CORREGIDO: Cambiar de hasMany a belongsToMany para relación many-to-many
+        User.belongsToMany(models.property, { 
+            through: models.user_properties,
+            foreignKey: 'id_user',
+            otherKey: 'id_property',
+            as: 'properties'
+        });
+        
         User.hasMany(models.user_properties, { foreignKey: 'id_user', as: 'userProperties' });
         User.hasMany(models.guard_country, { foreignKey: 'id_user', as: 'guardCountries' });
         User.hasMany(models.appid, { foreignKey: 'id_user', sourceKey: 'id' });

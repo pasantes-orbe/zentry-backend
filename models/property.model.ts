@@ -32,11 +32,20 @@ module.exports = (sequelize: any, DataTypes: any) => {
             sourceKey: 'id'
         });
 
-        // ✅ CORREGIDO: Agregado alias 'userProperty' 
+        /* alias 'userProperty'
+
         Property.hasOne(models.user_properties, {
             foreignKey: 'id_property',
             sourceKey: 'id',
             as: 'userProperty'  // ← Este alias estaba faltando
+        });*/
+
+        // ✅ CORREGIDO: Cambiar de hasOne a belongsToMany para relación many-to-many
+        Property.belongsToMany(models.user, {
+            through: models.user_properties,
+            foreignKey: 'id_property',
+            otherKey: 'id_user',
+            as: 'users'
         });
     };
 

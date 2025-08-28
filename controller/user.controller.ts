@@ -83,6 +83,7 @@ class UserController {
             request
         });
     }
+    
 
     public async allPasswordChangeRequests(req: Request, res: Response) {
         const { pendient } = req.query;
@@ -91,7 +92,11 @@ class UserController {
                 where: {
                     changed: false
                 },
-                include: user
+                include: [{
+                    model: user,
+                    as: 'user'  // ✅ Agregado el alias correcto
+                }]
+                
             })
             return res.json(requests);
         }

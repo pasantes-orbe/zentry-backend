@@ -16,9 +16,12 @@ const router = Router();
  * Get All
  */
 router.get('/', async (req: Request, res: Response) => {
-    // Usamos el modelo 'user_properties' corregido
+    // Corrección a include, as
     const keys = await user_properties.findAll({
-        include: [property]
+        include: [{
+            model: property,
+            as: 'property'
+        }]
     });
     return res.json(keys);
 });
@@ -30,12 +33,15 @@ router.get('/:id_owner', [
     check('id_owner').custom(userExists),
     noErrors
 ], async (req: Request, res: Response) => {
-    // Usamos el modelo 'user_properties' corregido
+    // Corrección a include, as
     const foundProperty = await user_properties.findOne({
         where: {
             id_user: req.params.id_owner,
         },
-        include: [property]
+        include: [{
+            model: property,
+            as: 'property'
+        }]
     })
     return res.json(foundProperty);
 });
@@ -51,7 +57,10 @@ router.get('/country/get_by_id/:id_country', [
 ], async (req: Request, res: Response) => {
     // Usamos el modelo 'user_properties' corregido
     const owners = await user_properties.findAll({
-        include: [property]
+        include: [{
+            model:property,
+            as: 'property'
+        }]
     });
 
     const owners_by_country = owners.filter((owner: any) => {
