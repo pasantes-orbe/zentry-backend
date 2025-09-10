@@ -1,3 +1,4 @@
+// routes/reservation.routes.ts
 import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import amenityExists from "../middlewares/customs/amenityExists.middleware";

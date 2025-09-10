@@ -3,4 +3,5 @@
 /dist
 /build
 
-*.js.mapconfig/config.json
+*.js.map
+config/config.json

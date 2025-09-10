@@ -1,3 +1,4 @@
+// interfaces/reservation.interface.ts
 import { Model, Optional } from 'sequelize';
 import { UserInterface } from './user.interface';
 import { AmenityInterface } from './amenity.interface';
