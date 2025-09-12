@@ -1,3 +1,4 @@
+// controller/notifications.controller.ts
 import { Request, Response } from "express";
 // Importamos el objeto 'db' centralizado
 import db from "../models"; 
