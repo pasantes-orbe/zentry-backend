@@ -135,7 +135,7 @@ class Server {
 export default Server;*/
 
 
-//server.ts
+//models/server.ts
 import express, { Application } from "express";
 import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";

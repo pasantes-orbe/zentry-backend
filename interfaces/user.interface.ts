@@ -1,3 +1,4 @@
+// interfaces/user.interface.ts
 import { RoleInterface } from "./role.interface";
 
 export interface UserInterface {

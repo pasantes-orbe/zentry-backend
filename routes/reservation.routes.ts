@@ -10,12 +10,19 @@ import db from "../models";
 import { Model } from "sequelize";
 import { ReservationAttributes } from '../interfaces/reservation.interface';
 
+// 🚨 IMPORTACIÓN NECESARIA PARA ACCEDER AL SOCKET.IO
+// Asumimos que Server.ts exporta la clase Server por defecto
+import Server from "../models/server";
+
 
 // Desestructuramos los modelos necesarios del objeto 'db'
 const { reservation, invitation, checkin, amenity, user, notification } = db;
 
 const router = Router();
 
+// 🚨 SE ELIMINÓ la línea 'const reservationsController = require(...)'.
+
+// Ruta POST principal para crear una reserva
 router.post('/', [
     check('id_amenity', "El campo 'id_amenity' no puede estar vacío").notEmpty(),
     check('id_amenity', "El campo 'id_amenity' debe ser numérico").isNumeric(),
@@ -60,12 +67,21 @@ router.post('/', [
         }
 
         // Paso 3: Crear la notificación para el administrador
-        await notification.create({
+        const newNotification = await notification.create({ // 💡 CAPTURAMOS EL OBJETO CREADO
             title: 'Nueva Solicitud de Reserva',
             content: `El propietario con ID ${id_user} solicitó una reserva para la amenidad ${id_amenity}.`,
-            id_user: 1 // <--- IMPORTANTE: Usar el ID del administrador del sistema
+            id_user: 1 // ID del administrador
         });
-
+        
+        // 🚨 PASO 4: EMITIR LA NOTIFICACIÓN EN TIEMPO REAL
+        // Accedemos a la instancia Singleton del servidor y a su objeto io (Socket.io)
+        const serverInstance = Server.instance; 
+        
+        // Validamos que exista y emitimos el evento que el frontend está escuchando
+        if (serverInstance && serverInstance.io) {
+            serverInstance.io.emit('new-notification', newNotification);
+        }
+        
         return res.status(201).json(newReservation);
 
     } catch (error) {
