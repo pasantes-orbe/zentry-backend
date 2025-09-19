@@ -64,8 +64,28 @@ class AuthController {
             // Eliminamos la propiedad 'userRole' para evitar duplicados en la respuesta
             delete userResponse.userRole;
 
-            // Devolvemos la respuesta exitosa
-            return res.status(200).json({ user: userResponse, token });
+            let ownerResponse = null;
+
+            if (userResponse.role.name === 'propietario') {
+                // Buscamos la información del propietario/user_property, incluyendo la propiedad
+                const foundOwner = await db.owner.findOne({ 
+                    where: { id_user: foundUser.id },
+                    include: [{ model: db.property, as: 'property' }] 
+                });
+
+                if (foundOwner) {
+                    ownerResponse = foundOwner.get({ plain: true });
+                    // Limpiamos los datos del usuario dentro del owner para evitar duplicados en el storage
+                    delete ownerResponse.user; 
+                }
+            }
+
+            // Devolvemos la respuesta exitosa con el objeto owner (si aplica)
+            return res.status(200).json({ 
+                user: userResponse, 
+                token, 
+                owner: ownerResponse //¡CLAVE PARA EL FRONTEND!
+            });
 
         } catch (error) {
             // Manejo de errores

@@ -28,7 +28,7 @@ class AntipanicController {
     }
 
     public async newAntipanic(req: Request, res: Response) {
-        const { id_owner, address, id_country, propertyNumber } = req.body;
+        const { id_owner, address, id_country, propertyNumber, latitude, longitude } = req.body;
         const state = true;
 
         try {
@@ -37,7 +37,9 @@ class AntipanicController {
                 address,
                 state,
                 id_country,
-                propertyNumber
+                propertyNumber,
+                lat: latitude, //Mapeo de latitude a lat (campo de la DB)
+                lng: longitude  //Mapeo de longitude a lng (campo de la DB)
             });
 
             const server = Server.instance;
@@ -101,6 +103,13 @@ class AntipanicController {
                 state: false,
                 details
             });
+            
+            //EMITIR SOCKET PARA AVISAR LA CANCELACIÓN
+            const server = Server.instance;
+            server.io.emit('owner-desactivate-antipanic', { 
+                msg: `Antipánico ${id} cancelado por el propietario.`,
+                antipanic: antipanicUpdated
+            });
 
             res.json({
                 msg: "Estado actualizado correctamente",

@@ -17,7 +17,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
         propertyNumber: { type: DataTypes.INTEGER },
         ownerId: { type: DataTypes.INTEGER },
         guardId: { type: DataTypes.INTEGER },
-        id_country: { type: DataTypes.INTEGER }
+        id_country: { type: DataTypes.INTEGER },
+        lat: { type: DataTypes.FLOAT }, 
+        lng: { type: DataTypes.FLOAT }
     }, {
         tableName: 'antipanics', // Se recomienda usar el nombre de la tabla en plural
         timestamps: true,

@@ -1,3 +1,4 @@
+// routes/antipanic.routes.ts
 import { Router } from "express";
 import { check } from "express-validator";
 import AntipanicController from "../controller/antipanic.controller";
