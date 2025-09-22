@@ -83,6 +83,7 @@ class Country {
 }
 export default Country;*/
 
+// classes/Country.ts
 import db from '../models';
 const { country } = db;
 
@@ -93,16 +94,25 @@ class Country {
     private image: string;
     private latitude: number;
     private longitude: number;
+    private address: string;
+    private locality: string;
+    private phone: string;
+    private perimeterPoints: string; // Para el JSON del perímetro
     private amenities: any[] = [];
     private properties: any[] = [];
     private recurrents: any[] = [];
 
-    constructor(name: string, latitude: number, longitude: number, image: string = "", id?: number) {
+    constructor(name: string, latitude: number, longitude: number, image: string = "",
+    address: string = "", locality: string = "", phone: string = "", perimeterPoints: string = "", id?: number) {
         this.id = id;
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
         this.image = image;
+        this.address = address;
+        this.locality = locality;
+        this.phone = phone;
+        this.perimeterPoints = perimeterPoints;
     }
 
     // Método asincrónico para guardar correctamente en Sequelize
@@ -112,7 +122,11 @@ class Country {
                 name: this.name,
                 avatar: this.image,
                 latitude: this.latitude,
-                longitude: this.longitude
+                longitude: this.longitude,
+                address: this.address,
+                locality: this.locality,
+                phone: this.phone,
+                perimeter_points: this.perimeterPoints
             });
             return true;
         } catch (error) {

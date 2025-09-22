@@ -100,6 +100,23 @@ module.exports = (sequelize: any, DataTypes: any) => {
             type: DataTypes.DOUBLE,
             allowNull: false,
         },
+        address: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        locality: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        phone: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        // `perimeter_points` guarda el JSON de los 4 puntos
+        perimeter_points: {
+            type: DataTypes.TEXT, 
+            allowNull: true,
+        },
         avatar: {
             type: DataTypes.STRING,
             allowNull: false,

@@ -1,3 +1,4 @@
+//classes/Countries.ts
 import db from '../models'; // Importamos el objeto 'db'
 import Country from './Country';
 

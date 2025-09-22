@@ -33,6 +33,7 @@
 //module.exports = OwnerCountry;
 
 //07/08/25
+
 // models/owner_country.model.ts
 import { DataTypes } from "sequelize";
 
