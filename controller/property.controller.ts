@@ -153,14 +153,18 @@ class PropertyController {
         },
         include: [
           {
-            model: user_properties,
-            as: 'userProperties', // Especificamos el alias
-            include: [
-              {
-                model: user,
-                as: 'propertyUser' // Especificamos el alias para user
-              }
-            ]
+            //model: user_properties,
+            //as: 'userProperties', // Especificamos el alias
+            model: user,
+            as: 'users', // Usamos el alias definido en el modelo Property
+            through: { attributes: [] }, // Excluye los atributos de la tabla intermedia
+            //LUEGO DESCOMENTAR PARA QUE SE VEA EN EL FRONT "PROPIETARIOS"
+            //include: [
+            //  {
+            //    model: user,
+            //    as: 'propertyUser' // Especificamos el alias para user
+            //  }
+            //]
           }
         ]
       });
@@ -168,7 +172,8 @@ class PropertyController {
       const response = properties.map((p: any) => {
         return {
           property: p,
-          owners: p.userProperties || [] // Usamos el alias especificado
+          //owners: p.userProperties || [] // Usamos el alias especificado
+          owners: p.users ? p.users.map((u: any) => ({ user: u })) : []
         };
       });
 

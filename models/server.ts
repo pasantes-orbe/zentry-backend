@@ -157,6 +157,7 @@ import antipanic from "../routes/antipanic.routes";
 import pushNotifications from "../routes/push_notifications.routes";
 import notificationRoutes from "../routes/notification.routes";
 import invitationRoutes from "../routes/invitations.routes";
+import userPropertiesRoutes from "../routes/user_properties.routes";
 
 import { authenticateDb } from "../DB/connection";
 import { getDbInstance } from "../DB/connection";
@@ -187,6 +188,7 @@ class Server {
         checkin: "/api/checkin",
         checkout: "/api/checkout",
         antipanic: "/api/antipanic",
+        user_properties: "/api/user-properties",
         push_notifications: "/api/notifications",
         notifications: "/api/notifications",
         invitation: "/api/invitation",
@@ -267,6 +269,7 @@ class Server {
         this.app.use(this.apiPaths.checkin, checkIn);
         this.app.use(this.apiPaths.checkout, checkOut);
         this.app.use(this.apiPaths.antipanic, antipanic);
+        this.app.use(this.apiPaths.user_properties, userPropertiesRoutes);
         this.app.use(this.apiPaths.push_notifications, pushNotifications);
         this.app.use(this.apiPaths.notifications, notificationRoutes);
         this.app.use(this.apiPaths.invitation, invitationRoutes);

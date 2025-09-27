@@ -19,9 +19,12 @@ import { RecurrentInterface } from "../interfaces/recurrent";
 import { RoleInterface } from "../interfaces/role";
 import { UserInterface } from "../interfaces/user";
 import { UserPropertiesInterface } from "../interfaces/userProperties";
+import { UserPropertyInterface } from "../interfaces/user.property.interface";
+
 import { AmenityInterface } from "../interfaces/amenity"; 
 import { ReservationAttributes } from '../interfaces/reservation.interface';
 import { GuardScheduleInterface } from '../interfaces/guard_schedule.interface'; 
+
 
 
 
