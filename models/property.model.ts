@@ -14,10 +14,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         address: { type: DataTypes.STRING },
         avatar: { type: DataTypes.STRING }
     },
-    {
-        tableName: 'properties',
-        timestamps: false
-    });
+    { // ✅ CORRECCIÓN: Este es el segundo objeto para la configuración.
+        tableName: 'properties',
+        timestamps: false
+    });
 
     Property.associate = (models: any) => {
         // Asociación con country

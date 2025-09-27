@@ -1,3 +1,4 @@
+// routes/user.routes.ts
 import { Request, Response, Router } from "express";
 import UserController from "../controller/user.controller";
 import { check } from "express-validator";

@@ -1,3 +1,4 @@
+//controller/property.controller.ts
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 // Importamos el objeto 'db' centralizado para acceder a todos los modelos
@@ -91,6 +92,13 @@ class PropertyController {
 
   public async create(req: Request, res: Response) {
     const { body } = req;
+    // 🚨 AÑADIR ESTE BLOQUE DE DEBUGGING
+    console.log("--- DEBUG START: Propiedad a crear ---");
+    console.log("req.body:", req.body);
+    console.log("req.params:", req.params);
+    console.log("req.files (Avatar):", req.files);
+    console.log("-------------------------------------");
+    // 🚨 FIN DEL BLOQUE DE DEBUGGING
 
     try {
       const propertyNumber = await property.findOne({
@@ -106,12 +114,23 @@ class PropertyController {
         });
       }
 
-      const { tempFilePath }: any = req.files?.avatar;
-      const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+    // ✅ Manejar el caso de que no se suba un avatar
+      let secure_url = null;
 
+      if (req.files?.avatar) {
+        const { tempFilePath }: any = req.files?.avatar;
+        const result = await new Uploader().uploadImage(tempFilePath);
+        secure_url = result.secure_url;
+      }
       body['avatar'] = secure_url;
 
+      // 🚨 DEBUG FINAL: Muestra el objeto que se intentará insertar
+      console.log("DATOS LISTOS PARA INSERT:", body); 
+
       const newProperty = await property.create(body);
+
+        // 🚨 DEBUG FINAL: Muestra la propiedad creada
+      console.log("PROPIEDAD CREADA:", newProperty.id); 
 
       res.json({
         msg: "La propiedad se creó con éxito",

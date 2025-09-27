@@ -1,3 +1,4 @@
+// Importamos los tipos necesarios desde Sequelize
 import { Model } from "sequelize";
 import db from "../models";
 import { GuardInterface } from '../interfaces/guard.interface';
