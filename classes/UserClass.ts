@@ -5,47 +5,50 @@ import { Op } from "sequelize";
 const { user, role } = db; // Extrae los modelos que necesitas
 
 class UserClass {
-    public async getAll() {
-        const users = await user.findAll({
-            attributes: { exclude: ['password', 'role_id'] },
-            include: [{
-                model: role,
-                as: 'userRole'
-            }],
-        });
-        return users;
-    }
+    public async getAll() {
+        const users = await user.findAll({
+            attributes: { exclude: ['password', 'role_id'] },
+            include: [{
+                model: role,
+                as: 'userRole'
+            }],
+        });
+        return users;
+    }
 
-    public async getAllByRole(roleName: string) {
-        const users = await user.findAll({
-            where: {
-                '$userRole.name$': roleName
-            },
-            attributes: { exclude: ['password', 'role_id'] },
-            include: [{
-                model: role,
-                as: 'userRole'
-            }],
-        });
-        return users;
-    }
+    public async getAllByRole(roleName: string) {
+        const users = await user.findAll({
+            where: {
+                '$userRole.name$': roleName
+            },
+            attributes: { exclude: ['password', 'role_id'] },
+            include: [{
+                model: role,
+                as: 'userRole'
+            }],
+        });
+        return users;
+    }
 
-    public async is(roleName: string, id: number) {
-        const foundUser = await user.findByPk(id, {
-            attributes: { exclude: ['password', 'role_id'] },
-            include: [{
-                model: role,
-                as: 'userRole'
-            }],
-        });
+    public async is(roleName: string, id: number) {
+        const foundUser = await user.findByPk(id, {
+            attributes: { exclude: ['password', 'role_id'] },
+            include: [{
+                model: role,
+                as: 'userRole'
+            }],
+        });
 
-        if (!foundUser || !foundUser.role) return false;
+        // FIX: Se cambió el acceso de 'foundUser.role' a 'foundUser.userRole' para coincidir con el alias de la inclusión.
+        // Esto previene los errores o cuelgues cuando se llama a esta función desde los middlewares/rutas POST.
+        if (!foundUser || !foundUser.userRole) return false; 
 
-        return foundUser.role.name === roleName;
-    }
+        return foundUser.userRole.name === roleName;
+    }
 }
 
 export default UserClass;
+
 
 /*15/7/25
 import { Op } from "sequelize";

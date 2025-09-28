@@ -1,4 +1,4 @@
-//controller/property.controller.ts
+// controller/property.controller.ts
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 // Importamos el objeto 'db' centralizado para acceder a todos los modelos
@@ -18,7 +18,7 @@ class PropertyController {
         include: [
           {
             model: user_properties,
-            as: 'userProperties' // Especificamos el alias
+            as: 'UserProperties' // 🟢 Usamos el alias consistente 'UserProperties'
           }
         ]
       });
@@ -66,11 +66,11 @@ class PropertyController {
         include: [
           {
             model: user_properties,
-            as: 'userProperties', // Especificamos el alias
+            as: 'UserProperties', // 🟢 Usamos el alias consistente 'UserProperties'
             include: [
               {
                 model: user,
-                as: 'propertyUser' // Asumiendo que este es el alias para user
+                as: 'user' // 🟢 Asumimos 'user' si la tabla pivote lo usa (user_properties.model.ts)
               }
             ]
           }
@@ -92,14 +92,13 @@ class PropertyController {
 
   public async create(req: Request, res: Response) {
     const { body } = req;
-    // 🚨 AÑADIR ESTE BLOQUE DE DEBUGGING
-    console.log("--- DEBUG START: Propiedad a crear ---");
-    console.log("req.body:", req.body);
-    console.log("req.params:", req.params);
-    console.log("req.files (Avatar):", req.files);
-    console.log("-------------------------------------");
-    // 🚨 FIN DEL BLOQUE DE DEBUGGING
-
+    
+    console.log("--- DEBUG START: Propiedad a crear ---");
+    console.log("req.body:", req.body);
+    console.log("req.params:", req.params);
+    console.log("req.files (Avatar):", req.files);
+    console.log("-------------------------------------");
+    
     try {
       const propertyNumber = await property.findOne({
         where: {
@@ -114,23 +113,21 @@ class PropertyController {
         });
       }
 
-    // ✅ Manejar el caso de que no se suba un avatar
-      let secure_url = null;
+      // ✅ Manejar el caso de que no se suba un avatar
+      let secure_url = null;
 
-      if (req.files?.avatar) {
+      if (req.files?.avatar) {
         const { tempFilePath }: any = req.files?.avatar;
         const result = await new Uploader().uploadImage(tempFilePath);
-        secure_url = result.secure_url;
-      }
+        secure_url = result.secure_url;
+      }
       body['avatar'] = secure_url;
 
-      // 🚨 DEBUG FINAL: Muestra el objeto que se intentará insertar
-      console.log("DATOS LISTOS PARA INSERT:", body); 
+      console.log("DATOS LISTOS PARA INSERT:", body);
 
       const newProperty = await property.create(body);
 
-        // 🚨 DEBUG FINAL: Muestra la propiedad creada
-      console.log("PROPIEDAD CREADA:", newProperty.id); 
+      console.log("PROPIEDAD CREADA:", newProperty.id);
 
       res.json({
         msg: "La propiedad se creó con éxito",
@@ -145,37 +142,48 @@ class PropertyController {
     }
   }
 
+  /**
+   * Obtiene todas las propiedades de un país, incluyendo los usuarios/propietarios relacionados.
+   * La respuesta se mapea a la estructura AGRUPADA { property: {...}, owners: [...] }
+   * para coincidir con la Property_OwnerInterface del frontend.
+   */
   public async getByCountry(req: Request, res: Response) {
     try {
+      // 1. Consulta: Traemos propiedades e incluimos los usuarios (Many-to-Many)
       const properties = await property.findAll({
         where: {
           id_country: req.params.id_country
         },
         include: [
           {
-            //model: user_properties,
-            //as: 'userProperties', // Especificamos el alias
             model: user,
-            as: 'users', // Usamos el alias definido en el modelo Property
+            as: 'users', // CRÍTICO: Debe ser 'users' (del belongsToMany en Property model)
             through: { attributes: [] }, // Excluye los atributos de la tabla intermedia
-            //LUEGO DESCOMENTAR PARA QUE SE VEA EN EL FRONT "PROPIETARIOS"
-            //include: [
-            //  {
-            //    model: user,
-            //    as: 'propertyUser' // Especificamos el alias para user
-            //  }
-            //]
           }
         ]
       });
 
-      const response = properties.map((p: any) => {
-        return {
-          property: p,
-          //owners: p.userProperties || [] // Usamos el alias especificado
-          owners: p.users ? p.users.map((u: any) => ({ user: u })) : []
-        };
-      });
+      // 2. Mapeo FINAL: Transformamos la respuesta AGRUPADA para que coincida con la interfaz Property_OwnerInterface
+      const response = properties
+        .filter((p: any) => p.users && p.users.length > 0) // Solo propiedades con al menos un usuario
+        .map((p: any) => {
+          
+          // Mapeamos los usuarios a la estructura 'Owner' esperada por el frontend
+          const ownersMapped = p.users.map((u: any) => ({
+            // Simulamos la estructura de Owner (tabla intermedia user_properties)
+            // Aunque estamos usando la relación M:M directa, el frontend espera este objeto.
+            // Los campos 'id', 'property' se ignoran o se rellenan con datos del M:M.
+            id: u.id, // Usamos el ID del usuario como referencia para el ID de asignación temporal
+            user: u.toJSON(), // Objeto User completo
+            property: p.toJSON(), // Objeto Property completo (el frontend podría ignorar esto)
+          }));
+          
+          // Devolvemos la estructura AGRUPADA: { property: ..., owners: [...] }
+          return {
+            property: p.toJSON(),
+            owners: ownersMapped,
+          };
+        });
 
       return res.json(response);
     } catch (error) {
@@ -183,6 +191,46 @@ class PropertyController {
       res.status(500).json({ msg: "Error al obtener propiedades por país" });
     }
   }
+
+      // 🟢 NUEVO MÉTODO: Obtiene las propiedades del usuario logueado
+    public async getPropertiesByOwner(req: Request, res: Response) {
+        // El middleware validateJWT debe haber inyectado el objeto user en req.user
+        // Si usas TypeScript, probablemente req.user no exista en la definición de Request por defecto.
+        // Asumo que tu validateJWT adjunta req.user.id o req.uid. Usaremos req.uid por convención.
+        // SI TU JWT ADJUNTA req.user.id, USA ESA PROPIEDAD EN SU LUGAR.
+        const ownerId = (req as any).uid || (req as any).user?.id; // Usamos un fallback si es necesario
+
+        if (!ownerId) {
+            return res.status(401).json({ msg: "ID de usuario no encontrado en el token." });
+        }
+
+        try {
+            // Buscamos las entradas en la tabla intermedia user_properties
+            // e incluimos los detalles de la propiedad asociada (Property)
+            const userProperties = await user_properties.findAll({
+                where: { id_user: ownerId }, // Buscamos por el ID del usuario logueado
+                include: [
+                    { 
+                        model: property, // Incluimos la tabla Property
+                        as: 'property', // Usamos el alias de la relación (debes verificarlo en user_properties.model.ts)
+                        attributes: ['id', 'name', 'number', 'address', 'id_country', 'avatar'] // Atributos que necesitamos
+                    }
+                ]
+            });
+
+            // Mapeamos el resultado para obtener solo los objetos Property que se mostrarán en el Front
+            // Usamos .toJSON() para serializar los objetos Sequelize correctamente.
+            const properties = userProperties
+                .filter(up => up.property)
+                .map(up => up.property.toJSON()); // Convertimos a JSON
+
+            return res.json(properties);
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ msg: "Error al obtener las propiedades del propietario." });
+        }
+    }
 
   public async update(req: Request, res: Response) {
     const { name, number, address } = req.body;

@@ -54,6 +54,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
     User.associate = (models: any) => {
         User.belongsTo(models.role, { foreignKey: 'role_id', as: 'userRole' });
 
+        // Esta es la relación que permite a Sequelize encontrar propietarios por país.
+        User.hasMany(models.owner_country, { foreignKey: 'id_user', as: 'ownerCountries' });
+
         // ✅ CORREGIDO: Cambiar de hasMany a belongsToMany para relación many-to-many
         User.belongsToMany(models.property, { 
             through: models.user_properties,

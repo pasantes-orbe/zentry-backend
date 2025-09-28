@@ -64,27 +64,73 @@ class AuthController {
             // Eliminamos la propiedad 'userRole' para evitar duplicados en la respuesta
             delete userResponse.userRole;
 
-            let ownerResponse = null;
+            //let ownerResponse = null;
+
+            //if (userResponse.role.name === 'propietario') {
+                // Buscamos la información del propietario/user_property, incluyendo la propiedad
+                //const foundOwner = await db.owner.findOne({ 
+                //    where: { id_user: foundUser.id },
+                //    include: [{ model: db.property, as: 'property' }] 
+                //});
+
+                //if (foundOwner) {
+                //    ownerResponse = foundOwner.get({ plain: true });
+                    // Limpiamos los datos del usuario dentro del owner para evitar duplicados en el storage
+                //    delete ownerResponse.user; 
+                //}
+            //}
+                        // Devolvemos la respuesta exitosa con el objeto owner (si aplica)
+            //return res.status(200).json({ 
+            //    user: userResponse, 
+            //    token, 
+            //    owner: ownerResponse //¡CLAVE PARA EL FRONTEND!
+            //});
+
+            // Inicializamos la respuesta del propietario que incluirá propiedades y países
+            let ownerData = null; 
 
             if (userResponse.role.name === 'propietario') {
-                // Buscamos la información del propietario/user_property, incluyendo la propiedad
-                const foundOwner = await db.owner.findOne({ 
+                
+                // 1. OBTENER LA ASIGNACIÓN DE PROPIEDAD
+                // 💡 CORRECCIÓN: Usamos db.user_properties (el nombre correcto del modelo)
+                const propertyAssignment = await db.user_properties.findOne({ 
                     where: { id_user: foundUser.id },
+                    // Incluimos la data de la Propiedad real
+                    // Usamos el alias 'property' definido en user_properties.model.ts
                     include: [{ model: db.property, as: 'property' }] 
                 });
 
-                if (foundOwner) {
-                    ownerResponse = foundOwner.get({ plain: true });
-                    // Limpiamos los datos del usuario dentro del owner para evitar duplicados en el storage
-                    delete ownerResponse.user; 
+                // 2. OBTENER LOS PAÍSES ASIGNADOS
+                // Usamos el modelo OwnerCountry (el nombre correcto)
+                const ownerCountries = await db.owner_country.findAll({
+                    where: { id_user: foundUser.id },
+                    // Usamos el alias 'country' definido en owner_country.model.ts
+                    include: [{ model: db.country, as: 'country' }]
+                });
+
+                // 3. CONSTRUIR LA RESPUESTA CON LA DATA COMBINADA
+                if (propertyAssignment || ownerCountries.length > 0) {
+                    ownerData = {
+                        // Asignación de Propiedad (contiene los datos de la propiedad anidada)
+                        propertyAssignment: propertyAssignment ? propertyAssignment.get({ plain: true }) : null,
+                        
+                        // Lista de países del propietario
+                        countries: ownerCountries.map((c: any) => c.get({ plain: true })),
+                        
+                        // ID del país por defecto para la primera redirección (ejemplo: countryId=2)
+                        defaultCountryId: ownerCountries.length > 0 ? ownerCountries[0].id_country : null 
+                    };
+                    
+                    // Nota: Ya no necesitas un 'delete ownerResponse.user' aquí, ya que 
+                    // 'ownerData' es un objeto nuevo que solo creamos con la data necesaria.
                 }
             }
-
-            // Devolvemos la respuesta exitosa con el objeto owner (si aplica)
-            return res.status(200).json({ 
+            
+            // Devolvemos la respuesta exitosa
+            return res.status(200).json({ 
                 user: userResponse, 
                 token, 
-                owner: ownerResponse //¡CLAVE PARA EL FRONTEND!
+                owner: ownerData // Contiene la propiedad y el país asignado
             });
 
         } catch (error) {

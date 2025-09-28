@@ -7,6 +7,7 @@ import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import fileUpload, { UploadedFile } from "express-fileupload";
+import validateJWT from "../middlewares/jwt/validateJWT.middleware";
 
 const router = Router();
 const property: PropertyController = new PropertyController();
@@ -32,6 +33,12 @@ router.get('/country/get_by_id/:id_country', [
     check('id_country').isNumeric(),
     noErrors
 ], property.getByCountry)
+
+// 🟢 NUEVA RUTA: Obtener propiedades del usuario logueado
+router.get('/owner-properties', [
+    validateJWT, // 👈 Usa el token para identificar al usuario
+    noErrors
+], property.getPropertiesByOwner); // 👈 Llamará al nuevo método
 
 
 router.get('/:id', isAdmin, property.getByID);
