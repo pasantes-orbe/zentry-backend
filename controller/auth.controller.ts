@@ -86,52 +86,78 @@ class AuthController {
             //    owner: ownerResponse //¡CLAVE PARA EL FRONTEND!
             //});
 
-            // Inicializamos la respuesta del propietario que incluirá propiedades y países
-            let ownerData = null; 
+            // Reemplazá desde la línea 88 hasta la 127
 
-            if (userResponse.role.name === 'propietario') {
-                
-                // 1. OBTENER LA ASIGNACIÓN DE PROPIEDAD
-                // 💡 CORRECCIÓN: Usamos db.user_properties (el nombre correcto del modelo)
-                const propertyAssignment = await db.user_properties.findOne({ 
-                    where: { id_user: foundUser.id },
-                    // Incluimos la data de la Propiedad real
-                    // Usamos el alias 'property' definido en user_properties.model.ts
-                    include: [{ model: db.property, as: 'property' }] 
-                });
+let ownerResponse = null;
 
-                // 2. OBTENER LOS PAÍSES ASIGNADOS
-                // Usamos el modelo OwnerCountry (el nombre correcto)
-                const ownerCountries = await db.owner_country.findAll({
-                    where: { id_user: foundUser.id },
-                    // Usamos el alias 'country' definido en owner_country.model.ts
-                    include: [{ model: db.country, as: 'country' }]
-                });
+if (userResponse.role.name === 'propietario') {
+    console.log('🏠 Usuario es propietario, buscando datos...');
+    console.log('🔍 ID usuario:', foundUser.id);
 
-                // 3. CONSTRUIR LA RESPUESTA CON LA DATA COMBINADA
-                if (propertyAssignment || ownerCountries.length > 0) {
-                    ownerData = {
-                        // Asignación de Propiedad (contiene los datos de la propiedad anidada)
-                        propertyAssignment: propertyAssignment ? propertyAssignment.get({ plain: true }) : null,
-                        
-                        // Lista de países del propietario
-                        countries: ownerCountries.map((c: any) => c.get({ plain: true })),
-                        
-                        // ID del país por defecto para la primera redirección (ejemplo: countryId=2)
-                        defaultCountryId: ownerCountries.length > 0 ? ownerCountries[0].id_country : null 
-                    };
-                    
-                    // Nota: Ya no necesitas un 'delete ownerResponse.user' aquí, ya que 
-                    // 'ownerData' es un objeto nuevo que solo creamos con la data necesaria.
-                }
-            }
-            
-            // Devolvemos la respuesta exitosa
-            return res.status(200).json({ 
-                user: userResponse, 
-                token, 
-                owner: ownerData // Contiene la propiedad y el país asignado
-            });
+    // 1. Buscar la propiedad asignada al usuario
+    const propertyAssignment = await db.user_properties.findOne({
+        where: { id_user: foundUser.id },
+        include: [{ model: db.property, as: 'property' }]
+    });
+
+    console.log('📍 Propiedad encontrada:', propertyAssignment ? 'SÍ' : 'NO');
+    if (propertyAssignment) {
+        console.log('   - ID propiedad:', propertyAssignment.id_property);
+        console.log('   - Nombre:', propertyAssignment.property?.name);
+        console.log('   - Número:', propertyAssignment.property?.number);
+    }
+
+    // 2. Buscar el país asignado al usuario
+    const ownerCountry = await db.owner_country.findOne({
+        where: { id_user: foundUser.id },
+        include: [{ model: db.country, as: 'country' }]
+    });
+
+    console.log('🌍 País encontrado:', ownerCountry ? 'SÍ' : 'NO');
+    if (ownerCountry) {
+        console.log('   - ID país:', ownerCountry.id_country);
+        console.log('   - Nombre país:', ownerCountry.country?.name);
+    }
+
+    // 3. Armar la respuesta en el formato que espera el frontend
+    if (propertyAssignment) {
+        ownerResponse = {
+            id: propertyAssignment.id,
+            id_user: foundUser.id,
+            id_property: propertyAssignment.id_property,
+            user: {
+                id: foundUser.id,
+                name: foundUser.name,
+                lastname: foundUser.lastname,
+                email: foundUser.email
+            },
+            property: propertyAssignment.property
+                ? {
+                      id: propertyAssignment.property.id,
+                      name: propertyAssignment.property.name,
+                      number: propertyAssignment.property.number,
+                      address: propertyAssignment.property.address,
+                      id_country: propertyAssignment.property.id_country
+                  }
+                : null
+        };
+
+        console.log('✅ Owner response armado correctamente');
+        console.log('   - Owner ID:', ownerResponse.id);
+        console.log('   - User ID:', ownerResponse.id_user);
+        console.log('   - Property ID:', ownerResponse.id_property);
+    } else {
+        console.warn('⚠️ No se encontró propiedad asignada para el usuario');
+    }
+}
+
+// Devolvemos la respuesta exitosa
+console.log('📤 Enviando respuesta al frontend...');
+return res.status(200).json({
+    user: userResponse,
+    token,
+    owner: ownerResponse
+});
 
         } catch (error) {
             // Manejo de errores

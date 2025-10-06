@@ -1,39 +1,53 @@
-//classes/Countries.ts
-import db from '../models'; // Importamos el objeto 'db'
-import Country from './Country';
+// classes/Countries.ts
+import db from '../models';
 
-// Desestructuramos el modelo 'country' del objeto 'db'
 const { country } = db;
 
 class Countries {
-    public async getAll() {
-        try {
-            // Usamos el modelo 'country' corregido para la consulta
-            return await country.findAll();
-        } catch (error) {
-            console.error("Error al obtener todos los países:", error);
-            return false;
-        }
+  public async getAll() {
+    try {
+      return await country.findAll({
+        attributes: [
+          'id',
+          'name',
+          'latitude',
+          'longitude',
+          'avatar',           
+          'address',
+          'locality',
+          'phone',
+          'perimeter_points',  
+        ],
+        raw: true,
+      });
+    } catch (error) {
+      console.error('Error al obtener todos los countries:', error);
+      return [];
     }
+  }
 
-    public async getOne(id: number): Promise<Country | null> {
-        try {
-            // Usamos el modelo 'country' corregido para la consulta
-            const c = await country.findByPk(id);
-
-            if (!c) {
-                // No se encontró el país con ese id
-                return null;
-            }
-
-            const { name, latitude, longitude, avatar, id: countryId } = c.dataValues;
-            const newCountry = new Country(name, latitude, longitude, avatar, countryId);
-            return newCountry;
-
-        } catch (error) {
-            console.error("Error al obtener un país:", error);
-            return Promise.reject(false);
-        }
+  public async getOne(id: number) {
+    try {
+      const row = await country.findByPk(id, {
+        attributes: [
+          'id',
+          'name',
+          'latitude',
+          'longitude',
+          'avatar',            
+          'address',
+          'locality',
+          'phone',
+          'perimeter_points',
+        ],
+        raw: true,
+      });
+      return row || null;
+    } catch (error) {
+      console.error('Error al obtener country:', error);
+      return null;
     }
+  }
 }
+
 export default Countries;
