@@ -14,7 +14,8 @@ router.post('/login', [
 ] , auth.login);
 
 router.get('/jwt', auth.jwtValidate);
-router.get('/jwt/:role', auth.isRole);
+router.post('/jwt/:role', auth.isRole);
+//router.get('/jwt/:role', auth.isRole);
 
 
 console.log('🔧 Auth routes cargadas');

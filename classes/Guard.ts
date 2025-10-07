@@ -1,4 +1,4 @@
-// Importamos los tipos necesarios desde Sequelize
+//classes/Guard.ts
 import { Model } from "sequelize";
 import db from "../models";
 import { GuardInterface } from '../interfaces/guard.interface';
@@ -9,25 +9,34 @@ const { user, role, guard_country, country } = db;
 class Guard {
 
     public async getAll(){
+        // CORRECCIÓN: Usar la sintaxis completa de include con el alias 'userRole'
         const guards = await user.findAll({
-            where: {'$role.name$': 'vigilador'},
-            include: role
+            // CORRECCIÓN: Referenciar el rol con el alias '$userRole.name$'
+            where: {'$userRole.name$': 'vigilador'}, 
+            include: [{
+                model: role,
+                as: 'userRole' // Se debe incluir con el alias correcto 'userRole'
+            }]
         });
 
         return guards;
     }
 
     public async exists(id_user: number){
+        // CORRECCIÓN: Usar la sintaxis completa de include con el alias 'userRole'
         const exists = await user.findByPk(id_user, {
-            include: [role]
+            include: [{ model: role, as: 'userRole' }] 
         });
 
-        if(!exists || (exists as any).role.name != "vigilador") return false
+        // CORRECCIÓN: Acceder al rol usando el alias 'userRole'
+        // Esto asume que el alias 'userRole' está definido en el modelo User
+        if(!exists || (exists as any).userRole.name != "vigilador") return false
 
         return true;
     }
 
     public async getByCountry(id_country: number){
+        // Esta función está bien, ya que solo consulta guard_country sin inclusiones complejas
         const guards = await guard_country.findAll({
             where: {id_country}
         });
@@ -41,7 +50,9 @@ class Guard {
             where: {
                 id_user
             },
-            include: [country] // Ahora TypeScript sabe que nos referimos al modelo 'country'
+            // CORRECCIÓN CRÍTICA: Se debe especificar el alias 'country' para la asociación
+            // entre guard_country y country.
+            include: [{ model: country, as: 'country' }] 
         })
 
         return foundCountry;

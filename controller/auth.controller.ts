@@ -172,28 +172,28 @@ class AuthController {
         const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
         if (!token) {
-            return res.status(401).json({ msg: "No hay token de autorización" });
+            return res.status(401).json(false); // Sin token = no autenticado
         }
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            // Buscamos el usuario por su ID e incluimos su rol
             const foundUser = await db.user.findByPk(uid, {
-                // Alias correcto para la consulta
                 include: [{ model: db.role, as: "userRole" }],
             });
 
-            if (!foundUser) return res.status(404).json({ msg: "El usuario no existe" });
+            if (!foundUser) {
+                return res.status(401).json(false); // Usuario no existe
+            }
 
-            // Verificamos si el nombre del rol coincide con el rol requerido
-            // Importante: Usamos el alias 'userRole' para acceder a los datos del rol
+        // ✅ CORRECCIÓN: Siempre devolver 200, pero cambiar el booleano
             if (foundUser.userRole?.name === requiredRole) {
                 return res.status(200).json(true);
             }
+        
+            return res.status(200).json(false); // ← CAMBIO AQUÍ: 200 en vez de 400
 
-            return res.status(400).json(false);
         } catch (error) {
-            return res.status(403).json({ msg: "Token inválido" });
+            return res.status(401).json(false); // Token inválido
         }
     };
 }
