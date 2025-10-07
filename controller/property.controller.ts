@@ -148,49 +148,31 @@ class PropertyController {
    * para coincidir con la Property_OwnerInterface del frontend.
    */
   public async getByCountry(req: Request, res: Response) {
-    try {
-      // 1. Consulta: Traemos propiedades e incluimos los usuarios (Many-to-Many)
-      const properties = await property.findAll({
-        where: {
-          id_country: req.params.id_country
-        },
-        include: [
-          {
-            model: user,
-            as: 'users', // CRÍTICO: Debe ser 'users' (del belongsToMany en Property model)
-            through: { attributes: [] }, // Excluye los atributos de la tabla intermedia
-          }
-        ]
-      });
+  try {
+    // 1) Trae TODAS las propiedades del country (asignadas o no)
+    const properties = await property.findAll({
+      where: { id_country: req.params.id_country }
+    });
 
-      // 2. Mapeo FINAL: Transformamos la respuesta AGRUPADA para que coincida con la interfaz Property_OwnerInterface
-      const response = properties
-        .filter((p: any) => p.users && p.users.length > 0) // Solo propiedades con al menos un usuario
-        .map((p: any) => {
-          
-          // Mapeamos los usuarios a la estructura 'Owner' esperada por el frontend
-          const ownersMapped = p.users.map((u: any) => ({
-            // Simulamos la estructura de Owner (tabla intermedia user_properties)
-            // Aunque estamos usando la relación M:M directa, el frontend espera este objeto.
-            // Los campos 'id', 'property' se ignoran o se rellenan con datos del M:M.
-            id: u.id, // Usamos el ID del usuario como referencia para el ID de asignación temporal
-            user: u.toJSON(), // Objeto User completo
-            property: p.toJSON(), // Objeto Property completo (el frontend podría ignorar esto)
-          }));
-          
-          // Devolvemos la estructura AGRUPADA: { property: ..., owners: [...] }
-          return {
-            property: p.toJSON(),
-            owners: ownersMapped,
-          };
+    // 2) Por cada propiedad, trae sus asignaciones en user_properties
+    const response = await Promise.all(
+      properties.map(async (p: any) => {
+        const owners = await user_properties.findAll({
+          where: { id_property: p.id }
         });
+        return {
+          property: p.toJSON(),            // lo que el front usa como property.property.*
+          owners: owners.map((o: any) => o.toJSON()) // puede ser []
+        };
+      })
+    );
 
-      return res.json(response);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ msg: "Error al obtener propiedades por país" });
-    }
+    return res.json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al obtener propiedades por país' });
   }
+}
 
       // 🟢 NUEVO MÉTODO: Obtiene las propiedades del usuario logueado
     public async getPropertiesByOwner(req: Request, res: Response) {
