@@ -51,21 +51,21 @@ module.exports = (sequelize: any, DataTypes: any) => {
         timestamps: false
     });
 
-    //OwnerCountry.associate = (models: any) => {
+    OwnerCountry.associate = (models: any) => {
         // CORRECCIÓN: Nombres de modelos en minúsculas para que coincidan con el resto del proyecto
-    //    OwnerCountry.belongsTo(models.user, {
-    //        foreignKey: 'id_user',
-    //        targetKey: 'id',
-    //        as: 'OwnerUser' // Alias para la relación con el modelo User
+        OwnerCountry.belongsTo(models.user, {
+            foreignKey: 'id_user',
+            targetKey: 'id',
+            as: 'OwnerUser' // Alias para la relación con el modelo User
 
-    //    });
+        });
 
-    //    OwnerCountry.belongsTo(models.country, {
-    //        foreignKey: 'id_country',
-    //        targetKey: 'id',
-    //        as: 'country' // Alias para la relación con el modelo Country
-    //    });
-    //};
+        OwnerCountry.belongsTo(models.country, {
+            foreignKey: 'id_country',
+            targetKey: 'id',
+            as: 'country' // Alias para la relación con el modelo Country
+        });
+    };
 
     return OwnerCountry;
 };

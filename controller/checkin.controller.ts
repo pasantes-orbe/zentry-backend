@@ -114,7 +114,10 @@ class CheckInController {
             const { id_country } = req.params;
             const checkins = await checkin.findAll({
                 where: { id_country, check_in: true },
-                include: [user]
+                include: [
+                    {model: user, as: 'guardUser'},
+                    {model: user, as: 'ownerUser'}
+                ]
             });
             return res.json(checkins);
         } catch (error) {
@@ -128,7 +131,10 @@ class CheckInController {
             const { id_country } = req.params;
             const checkins = await checkin.findAll({
                 where: { confirmed_by_owner: true, check_in: false, id_country },
-                include: [user]
+                include: [
+                    {model: user, as: 'guardUser'},
+                    {model: user, as: 'ownerUser'}
+                ]
             });
             return res.json(checkins);
         } catch (error) {
@@ -165,7 +171,10 @@ class CheckInController {
         try {
             const checkins = await checkin.findAll({
                 where: { check_out: false, check_in: true, confirmed_by_owner: true },
-                include: [user]
+                include: [
+                    { model: user, as: 'guardUser'},
+                    { model: user, as: 'ownerUser'}
+                ]
             });
             return res.json(checkins);
         } catch (error) {
@@ -216,8 +225,8 @@ class CheckInController {
                     }
                 },
                 include: [
-                    { model: user, as: 'owner' },
-                    { model: user, as: 'guard' }
+                    { model: user, as: 'ownerUser' },
+                    { model: user, as: 'guardUser' }
                 ]
             });
             return res.json(checkins);

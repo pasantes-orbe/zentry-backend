@@ -1,3 +1,4 @@
+//routes/role.routes.ts
 import { Router } from "express";
 import { check } from "express-validator";
 import RoleController from "../controller/role.controller";

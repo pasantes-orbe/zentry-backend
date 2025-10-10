@@ -42,12 +42,12 @@ class AuthController {
 
             // Verificamos si el usuario existe y si la contraseña es válida
             if (!foundUser || !foundUser.password) {
-                return res.status(404).json({ msg: "Usuario o contraseña inválido" });
+                return res.status(401).json({ msg: "Usuario o contraseña inválido" });
             }
 
             const validPassword = await bcrypt.compare(password, foundUser.password);
             if (!validPassword) {
-                return res.status(404).json({ msg: "Usuario o contraseña inválido" });
+                return res.status(401).json({ msg: "Usuario o contraseña inválido" });
             }
 
             // Generamos el token de autenticación
@@ -113,10 +113,10 @@ if (userResponse.role.name === 'propietario') {
         include: [{ model: db.country, as: 'country' }]
     });
 
-    console.log('🌍 País encontrado:', ownerCountry ? 'SÍ' : 'NO');
+    console.log('Country encontrado:', ownerCountry ? 'SÍ' : 'NO');
     if (ownerCountry) {
-        console.log('   - ID país:', ownerCountry.id_country);
-        console.log('   - Nombre país:', ownerCountry.country?.name);
+        console.log('   - ID country:', ownerCountry.id_country);
+        console.log('   - Nombre country:', ownerCountry.country?.name);
     }
 
     // 3. Armar la respuesta en el formato que espera el frontend
