@@ -1,3 +1,4 @@
+// routes/invitations.routes.ts
 import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import InvitationController from "../controller/invitation.controller";

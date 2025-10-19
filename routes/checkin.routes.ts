@@ -1,3 +1,4 @@
+// routes/checkin.routes.ts
 import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import AuthController from "../controller/auth.controller";

@@ -58,7 +58,10 @@ router.get('/country/get_by_id/:id_country', [
             raw: false, 
             attributes: ['id', 'id_user', 'id_country'] 
         });
-        
+
+        // LOG IMPORTANTE PARA DEBUG:
+        console.log('🔎 Owners encontrados:', owners);
+
         console.log(`[GET /country/get_by_id] Devolviendo ${owners.length} propietarios para country ${id_country}`);
         return res.json(owners); 
 
@@ -67,6 +70,7 @@ router.get('/country/get_by_id/:id_country', [
         return res.status(500).json([]);
     }
 });
+
 
 /**
  * POST - Relation with property

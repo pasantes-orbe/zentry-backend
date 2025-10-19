@@ -1,3 +1,4 @@
+// routes/recurrent.routes.ts
 import { Router } from "express";
 import { check } from "express-validator";
 import RecurrentController from "../controller/recurrent.controller";
