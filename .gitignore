@@ -5,3 +5,5 @@
 
 *.js.map
 config/config.json
+config/config.json
+DB/connection.ts

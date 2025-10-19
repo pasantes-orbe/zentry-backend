@@ -1,6 +1,7 @@
 // sockets/controller.ts
 import axios from "axios";
 import { Socket } from "socket.io/dist/socket";
+import { Server as SocketIOServer } from "socket.io";
 import GuardUbicationControl from "../classes/GuardsUbicationControl";
 import Notifications from "../classes/Notifications";
 import OwnersConnectedControl from "../classes/OwnersConnectedControl";
@@ -13,6 +14,36 @@ class SocketController {
     public guardsUbication: GuardUbicationControl = new GuardUbicationControl();
     public ownerControl: OwnersConnectedControl = new OwnersConnectedControl();
     public notifications: Notifications = new Notifications();
+    private cleanupInterval: NodeJS.Timeout | null = null;
+    private io: SocketIOServer | null = null;
+
+    constructor() {
+        // Iniciar limpieza automática de guardias inactivos cada 30 segundos
+        this.startGuardCleanup();
+    }
+
+    // Método para inyectar la instancia de io
+    public setIO(io: SocketIOServer) {
+        this.io = io;
+        console.log('[SocketController] Instancia de Socket.IO configurada');
+    }
+
+    private startGuardCleanup() {
+        if (this.cleanupInterval) return; // Evitar múltiples intervalos
+        
+        this.cleanupInterval = setInterval(() => {
+            const activeGuards = this.guardsUbication.cleanInactiveGuards();
+            console.log(`[SocketController] Guardias activos: ${activeGuards.length}`);
+            
+            // Emitir lista actualizada después de limpiar
+            if (this.io) {
+                this.io.emit('get-actives-guards', activeGuards);
+            }
+        }, 30000); // Cada 30 segundos
+        
+        console.log('[SocketController] Sistema de limpieza de guardias inactivos iniciado');
+    }
+
     public notificarCheckIn(client: Socket) {
         client.on('notificar-check-in', async (payload) => {
             console.log("Mensaje recibido", payload);
@@ -138,12 +169,36 @@ class SocketController {
         })
     }
     public escucharNuevaPosicionGuardia(client: Socket) {
+        // Mantener compatibilidad con evento antiguo
         client.on('nueva-posicion-guardia', (payload) => {
             const { lat, lng, id_user, id_country, user_name, user_lastname } = payload
-            console.log(lat, lng, id_user, id_country, user_name, user_lastname)
+            console.log(`[Socket] Ubicación recibida (evento antiguo): Guardia ${id_user} en (${lat}, ${lng})`);
             this.guardsUbication.addGuard(lat, lng, id_user, id_country, user_name, user_lastname)
             const allGuards = this.guardsUbication.getGuards()
-            client.broadcast.emit('get-actives-guards', allGuards)
+            
+            // Emitir a TODOS los clientes usando io.emit
+            if (this.io) {
+                this.io.emit('get-actives-guards', allGuards);
+                console.log(`[Socket] Emitido 'get-actives-guards' a todos los clientes. Total guardias: ${allGuards.length}`);
+            }
+        })
+
+        // Nuevo evento compatible con el frontend actualizado
+        client.on('update-guard-location', (payload) => {
+            const { lat, lng, id_user, id_country, user_name, user_lastname } = payload
+            console.log(`[Socket] Ubicación actualizada: Guardia ${id_user} (${user_name} ${user_lastname}) en (${lat}, ${lng})`);
+            
+            // Guardar/actualizar ubicación
+            this.guardsUbication.addGuard(lat, lng, id_user, id_country, user_name, user_lastname)
+            const allGuards = this.guardsUbication.getGuards()
+            
+            // ✅ CRÍTICO: Emitir a TODOS los clientes usando io.emit
+            if (this.io) {
+                this.io.emit('get-actives-guards', allGuards);
+                console.log(`[Socket] ✅ Emitido 'get-actives-guards' a TODOS los clientes. Total guardias: ${allGuards.length}`);
+            } else {
+                console.error('[Socket] ❌ ERROR: io no está configurado. No se puede emitir.');
+            }
         })
     }
 

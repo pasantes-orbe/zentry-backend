@@ -113,13 +113,16 @@ class Server {
 
     sockets() {
         const controller = new SocketController();
+        // ✅ CRÍTICO: Inyectar la instancia de io en el controlador
+        controller.setIO(this.io);
+
         this.io.on("connection", (socket: Socket) => {
             console.log('Conectado', socket.id);
             controller.propietarioConectado(socket)
             controller.notificarCheckIn(socket);
             controller.escucharAntipanico(socket);
             controller.escucharNuevoConfirmedByOwner(socket)
-            controller.escucharAntipanicoFinalizado(socket)
+            controller.escucharAntipanicFinalizado(socket)
             controller.escucharNuevaPosicionGuardia(socket)
             controller.escucharGuardDisconnected(socket)
             // controller.disconnect(socket);
@@ -223,7 +226,7 @@ class Server {
             credentials: true,
             origin: ["http://localhost:4200","http://localhost:8100"], //esto hay que cambiarlo cuando se suba a produccion.
             //Especifico para mi front que esta en el puerto 4200
-            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization']
         };
         this.app.use(cors(corsOptions));
@@ -270,33 +273,71 @@ class Server {
         this.app.use(this.apiPaths.checkout, checkOut);
         this.app.use(this.apiPaths.antipanic, antipanic);
         this.app.use(this.apiPaths.user_properties, userPropertiesRoutes);
-        this.app.use(this.apiPaths.push_notifications, pushNotifications);
-        this.app.use(this.apiPaths.notifications, notificationRoutes);
-        this.app.use(this.apiPaths.invitation, invitationRoutes);
-    }
+        this.app.use(this.apiPaths.push_notifications, pushNotifications);
+        this.app.use(this.apiPaths.notifications, notificationRoutes);
+        this.app.use(this.apiPaths.invitation, invitationRoutes);
+    }
 
-    sockets() {
-        const controller = new SocketController();
+    sockets() {
+        const controller = new SocketController();
 
-        this.io.on("connection", (socket: Socket) => {
-            console.log("Conectado", socket.id);
-            controller.propietarioConectado(socket);
-            controller.notificarCheckIn(socket);
-            controller.escucharAntipanico(socket);
-            controller.escucharNuevoConfirmedByOwner(socket);
-            controller.escucharAntipanicoFinalizado(socket);
-            controller.escucharNuevaPosicionGuardia(socket);
-            controller.escucharGuardDisconnected(socket);
-        });
-    }
+        // ✅ CRÍTICO: Inyectar la instancia de io en el controlador
+        controller.setIO(this.io);
 
-    async startServer() {
-        try {
-            await authenticateDb();
-            console.log('Database Online: Autenticación exitosa.');
+        this.io.on("connection", (socket: Socket) => {
+            console.log("Conectado", socket.id);
+            controller.propietarioConectado(socket);
+            controller.notificarCheckIn(socket);
+            controller.escucharAntipanico(socket);
+            controller.escucharNuevoConfirmedByOwner(socket);
+            controller.escucharAntipanicoFinalizado(socket);
+            controller.escucharNuevaPosicionGuardia(socket);
+            controller.escucharGuardDisconnected(socket);
+        });
+    }
 
-            
+    async startServer() {
+        try {
+            await authenticateDb();
+            console.log('Database Online: Autenticación exitosa.');
 
+            // Sincronización de tablas MANUAL
+            //await dbModels.role.sync({ force: true });
+            //console.log('Tabla "role" sincronizada.');
+            //await dbModels.country.sync({ force: true });
+            //console.log('Tabla "country" sincronizada.');
+            //await dbModels.property.sync({ force: true });
+            //console.log('Tabla "property" sincronizada.');
+            //await dbModels.amenity.sync({ force: true });
+            //console.log('Tabla "amenity" sincronizada.');
+            //await dbModels.user.sync({ force: true });
+            //console.log('Tabla "user" sincronizada.');
+            //await dbModels.owner_country.sync({ force: true });
+            //console.log('Tabla "owner_country" sincronizada.');
+            //await dbModels.guard_country.sync({ force: true });
+            //console.log('Tabla "guard_country" sincronizada.');
+            //await dbModels.user_properties.sync({ force: true });
+            //console.log('Tabla "user_properties" sincronizada.');
+            //await dbModels.guard_schedule.sync({ force: true });
+            //console.log('Tabla "guard_schedule" sincronizada.');
+            //await dbModels.antipanic.sync({ force: true });
+            //console.log('Tabla "antipanic" sincronizada.');
+            //await dbModels.reservation.sync({ force: true });
+            //console.log('Tabla "reservation" sincronizada.');
+            //await dbModels.password_change_request.sync({ force: true }); 
+            //console.log('Tabla "password_change_request" sincronizada.');
+            //await dbModels.notification.sync({ force: true });
+            //console.log('Tabla "notification" sincronizada.');
+            //await dbModels.invitation.sync({ force: true });
+            //console.log('Tabla "invitation" sincronizada.'); 
+            //await dbModels.appid.sync({ force: true });
+            //console.log('Tabla "appid" sincronizada.');
+            //await dbModels.recurrent.sync({ force: true });
+            //console.log('Tabla "recurrent" sincronizada.');
+            //await dbModels.checkin.sync({ force: true });
+            //console.log('Tabla "checkin" sincronizada.');
+            //await dbModels.checkout.sync({ force: true });
+            //console.log('Tabla "checkout" sincronizada.');
             // Sincronización de tablas MANUAL
             //await dbModels.role.sync({ force: true });
             //console.log('Tabla "role" sincronizada.');

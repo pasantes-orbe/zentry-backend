@@ -20,35 +20,56 @@
 
 //module.exports = Recurrent;
 
-// models/recurrent.model.ts
-import { DataTypes } from 'sequelize';
+// models/recurrent.model.ts// models/recurrent.model.ts
+import { DataTypes } from "sequelize";
 
-module.exports = (sequelize: any, DataTypes: any) => {
+// patrón clásico de sequelize v5/v6 con CommonJS
+module.exports = (sequelize: any, _DataTypes: typeof DataTypes) => {
+  const Recurrent = sequelize.define(
+    "recurrent",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      status: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      guest_name: { type: DataTypes.STRING, allowNull: false },
+      guest_lastname: { type: DataTypes.STRING, allowNull: false },
+      dni: { type: DataTypes.INTEGER, allowNull: false },
 
-    const Recurrent = sequelize.define('recurrent', {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
-        status: { type: DataTypes.BOOLEAN },
-        guest_name: { type: DataTypes.STRING },
-        guest_lastname: { type: DataTypes.STRING },
-        roleRecurrent: { type: DataTypes.STRING },
-        access_days: { type: DataTypes.STRING },
-        dni: { type: DataTypes.INTEGER },
-    }, {
-        tableName: 'recurrents', // Se recomienda usar el nombre de la tabla en plural
-        timestamps: false
-    });
+      // Campos de negocio usados por las rutas/controller
+      roleRecurrent: { type: DataTypes.STRING }, // ojo: en rutas usan "roleRecurrent"
+      access_days: { type: DataTypes.STRING },
 
-    Recurrent.associate = (models: any) => {
-        // CORRECCIÓN: Nombres de modelos en minúsculas para que coincidan con el resto del proyecto
-        Recurrent.belongsTo(models.property, {
-            foreignKey: 'id_property',
-            targetKey: 'id'
-        });
-    };
+      // Relaciones
+      id_property: { type: DataTypes.INTEGER, allowNull: false },
+      id_country: { type: DataTypes.INTEGER, allowNull: true },
+    },
+    {
+      tableName: "recurrents",
+      timestamps: false,
+    }
+  );
 
-    return Recurrent;
+  // Asociaciones (el loader de modelos suele inyectar models en Recurrent.associate)
+  (Recurrent as any).associate = (models: any) => {
+    if (models.property) {
+      Recurrent.belongsTo(models.property, {
+        foreignKey: "id_property",
+        as: "property",
+      });
+    }
+    if (models.country) {
+      Recurrent.belongsTo(models.country, {
+        foreignKey: "id_country",
+        as: "country",
+      });
+    }
+  };
+
+  return Recurrent;
 };
