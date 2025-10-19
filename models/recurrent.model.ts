@@ -34,6 +34,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
         status: { type: DataTypes.BOOLEAN },
         guest_name: { type: DataTypes.STRING },
         guest_lastname: { type: DataTypes.STRING },
+        roleRecurrent: { type: DataTypes.STRING },
+        access_days: { type: DataTypes.STRING },
         dni: { type: DataTypes.INTEGER },
     }, {
         tableName: 'recurrents', // Se recomienda usar el nombre de la tabla en plural

@@ -15,17 +15,28 @@ class CheckInController {
 
     public async create(req: Request, res: Response) {
         try {
-            // Preparar algunos valores antes de crear el registro
-            if (!req.body.confirmed_by_owner) req.body.confirmed_by_owner = false;
-            else req.body.confirmed_by_owner = true;
+            // 1. Manejo del confirmed_by_owner: Si el frontend envía 'true' (string o boolean), se fuerza a true.
+            const confirmedByOwner = req.body.confirmed_by_owner === 'true' || req.body.confirmed_by_owner === true;
+            req.body.confirmed_by_owner = confirmedByOwner;
 
-            if (!req.body.check_out) req.body.check_out = false;
-            else req.body.check_out = null;
+            // 2. Flags de estado: Una visita rápida es solo una autorización, no un ingreso/salida.
+            // Siempre se inicia con check_in: false, check_out: false.
+            req.body.check_in = false;
+            req.body.check_out = false; 
 
+            // 3. Normalización de campos opcionales a null si vienen vacíos (se limpia transport, details)
+            req.body.transport = req.body.transport?.trim() || null;
+            req.body.details = req.body.details?.trim() || null;
+            req.body.id_guard = req.body.id_guard || null; // id_guard siempre será null en Visita Rápida (viene de owner)
+            
+            // 4. Patente en mayúsculas y normalización.
             if (req.body.patent) {
-                req.body.patent = req.body.patent.toUpperCase();
+                req.body.patent = req.body.patent.toUpperCase().trim() || null;
+            } else {
+                req.body.patent = null;
             }
 
+            // 5. Verificación de guardia (mantenemos el chequeo, aunque para owner será null).
             if (req.body.id_guard) {
                 const guardExists = await new Guard().exists(req.body.id_guard);
                 if (!guardExists) {
@@ -33,17 +44,26 @@ class CheckInController {
                     req.body.id_guard = null;
                 }
             }
-
-            req.body.check_in = false; // Estado inicial
+            
+            // --- Fin de la lógica de normalización ---
 
             const newCheckIn = await checkin.create(req.body);
 
-            // Emitir socket notificando nuevo check-in
+            // Emitir socket. Usamos el evento 'notificarNuevoConfirmedByOwner' para avisar a la garita
+            // sobre la nueva autorización si fue confirmada por el propietario.
             const server = Server.instance;
-            server.io.emit('notificar-checkin', { msg: `${req.body.guest_lastname} ${req.body.guest_name} está solicitando check-in`, checkIn: newCheckIn });
+            if (confirmedByOwner) {
+                server.io.emit('notificarNuevoConfirmedByOwner', { 
+                    msg: `Visita rápida de ${req.body.guest_lastname} ${req.body.guest_name} autorizada por propietario.`, 
+                    checkIn: newCheckIn 
+                });
+            } else {
+                // Lógica de check-in normal (sin confirmar)
+                server.io.emit('notificar-checkin', { msg: `${req.body.guest_lastname} ${req.body.guest_name} está solicitando check-in`, checkIn: newCheckIn });
+            }
 
-            return res.json({
-                msg: "Check-In registrado exitosamente",
+            return res.status(201).json({ // Usamos 201 Created para indicar la creación exitosa
+                msg: "Autorización de Visita Rápida registrada exitosamente",
                 checkIn: newCheckIn
             });
         } catch (error) {

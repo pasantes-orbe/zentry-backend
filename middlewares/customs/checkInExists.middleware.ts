@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import CheckIn from "../../classes/CheckIn";
-import CheckInModel from "../../models/checkin.model";
+//import CheckInModel from "../../models/checkin.model";
 
 async function checkInExists(id: number){
 

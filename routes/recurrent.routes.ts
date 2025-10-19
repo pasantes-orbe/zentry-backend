@@ -1,3 +1,4 @@
+// routes/recurrent.routes.ts
 import { Router } from "express";
 import { check } from "express-validator";
 import RecurrentController from "../controller/recurrent.controller";
@@ -38,6 +39,10 @@ router.post('/', [
     check('guest_name', 'El nombre del invitado es obligatorio').notEmpty(),
     check('guest_lastname', 'El apellido del invitado es obligatorio').notEmpty(),
     check('dni', 'El dni del invitado es obligatorio').notEmpty(),
+    //NUEVA VALIDACIÓN: Campo Rol
+    check('roleRecurrent', 'El rol del invitado es obligatorio').notEmpty(),
+    //NUEVA VALIDACIÓN: Días de Acceso
+    check('access_days', 'Los días de acceso son obligatorios').notEmpty(),
     check('id_property').custom(propertyExists),
     noErrors
 ], recurrent.create);

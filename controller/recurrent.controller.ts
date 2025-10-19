@@ -17,7 +17,7 @@ class RecurrentController {
                 include: [{
                     model: property
                 }],
-                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni', 'rolRecurrent', 'access_days']
             });
             return res.json(recurrents);
         } catch (error) {
@@ -35,7 +35,7 @@ class RecurrentController {
                 include: [{
                     model: property,
                 }],
-                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni']
+                attributes: ['id', 'status', 'guest_name', 'guest_lastname', 'dni', 'rolRecurrent', 'access_days']
             });
             if (foundRecurrent) {
                 return res.json(foundRecurrent);
