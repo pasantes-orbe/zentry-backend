@@ -44,66 +44,105 @@ class SocketController {
         console.log('[SocketController] Sistema de limpieza de guardias inactivos iniciado');
     }
 
-    public notificarCheckIn(client: Socket) {
-        client.on('notificar-check-in', async (payload) => {
-            console.log("Mensaje recibido", payload);
-            console.log("OWNER ID DESDE EL PAYLOAD", payload['id_owner']);
-            // recibo el check-in creado, el cual debo pasar al usuario propietario
-            const id_owner = payload['id_owner']; // con el id_owner envio la notificacion
-            const guest_name = payload['guest_name']; // con el id_owner envio la notificacion
-            const guest_lastname = payload['guest_lastname']; // con el id_owner envio la notificacion
-            const dni = payload['DNI']; // con el id_owner envio la notificacion
-            const owner = await user.findByPk(id_owner)
-            console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
-            this.notifications.notifyAExternal_User_By_ID(String(id_owner),
-                `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`,
-                `${owner?.name}`,
-                'Nueva Solicitud de Check-in')
-            const ownerConnected = this.ownerControl.getownersByUserId(id_owner)
-            if (ownerConnected) {
-                client.to(ownerConnected.id_socket).emit('notificacion-check-in', payload)
-            } else {
-                return
-            }
-        })
-    }
-    public escucharAntipanico(client: Socket) {
-        client.on('notificar-antipanico', (payload) => {
-            const { res, ownerName, ownerLastName } = payload
-            const address = res['antipanic']['address'];
-            const id = res['antipanic']['id']
-            const id_country = res['antipanic']['id_country']
-            this.notifications.notifyAllGuards(
-                String(id_country),
-                `Antipanico activado por ${ownerName} ${ownerLastName} de direccion ${address}`,
-                'Antipanico Activado',
-                'Antipanico'
-            )
-            const antipanicAdvice = {
-                ownerName,
-                ownerLastName,
-                address,
-                id
-            }
-            console.log(antipanicAdvice)
-            client.broadcast.emit('notificacion-antipanico', antipanicAdvice)
-        })
-    }
-    public escucharAntipanicoFinalizado(client: Socket) {
-        client.on('notificar-antipanico-finalizado', (payload) => {
-            console.log(payload)
-            const owner = this.ownerControl.getownersByUserId(payload['antipanic']['ownerId'])
-            // ✅ Corregido: no acceder a owner.id_socket antes de verificar que exista
-            if (owner) {
-                console.log("Este es el id del socket", owner.id_socket)
-                console.log("ESTE ES EL PAYLOD", payload)
-                client.broadcast.emit('notificacion-antipanico-finalizado', payload);
-                client.to(owner.id_socket).emit('notificacion-antipanico-finalizado', payload)
-            } else {
-                return
-            }
-        })
-    }
+    public notificarCheckIn(client: Socket) {
+        client.on('notificar-check-in', async (payload) => {
+            console.log("Mensaje recibido", payload);
+            console.log("OWNER ID DESDE EL PAYLOAD", payload['id_owner']);
+            // recibo el check-in creado, el cual debo pasar al usuario propietario
+            const id_owner = payload['id_owner']; // con el id_owner envio la notificacion
+            const guest_name = payload['guest_name']; // con el id_owner envio la notificacion
+            const guest_lastname = payload['guest_lastname']; // con el id_owner envio la notificacion
+            const dni = payload['DNI']; // con el id_owner envio la notificacion
+            const owner = await user.findByPk(id_owner)
+            console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
+            this.notifications.notifyAExternal_User_By_ID(String(id_owner),
+                `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`,
+                `${owner?.name}`,
+                'Nueva Solicitud de Check-in')
+            const ownerConnected = this.ownerControl.getownersByUserId(id_owner)
+            if (ownerConnected) {
+                client.to(ownerConnected.id_socket).emit('notificacion-check-in', payload)
+            } else {
+                return
+            }
+        })
+    }
+    public escucharAntipanico(client: Socket) {
+        client.on('notificar-antipanico', (payload) => {
+            try {
+                console.log('[Socket] Antipánico activado recibido:', payload);
+                
+                const { res, ownerName, ownerLastName } = payload;
+                
+                // Verificar que res y antipanic existan
+                if (!res || !res.antipanic) {
+                    console.error('[Socket] ❌ Payload inválido: falta res.antipanic');
+                    return;
+                }
+                
+                const address = res['antipanic']['address'];
+                const id = res['antipanic']['id'];
+                const id_country = res['antipanic']['id_country'];
+                
+                // Notificar a todos los guardias del country
+                this.notifications.notifyAllGuards(
+                    String(id_country),
+                    `Antipanico activado por ${ownerName} ${ownerLastName} de direccion ${address}`,
+                    'Antipanico Activado',
+                    'Antipanico'
+                );
+                
+                const antipanicAdvice = {
+                    ownerName,
+                    ownerLastName,
+                    address,
+                    id
+                };
+                
+                console.log('[Socket] ✅ Emitiendo notificación de antipánico:', antipanicAdvice);
+                client.broadcast.emit('notificacion-antipanico', antipanicAdvice);
+                
+            } catch (error) {
+                console.error('[Socket] ❌ Error al procesar antipánico:', error);
+            }
+        })
+    }
+    public escucharAntipanicoFinalizado(client: Socket) {
+        client.on('notificar-antipanico-finalizado', (payload) => {
+            try {
+                console.log('[Socket] Antipánico finalizado recibido:', payload);
+                
+                // Buscar al owner en la lista de conectados
+                const owner = this.ownerControl.getownersByUserId(payload['antipanic']['ownerId']);
+                
+                if (!owner) {
+                    console.warn('[Socket] ⚠️ Owner no está conectado (ID:', payload['antipanic']['ownerId'], ')');
+                    // Emitir broadcast a todos los guardias de todas formas
+                    client.broadcast.emit('notificacion-antipanico-finalizado', payload);
+                    return;
+                }
+                
+                if (!owner.id_socket) {
+                    console.warn('[Socket] ⚠️ Owner sin id_socket válido');
+                    client.broadcast.emit('notificacion-antipanico-finalizado', payload);
+                    return;
+                }
+                
+                console.log('[Socket] ✅ Owner conectado, id_socket:', owner.id_socket);
+                console.log('[Socket] Payload a enviar:', payload);
+                
+                // Emitir a todos los guardias
+                client.broadcast.emit('notificacion-antipanico-finalizado', payload);
+                
+                // Emitir específicamente al propietario
+                client.to(owner.id_socket).emit('notificacion-antipanico-finalizado', payload);
+                
+            } catch (error) {
+                console.error('[Socket] ❌ Error al notificar finalización de antipánico:', error);
+                // No crashear el servidor, solo loguear el error
+            }
+        })
+    }
 
     public escucharNuevoConfirmedByOwner(client: Socket) {
         client.on('notificar-nuevo-confirmedByOwner', async (payload) => {

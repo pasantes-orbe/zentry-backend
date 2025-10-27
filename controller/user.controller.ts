@@ -10,9 +10,7 @@ import jwt from "jsonwebtoken";
 import Uploader from "../classes/Uploader";
 
 // Desestructuramos los modelos necesarios del objeto 'db' para usarlos fácilmente.
-const { user, role } = db;
-// Resolver modelo con tolerancia a nombre/registro distinto
-const PasswordChangeModel: any = (db as any).passwordChangeRequest || (db as any).password_change_request || (db as any).PasswordChangeRequest;
+const { user, role, passwordChangeRequest, guard_country, guard_schedule, owner_country, user_properties, appid, notification, reservation, antipanic, checkin, checkout } = db;
 
 class UserController {
     public async getAllUsers(req: Request, res: Response) {
@@ -321,50 +319,137 @@ class UserController {
         })
     }
 
-    public async updateAvatar(req: Request, res: Response) {
+    public async deleteUser(req: Request, res: Response) {
+        const { id } = req.params;
+
         try {
-            const { id } = req.params;
+            // Debug: Verificar qué modelos están disponibles
+            console.log('Modelos disponibles:', {
+                user: !!user,
+                guard_country: !!guard_country,
+                guard_schedule: !!guard_schedule,
+                owner_country: !!owner_country,
+                user_properties: !!user_properties,
+                notification: !!notification,
+                reservation: !!reservation,
+                appid: !!appid,
+                passwordChangeRequest: !!passwordChangeRequest,
+                antipanic: !!antipanic
+            });
+
+            // Buscar el usuario
             const foundUser = await user.findByPk(id);
+
             if (!foundUser) {
-                return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
+                return res.status(404).json({
+                    ok: false,
+                    message: 'Usuario no encontrado'
+                });
             }
 
-            const file = (req as any).files?.avatar;
-            if (!file) {
-                return res.status(400).json({ msg: "Falta el archivo 'avatar' en form-data" });
+            // Eliminar todos los registros relacionados en cascada
+            // Usamos verificaciones para evitar errores si algún modelo no existe
+            
+            // 1. Eliminar registros en guard_country
+            if (guard_country) {
+                await guard_country.destroy({
+                    where: { id_user: id }
+                });
             }
 
-            const avatarFile = Array.isArray(file) ? file[0] : file;
-            const tempFilePath = (avatarFile as any).tempFilePath;
-            if (!tempFilePath) {
-                return res.status(400).json({ msg: "No se recibió un archivo válido" });
+            // 2. Eliminar horarios del guardia
+            if (guard_schedule) {
+                await guard_schedule.destroy({
+                    where: { id_user: id }
+                });
             }
 
-            const { secure_url } = await new Uploader().uploadImage(tempFilePath);
-            await foundUser.update({ avatar: secure_url });
+            // 3. Eliminar registros en owner_country
+            if (owner_country) {
+                await owner_country.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 4. Eliminar propiedades asociadas al usuario
+            if (user_properties) {
+                await user_properties.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 5. Eliminar notificaciones del usuario
+            if (notification) {
+                await notification.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 6. Eliminar reservaciones del usuario
+            if (reservation) {
+                await reservation.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 7. Eliminar app IDs del usuario
+            if (appid) {
+                await appid.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 8. Eliminar solicitudes de cambio de contraseña
+            if (passwordChangeRequest) {
+                await passwordChangeRequest.destroy({
+                    where: { id_user: id }
+                });
+            }
+
+            // 9. Eliminar registros de antipanic donde el usuario es owner
+            if (antipanic) {
+                await antipanic.destroy({
+                    where: { ownerId: id }
+                });
+            }
+
+            // 10. Eliminar registros de antipanic donde el usuario es guard
+            if (antipanic) {
+                await antipanic.destroy({
+                    where: { guardId: id }
+                });
+            }
+
+            // 11. Eliminar registros de checkin donde el usuario es guard
+            if (checkin) {
+                await checkin.destroy({
+                    where: { id_guard: id }
+                });
+            }
+
+            // 12. Eliminar registros de checkin donde el usuario es owner
+            if (checkin) {
+                await checkin.destroy({
+                    where: { id_owner: id }
+                });
+            }
+
+            // Ahora sí eliminar el usuario
+            await foundUser.destroy();
 
             return res.status(200).json({
-                msg: "Avatar actualizado",
-                avatar: secure_url
+                ok: true,
+                message: 'Guardia eliminado exitosamente',
+                id: parseInt(id)
             });
-        } catch (error) {
-            console.error('updateAvatar error:', error);
-            return res.status(500).json({ msg: "Error subiendo avatar" });
-        }
-    }
 
-    public async deleteUser(req: Request, res: Response) {
-        try {
-            const { id } = req.params;
-            const foundUser = await user.findByPk(id);
-            if (!foundUser) {
-                return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
-            }
-            await user.destroy({ where: { id } });
-            return res.status(200).json({ msg: 'Usuario eliminado' });
-        } catch (error) {
-            console.error('deleteUser error:', error);
-            return res.status(500).json({ msg: 'Error eliminando usuario' });
+        } catch (error: any) {
+            console.error('Error al eliminar usuario:', error);
+            return res.status(500).json({
+                ok: false,
+                message: 'Error al eliminar el usuario',
+                error: error.message
+            });
         }
     }
 }
