@@ -43,13 +43,13 @@ class UserController {
             return res.status(400).json({ msg: 'Parámetro id_request inválido' });
         }
 
-        if (!PasswordChangeModel) {
+        if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json({ msg: 'Modelo de solicitud de cambio de contraseña no disponible' });
         }
 
         try {
-            const reqRow = await PasswordChangeModel.findByPk(id_request);
+            const reqRow = await passwordChangeRequest.findByPk(id_request);
             if (!reqRow) {
                 return res.status(404).json({ msg: 'Solicitud no encontrada' });
             }
@@ -175,11 +175,11 @@ class UserController {
             date: Date.now(),
             changed: false
         }
-        if (!PasswordChangeModel) {
+        if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json({ msg: "Modelo de solicitud de cambio de contraseña no disponible" });
         }
-        const request = await PasswordChangeModel.create(requestBody);
+        const request = await passwordChangeRequest.create(requestBody);
 
         // Crear notificación para Admin y emitir por WebSocket
         try {
@@ -227,7 +227,7 @@ class UserController {
     public async allPasswordChangeRequests(req: Request, res: Response) {
         const { pendient } = req.query;
         if (pendient) {
-            const requests = await PasswordChangeModel.findAll({
+            const requests = await passwordChangeRequest.findAll({
                 where: {
                     changed: false
                 },
@@ -239,11 +239,11 @@ class UserController {
             })
             return res.json(requests);
         }
-        if (!PasswordChangeModel) {
+        if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json([]);
         }
-        const requests = await PasswordChangeModel.findAll();
+        const requests = await passwordChangeRequest.findAll();
         return res.json(requests);
     }
 
@@ -317,6 +317,35 @@ class UserController {
             msg: "Actualizado correctamente",
             user: user_update
         })
+    }
+
+    public async updateAvatar(req: Request, res: Response) {
+        const { id } = req.params;
+        const { avatar } = req.body as { avatar?: string };
+
+        if (!avatar || typeof avatar !== 'string') {
+            return res.status(400).json({ msg: 'Campo avatar requerido' });
+        }
+
+        try {
+            const foundUser = await user.findByPk(id);
+            if (!foundUser) {
+                return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
+            }
+
+            let valueToStore: string = avatar;
+            if (!/^https?:\/\//i.test(avatar)) {
+                const uploader = new Uploader();
+                const uploaded: any = await uploader.uploadImage(avatar);
+                valueToStore = uploaded?.public_id || uploaded?.secure_url || avatar;
+            }
+
+            const updated = await (foundUser as any).update({ avatar: valueToStore });
+            return res.json({ msg: 'Avatar actualizado', user: updated });
+        } catch (error) {
+            console.error('updateAvatar error:', error);
+            return res.status(500).json({ msg: 'Error actualizando avatar' });
+        }
     }
 
     public async deleteUser(req: Request, res: Response) {
