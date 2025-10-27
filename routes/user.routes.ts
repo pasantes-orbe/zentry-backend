@@ -47,9 +47,13 @@ router.post('/request-change-password', [
 router.patch('/change-password/:id', [validateJWT, isTheUser],
     controller.changePassword);
 
-//router.patch('/change-password/:id_request', [
-//    isAdmin,
-//], controller.changePassword);
+// Admin aprueba/atiende una solicitud de cambio de contraseña
+router.patch('/change-password/:id_request', [
+    validateJWT,
+    check('id_request').notEmpty(),
+    check('id_request').isNumeric(),
+    noErrors
+], (req: Request, res: Response) => controller.approvePasswordChangeRequest(req, res));
 
 /**
  * Update User
@@ -60,6 +64,22 @@ router.patch('/update-user/:id', [
     check('id').isNumeric(),
     noErrors
 ], controller.updateUser)
+
+// Upload/Update user avatar
+router.patch('/avatar/:id', [
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], controller.updateAvatar)
+
+// Delete user by id (admin only)
+router.delete('/:id', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], controller.deleteUser)
 
 /**
  * All Password Change Requests
@@ -83,7 +103,25 @@ router.get('/owners/get_by_country/:id_country', [
         include: [db.user, db.country] // Usamos los nombres de los modelos en minúsculas
     })
 
-    return res.json(propietarios);
+    // Normalizar avatar del usuario incluido (cuando venga como public_id/relativo)
+    const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+    const cloudName = 'dkfzxplwp';
+    const toAvatarUrl = (val?: string | null) => {
+        if (!val) return placeholder;
+        const s = String(val);
+        if (/^https?:\/\//i.test(s)) return s;
+        return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`;
+    };
+
+    const response = propietarios.map((p: any) => {
+        const json = p.toJSON ? p.toJSON() : p;
+        if (json.user) {
+            json.user.avatar = toAvatarUrl(json.user.avatar);
+        }
+        return json;
+    });
+
+    return res.json(response);
 });
 
 export default router;

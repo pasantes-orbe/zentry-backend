@@ -5,9 +5,14 @@ import db from "../models";
 import PasswordHelper from "../helpers/password.helper"; 
 import UserClass from "../classes/UserClass";
 import Mailer from "../helpers/mailer.helper";
+import Server from "../models/server";
+import jwt from "jsonwebtoken";
+import Uploader from "../classes/Uploader";
 
 // Desestructuramos los modelos necesarios del objeto 'db' para usarlos fácilmente.
-const { user, role, passwordChangeRequest } = db;
+const { user, role } = db;
+// Resolver modelo con tolerancia a nombre/registro distinto
+const PasswordChangeModel: any = (db as any).passwordChangeRequest || (db as any).password_change_request || (db as any).PasswordChangeRequest;
 
 class UserController {
     public async getAllUsers(req: Request, res: Response) {
@@ -18,11 +23,96 @@ class UserController {
             } catch (error) {
                 return res.status(500).send(error);
             }
-        } try {
+        }
+        try {
             const users = await new UserClass().getAll();
             return res.json(users);
         } catch (error) {
             return res.status(500).send(error);
+        }
+    }
+
+    /**
+     * Admin aprueba/atiende una solicitud de cambio de contraseña
+     * PATCH /api/users/change-password/:id_request
+     * Body: { status: boolean }
+     */
+    public async approvePasswordChangeRequest(req: Request, res: Response) {
+        const id_request = Number(req.params.id_request);
+        const status = (req.body && typeof req.body.status !== 'undefined') ? !!req.body.status : true;
+
+        if (!Number.isFinite(id_request)) {
+            return res.status(400).json({ msg: 'Parámetro id_request inválido' });
+        }
+
+        if (!PasswordChangeModel) {
+            console.error('Modelo passwordChangeRequest no registrado en db');
+            return res.status(500).json({ msg: 'Modelo de solicitud de cambio de contraseña no disponible' });
+        }
+
+        try {
+            const reqRow = await PasswordChangeModel.findByPk(id_request);
+            if (!reqRow) {
+                return res.status(404).json({ msg: 'Solicitud no encontrada' });
+            }
+
+            await reqRow.update({ changed: !!status });
+
+            // Notificar al propietario con instrucciones (opcional)
+            try {
+                const notificationModel: any = (db as any).notification;
+                const requesterUserId = (reqRow as any).id_user;
+                const owner = await user.findByPk(requesterUserId);
+                const ownerName = `${(owner as any)?.name || ''} ${(owner as any)?.lastname || ''}`.trim() || 'Propietario';
+                const title = 'Instrucciones para restablecer contraseña';
+                const content = 'Tu solicitud fue aprobada. Revisa tu email para cambiar la contraseña.';
+
+                let createdNotification: any = null;
+                if (notificationModel) {
+                    createdNotification = await notificationModel.create({
+                        id_user: requesterUserId,
+                        title,
+                        content,
+                        read: false
+                    });
+                }
+
+                const serverInstance = Server.instance;
+                if (serverInstance && serverInstance.io) {
+                    const payload = {
+                        ...(createdNotification?.toJSON?.() ?? createdNotification ?? {}),
+                        id_user: requesterUserId,
+                        type: 'password_reset_instructions',
+                        content,
+                        createdAt: (createdNotification as any)?.createdAt ?? new Date().toISOString(),
+                        requester_user_id: requesterUserId
+                    };
+                    serverInstance.io.emit('new-notification', payload);
+                }
+
+                // Enviar email con link de restablecimiento (token de un solo uso, expira en 30min)
+                try {
+                    const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
+                    const token = jwt.sign(
+                        { uid: String(requesterUserId), requestId: String(id_request), type: 'password_reset' },
+                        JWT_SECRET,
+                        { expiresIn: '30m' }
+                    );
+                    const frontendBase = process.env.FRONTEND_BASE_URL || 'http://localhost:4200';
+                    const resetLink = `${frontendBase}/reset-password?token=${encodeURIComponent(token)}`;
+                    const mailer = new Mailer();
+                    await mailer.sendResetLink((owner as any)?.email, resetLink);
+                } catch (e) {
+                    console.error('Error enviando email de restablecimiento:', e);
+                }
+            } catch (e) {
+                console.error('Error notificando al propietario sobre reset de contraseña:', e);
+            }
+
+            return res.status(200).json({ msg: 'Solicitud actualizada', id_request, changed: !!status });
+        } catch (error) {
+            console.error('approvePasswordChangeRequest error:', error);
+            return res.status(500).json({ msg: 'Error interno' });
         }
     }
 
@@ -37,6 +127,16 @@ class UserController {
         });
 
         if (foundUser) {
+            const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+            const cloudName = 'dkfzxplwp';
+            const toAvatarUrl = (val?: string | null) => {
+                if (!val) return placeholder;
+                const s = String(val);
+                if (/^https?:\/\//i.test(s)) return s;
+                return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`;
+            };
+            const current = (foundUser as any).get('avatar');
+            (foundUser as any).setDataValue('avatar', toAvatarUrl(current));
             return res.json(foundUser);
         }
         res.status(404);
@@ -77,7 +177,48 @@ class UserController {
             date: Date.now(),
             changed: false
         }
-        const request = await passwordChangeRequest.create(requestBody);
+        if (!PasswordChangeModel) {
+            console.error('Modelo passwordChangeRequest no registrado en db');
+            return res.status(500).json({ msg: "Modelo de solicitud de cambio de contraseña no disponible" });
+        }
+        const request = await PasswordChangeModel.create(requestBody);
+
+        // Crear notificación para Admin y emitir por WebSocket
+        try {
+            const notificationModel: any = (db as any).notification;
+            const adminId = 1; // Destinatario: Admin principal (ajustar si hay multi-admin)
+
+            const ownerName = `${exists.get('name') || ''} ${exists.get('lastname') || ''}`.trim() || 'Propietario';
+            const title = 'Solicitud de cambio de contraseña';
+            const content = `${ownerName} solicitó cambio de contraseña`;
+
+            let createdNotification: any = null;
+            if (notificationModel) {
+                createdNotification = await notificationModel.create({
+                    id_user: adminId,
+                    title,
+                    content,
+                    read: false
+                });
+            }
+
+            const serverInstance = Server.instance;
+            if (serverInstance && serverInstance.io) {
+                const payload = {
+                    ...(createdNotification?.toJSON?.() ?? createdNotification ?? {}),
+                    id_user: adminId,
+                    type: 'password_request',
+                    content,
+                    createdAt: (createdNotification as any)?.createdAt ?? new Date().toISOString(),
+                    requester_user_id: exists.get('id')
+                };
+                serverInstance.io.emit('new-notification', payload);
+            }
+        } catch (e) {
+            console.error('Error creando/emitiendo notificación de password_request:', e);
+            // No interrumpimos el flujo principal
+        }
+
         return res.json({
             msg: "El administrador recibió la solicitud de reestablecimiento de contraseña",
             request
@@ -88,7 +229,7 @@ class UserController {
     public async allPasswordChangeRequests(req: Request, res: Response) {
         const { pendient } = req.query;
         if (pendient) {
-            const requests = await passwordChangeRequest.findAll({
+            const requests = await PasswordChangeModel.findAll({
                 where: {
                     changed: false
                 },
@@ -100,7 +241,11 @@ class UserController {
             })
             return res.json(requests);
         }
-        const requests = await passwordChangeRequest.findAll();
+        if (!PasswordChangeModel) {
+            console.error('Modelo passwordChangeRequest no registrado en db');
+            return res.status(500).json([]);
+        }
+        const requests = await PasswordChangeModel.findAll();
         return res.json(requests);
     }
 
@@ -174,6 +319,53 @@ class UserController {
             msg: "Actualizado correctamente",
             user: user_update
         })
+    }
+
+    public async updateAvatar(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const foundUser = await user.findByPk(id);
+            if (!foundUser) {
+                return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
+            }
+
+            const file = (req as any).files?.avatar;
+            if (!file) {
+                return res.status(400).json({ msg: "Falta el archivo 'avatar' en form-data" });
+            }
+
+            const avatarFile = Array.isArray(file) ? file[0] : file;
+            const tempFilePath = (avatarFile as any).tempFilePath;
+            if (!tempFilePath) {
+                return res.status(400).json({ msg: "No se recibió un archivo válido" });
+            }
+
+            const { secure_url } = await new Uploader().uploadImage(tempFilePath);
+            await foundUser.update({ avatar: secure_url });
+
+            return res.status(200).json({
+                msg: "Avatar actualizado",
+                avatar: secure_url
+            });
+        } catch (error) {
+            console.error('updateAvatar error:', error);
+            return res.status(500).json({ msg: "Error subiendo avatar" });
+        }
+    }
+
+    public async deleteUser(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const foundUser = await user.findByPk(id);
+            if (!foundUser) {
+                return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
+            }
+            await user.destroy({ where: { id } });
+            return res.status(200).json({ msg: 'Usuario eliminado' });
+        } catch (error) {
+            console.error('deleteUser error:', error);
+            return res.status(500).json({ msg: 'Error eliminando usuario' });
+        }
     }
 }
 export default UserController;

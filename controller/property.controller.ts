@@ -158,11 +158,32 @@ class PropertyController {
     const response = await Promise.all(
       properties.map(async (p: any) => {
         const owners = await user_properties.findAll({
-          where: { id_property: p.id }
+          where: { id_property: p.id },
+          include: [{ model: user, as: 'user', attributes: ['id','email','name','lastname','avatar'] }]
         });
+
+        // Normalizar avatar del usuario incluido
+        const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+        const cloudName = 'dkfzxplwp';
+        const toAvatarUrl = (val?: string | null) => {
+          if (!val) return placeholder;
+          const s = String(val);
+          if (/^https?:\/\//i.test(s)) return s; // absolute URL
+          if (s.startsWith('/')) return s; // relative path
+          return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`; // public_id
+        };
+
+        const ownersJson = owners.map((o: any) => {
+          const j = o.toJSON();
+          if (j.user) {
+            j.user.avatar = toAvatarUrl(j.user.avatar);
+          }
+          return j;
+        });
+
         return {
           property: p.toJSON(),            // lo que el front usa como property.property.*
-          owners: owners.map((o: any) => o.toJSON()) // puede ser []
+          owners: ownersJson // puede ser []
         };
       })
     );

@@ -36,7 +36,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
         },
         title: { type: DataTypes.STRING },
         content: { type: DataTypes.STRING },
-        id_user: { type: DataTypes.INTEGER }
+        id_user: { type: DataTypes.INTEGER },
+        read: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
     }, {
         tableName: 'notifications', // Se recomienda usar el nombre de la tabla en plural
         updatedAt: false,

@@ -1,7 +1,8 @@
+// interfaces/invitation.interface.ts
 interface InvitationAttributes {
   id_reservation: number;  
-  name: string;
-  lastname: string;
+  guest_name: string;
+  guest_lastname: string;
   dni: string;
 
 }

@@ -1,8 +1,9 @@
 // controller/recurrent.controller.ts
 import { Request, Response } from "express";
+import { Op } from "sequelize";
 import db from "../models";
 
-const { recurrent, property } = db;
+const { recurrent, property, user_properties } = db;
 
 class RecurrentController {
   public async getAll(req: Request, res: Response) {
@@ -75,6 +76,41 @@ class RecurrentController {
     }
   }
 
+  public async getByOwner(req: Request, res: Response) {
+    const id_owner = Number(req.params.id_owner);
+    if (isNaN(id_owner)) {
+      return res.status(400).json({ msg: "ID de propietario inválido" });
+    }
+
+    try {
+      // 1) Obtener las propiedades asignadas al usuario (owner)
+      const links = await user_properties.findAll({
+        where: { id_user: id_owner },
+        attributes: ["id_property"],
+      });
+
+      const propertyIds = links.map((up: any) => up.id_property);
+
+      if (propertyIds.length === 0) {
+        return res.json([]); // no tiene propiedades asignadas
+      }
+
+      // 2) Traer los recurrentes de esas propiedades
+      const recurrentsOfOwner = await recurrent.findAll({
+        where: { id_property: { [Op.in]: propertyIds } },
+        include: [{ model: property, as: "property" }],
+      });
+
+      return res.json(recurrentsOfOwner);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        msg: "Error al obtener los invitados recurrentes por propietario",
+        error,
+      });
+    }
+  }
+
   public async create(req: Request, res: Response) {
     const { body } = req;
     try {
@@ -134,6 +170,24 @@ class RecurrentController {
       return res.status(500).send(error);
     }
   }
+
+  public async delete(req: Request, res: Response) {
+    const recurrentID = Number(req.params.id_recurrent);
+    if (isNaN(recurrentID)) {
+      return res.status(400).json({ msg: "ID de recurrente inválido" });
+    }
+
+    try {
+      const deleted = await recurrent.destroy({ where: { id: recurrentID } });
+      if (deleted === 0) {
+        return res.status(404).json({ msg: `No existe el invitado recurrente con el id ${recurrentID}` });
+      }
+      return res.status(200).json({ msg: "Invitado recurrente eliminado correctamente" });
+    } catch (error) {
+      return res.status(500).json({ msg: "Error al eliminar el invitado recurrente", error });
+    }
+  }
 }
 
 export default RecurrentController;
+

@@ -5,6 +5,7 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
+import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import db from "../models";
 
 const { user_properties, owner_country, property, user, country } = db; 
@@ -32,6 +33,36 @@ router.get('/:id_owner', [
     })
     console.log(`[GET /:id_owner] Propiedad encontrada para usuario ${req.params.id_owner}:`, foundProperty ? 'Sí' : 'No');
     return res.json(foundProperty);
+});
+
+// GET all properties for an owner (normalized array)
+router.get('/properties/:id_owner', [
+    check('id_owner').custom(userExists),
+    noErrors
+], async (req: Request, res: Response) => {
+    try {
+        const items = await user_properties.findAll({
+            where: { id_user: req.params.id_owner },
+            include: [{ model: property, as: 'property' }]
+        });
+
+        const props = items
+            .map((it: any) => it?.property)
+            .filter(Boolean)
+            .map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                number: p.number,
+                address: p.address,
+                avatar: p.avatar,
+                id_country: p.id_country
+            }));
+
+        return res.json(props);
+    } catch (e) {
+        console.error('Error fetching owner properties:', e);
+        return res.status(500).json([]);
+    }
 });
 
 router.get('/country/get_by_id/:id_country', [
@@ -63,7 +94,27 @@ router.get('/country/get_by_id/:id_country', [
         console.log('🔎 Owners encontrados:', owners);
 
         console.log(`[GET /country/get_by_id] Devolviendo ${owners.length} propietarios para country ${id_country}`);
-        return res.json(owners); 
+
+        // Normalizar avatar de OwnerUser en la respuesta
+        const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+        const cloudName = 'dkfzxplwp';
+        const toAvatarUrl = (val?: string | null) => {
+            if (!val) return placeholder;
+            const s = String(val);
+            if (/^https?:\/\//i.test(s)) return s; // absolute URL
+            if (s.startsWith('/')) return s; // relative path
+            return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`; // public_id
+        };
+
+        const response = owners.map((row: any) => {
+            const json = row.toJSON ? row.toJSON() : row;
+            if (json.OwnerUser) {
+                json.OwnerUser.avatar = toAvatarUrl(json.OwnerUser.avatar);
+            }
+            return json;
+        });
+
+        return res.json(response); 
 
     } catch (error) {
         console.error('❌ Error al obtener propietarios por país:', error);
@@ -179,6 +230,34 @@ router.post('/assign', [
             msg: "Error de base de datos al asignar país.", 
             error: (error as Error).message 
         });
+    }
+});
+
+// DELETE - Unassign owner from property
+router.delete('/', [
+    isAdmin,
+    check('id_user', "Id de usuario obligatorio").notEmpty(),
+    check('id_user', "El id de usuario debe ser numerico").isNumeric(),
+    check('id_property', "Id de propiedad obligatorio").notEmpty(),
+    check('id_property', "El id de propiedad debe ser numerico").isNumeric(),
+    noErrors
+], async (req: Request, res: Response) => {
+    try {
+        const uid = Number(req.body.id_user);
+        const pid = Number(req.body.id_property);
+
+        const deleted = await user_properties.destroy({
+            where: { id_user: uid, id_property: pid }
+        });
+
+        if (!deleted) {
+            return res.status(404).json({ msg: 'Relation not found' });
+        }
+
+        return res.json({ msg: 'Unassigned', deleted });
+    } catch (error) {
+        console.error('❌ Error al desasignar propietario de propiedad:', error);
+        return res.status(500).json({ msg: 'Server error' });
     }
 });
 

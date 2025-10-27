@@ -64,6 +64,17 @@ class AuthController {
             // Eliminamos la propiedad 'userRole' para evitar duplicados en la respuesta
             delete userResponse.userRole;
 
+            // Normalizar avatar a URL absoluta de Cloudinary o usar placeholder
+            const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+            const cloudName = 'dkfzxplwp';
+            const toAvatarUrl = (val?: string | null) => {
+                if (!val) return placeholder;
+                const s = String(val);
+                if (/^https?:\/\//i.test(s)) return s; // ya es absoluta
+                return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`;
+            };
+            (userResponse as any).avatar = toAvatarUrl((userResponse as any).avatar);
+
             //let ownerResponse = null;
 
             //if (userResponse.role.name === 'propietario') {
@@ -163,6 +174,95 @@ return res.status(200).json({
             // Manejo de errores
             console.error("Login error:", error);
             return res.status(500).json({ msg: "Error al iniciar sesión" });
+        }
+    };
+
+    /**
+     * Change password for the authenticated user (JWT required)
+     * Body: { currentPassword: string, newPassword: string }
+     */
+    public changePassword = async (req: Request, res: Response) => {
+        try {
+            const authHeader = req.header("Authorization");
+            const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+
+            if (!token) {
+                return res.status(401).json({ ok: false, msg: "No autorizado" });
+            }
+
+            let uid: string;
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+                uid = decoded.uid;
+            } catch (_e) {
+                return res.status(401).json({ ok: false, msg: "Token inválido" });
+            }
+
+            const { currentPassword, newPassword } = req.body || {};
+            if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+                return res.status(400).json({ ok: false, msg: "Parámetros inválidos" });
+            }
+            if (newPassword.length < 6) {
+                return res.status(400).json({ ok: false, msg: "Contraseña demasiado corta" });
+            }
+
+            const foundUser = await db.user.findByPk(uid);
+            if (!foundUser || !foundUser.password) {
+                return res.status(404).json({ ok: false, msg: "Usuario no encontrado" });
+            }
+
+            const valid = await bcrypt.compare(currentPassword, foundUser.password);
+            if (!valid) {
+                return res.status(401).json({ ok: false, msg: "La contraseña actual es incorrecta" });
+            }
+
+            const hashed = await bcrypt.hash(newPassword, 10);
+            await db.user.update({ password: hashed }, { where: { id: uid } });
+            return res.status(200).json({ ok: true, msg: "Contraseña actualizada" });
+        } catch (error) {
+            console.error('changePassword error:', error);
+            return res.status(500).json({ ok: false, msg: "Error interno" });
+        }
+    };
+
+    /**
+     * Reset password via short-lived token (no JWT required)
+     * Body: { token: string, newPassword: string }
+     */
+    public resetPassword = async (req: Request, res: Response) => {
+        try {
+            const { token, newPassword } = req.body || {};
+            if (!token || typeof token !== 'string') {
+                return res.status(400).json({ ok: false, msg: 'Token requerido' });
+            }
+            if (typeof newPassword !== 'string' || newPassword.length < 6) {
+                return res.status(400).json({ ok: false, msg: 'Contraseña demasiado corta' });
+            }
+
+            let payload: any;
+            try {
+                payload = jwt.verify(token, JWT_SECRET) as any;
+            } catch (_e) {
+                return res.status(401).json({ ok: false, msg: 'Token inválido o expirado' });
+            }
+
+            if (payload?.type !== 'password_reset' || !payload?.uid) {
+                return res.status(400).json({ ok: false, msg: 'Token no válido para reseteo' });
+            }
+
+            const uid = String(payload.uid);
+            const foundUser = await db.user.findByPk(uid);
+            if (!foundUser) {
+                return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
+            }
+
+            const hashed = await bcrypt.hash(newPassword, 10);
+            await db.user.update({ password: hashed }, { where: { id: uid } });
+
+            return res.status(200).json({ ok: true, msg: 'Contraseña actualizada' });
+        } catch (error) {
+            console.error('resetPassword error:', error);
+            return res.status(500).json({ ok: false, msg: 'Error interno' });
         }
     };
 

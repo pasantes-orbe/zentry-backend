@@ -1,3 +1,4 @@
+// routes/amenity.routes.ts
 import { Request, Response, Router } from "express";
 import { check } from "express-validator";
 import Amenity from "../classes/Amenity";
@@ -70,7 +71,7 @@ router.post('/country/:id', [
 
     const countryInstance = await new Countries().getOne(+req.params.id);
     if (!countryInstance) {
-        return res.status(404).json({ msg: "El país no existe" });
+        return res.status(404).json({ msg: "El Country no existe" });
     }
 
     const { name, address } = req.body;
@@ -116,6 +117,58 @@ router.delete('/:id', [
         return res.json({ msg: "Eliminado correctamente" });
     } catch (error) {
         return res.status(500).send(error);
+    }
+});
+
+// NUEVO: Ruta para actualizar (Editar) un amenity
+router.patch('/:id', [
+    isAdmin, // Solo Admin puede actualizar
+    check('id', 'El ID del amenity no puede estar vacío').notEmpty(),
+    check('id', 'El ID del amenity debe ser numérico').isNumeric(),
+    check('id').custom(amenityExists), // Verificar que el amenity exista
+    check('name', 'El nombre no puede estar vacío').optional().notEmpty(), // Nombre es opcional para el PATCH, pero si existe no puede ser vacío
+    noErrors
+], async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, address } = req.body;
+    
+    try {
+        const amenityToUpdate = await amenity.findByPk(id);
+
+        if (!amenityToUpdate) {
+            return res.status(404).json({ msg: "Amenity no encontrado" });
+        }
+
+        let newImageUrl: string | undefined;
+
+        // 1. Manejo de la imagen (avatar)
+        const avatarFile = req.files?.avatar;
+        if (avatarFile) {
+            const file = Array.isArray(avatarFile) ? avatarFile[0] : avatarFile;
+            if (file.tempFilePath) {
+                // Subir la nueva imagen y obtener la URL segura
+                const { secure_url } = await new Uploader().uploadImage(file.tempFilePath);
+                newImageUrl = secure_url;
+            }
+        }
+        
+        // 2. Construir el objeto de actualización
+        const updateData: { [key: string]: any } = {};
+        if (name) updateData.name = name;
+        if (address) updateData.address = address;
+        if (newImageUrl) updateData.image = newImageUrl; // Usar 'image' si la URL se guarda en ese campo
+        
+        // 3. Actualizar en la base de datos
+        await amenityToUpdate.update(updateData);
+        
+        return res.json({ 
+            msg: "Amenity actualizado correctamente",
+            amenity: amenityToUpdate 
+        });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Error interno al actualizar el amenity", error });
     }
 });
 

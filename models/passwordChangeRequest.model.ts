@@ -53,10 +53,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     });
 
     PasswordChangeRequest.associate = (models: any) => {
-        // CORRECCIÓN: Nombres de modelos en minúsculas para que coincidan con el resto del proyecto
+        // Asociación correcta: cada request pertenece a un usuario
         PasswordChangeRequest.belongsTo(models.user, {
             foreignKey: 'id_user',
-            as: 'passwordChangeRequests',
+            as: 'user',
         });
     };
 

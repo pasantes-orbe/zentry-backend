@@ -1,35 +1,8 @@
-//import { DataTypes } from "sequelize";
-//import { getDbInstance } from "../DB/connection";
-
-
-//const db = getDbInstance(); 
-
-//const AmenityModel = db.define('amenity', {
-//    id: {
-//        type: DataTypes.INTEGER,
-//        primaryKey: true,
-//        autoIncrement: true
-//    },
-//    name: {type: DataTypes.STRING},
-//    image: {type: DataTypes.STRING},
-//    address: {type: DataTypes.STRING}
-
-//},
-//{
-//    timestamps: false
-//}
-//);
-
-
-
-//module.exports = AmenityModel;
-
-// models/amenity.model.ts
 import { DataTypes } from "sequelize";
 
 module.exports = (sequelize: any, DataTypes: any) => {
 
-    const AmenityModel = sequelize.define('amenity', {
+     const AmenityModel = sequelize.define('amenity', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -43,20 +16,27 @@ module.exports = (sequelize: any, DataTypes: any) => {
             type: DataTypes.STRING,
             allowNull: true
         },
-        address: { 
+        address: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        id_country: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
-    },
-    {
-        tableName: 'amenities',
-        timestamps: false
-    });
 
-    AmenityModel.associate = (models: any) => {
-        // CORRECCIÓN: Usamos el nombre del modelo en minúsculas para que coincida con la definición
-        AmenityModel.hasMany(models.reservation, { foreignKey: 'id_amenity', as: 'reservations' });
-    };
+     },
+     {
+         tableName: 'amenities',
+         timestamps: false
+     });
 
-    return AmenityModel;
-};
+     AmenityModel.associate = (models: any) => {
+         // Relación One-to-Many con reservations
+         AmenityModel.hasMany(models.reservation, { foreignKey: 'id_amenity', as: 'reservations' });
+         // Relación con country (opcional, pero útil si se usa include)
+         AmenityModel.belongsTo(models.country, { foreignKey: 'id_country', as: 'country' });
+     };
+
+     return AmenityModel;
+ };

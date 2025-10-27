@@ -19,7 +19,9 @@ class Amenity {
 
     public async save() {
         try {
-            console.log("AAAAAAAA", this.getCountry().getId());
+            const c: any = this.getCountry();
+            const countryId = typeof c?.getId === 'function' ? c.getId() : (c?.id ?? c);
+            console.log("AAAAAAAA", countryId);
             console.log(this.getName());
             console.log(this.getAvatar());
             console.log(this.getAddress());
@@ -29,7 +31,7 @@ class Amenity {
                 name: this.getName(),
                 image: this.getAvatar(),
                 address: this.getAddress(),
-                id_country: this.getCountry().getId()
+                id_country: Number(countryId)
             });
 
             return await amenityToSave.save();
