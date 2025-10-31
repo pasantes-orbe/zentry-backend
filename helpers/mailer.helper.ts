@@ -1,3 +1,4 @@
+// helpers/mailer.helper.ts
 import nodemailer from "nodemailer";
 
 class Mailer {

@@ -57,4 +57,12 @@ router.post('/read', [
 // PATCH READ BULK (compatibilidad)
 router.patch('/read', (req: Request, res: Response) => notificationController.markAsReadBulk(req, res));
 
+// CREATE NOTIFICATION (para frontend)
+router.post('/', [
+    body('ownerId').notEmpty(),
+    body('title').notEmpty(),
+    body('message').notEmpty(),
+    noErrors
+], (req: Request, res: Response) => notificationController.create(req, res));
+
 export default router;

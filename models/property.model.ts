@@ -12,7 +12,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
         name: { type: DataTypes.STRING },
         number: { type: DataTypes.INTEGER },
         address: { type: DataTypes.STRING },
-        avatar: { type: DataTypes.STRING }
+        avatar: { type: DataTypes.STRING },
+        isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
     },
     { // ✅ CORRECCIÓN: Este es el segundo objeto para la configuración.
         tableName: 'properties',

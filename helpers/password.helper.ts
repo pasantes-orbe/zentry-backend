@@ -1,3 +1,4 @@
+// helpers/password.helper.ts
 import bcrypt from "bcrypt";
 import generator from "generate-password";
 

@@ -46,6 +46,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+        },
     }, {
         tableName: "users",
         timestamps: false,
@@ -55,7 +60,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         User.belongsTo(models.role, { foreignKey: 'role_id', as: 'userRole' });
 
         // Esta es la relación que permite a Sequelize encontrar propietarios por país.
-        User.hasMany(models.owner_country, { foreignKey: 'id_user', as: 'ownerCountries' });
+		User.hasMany(models.owner_country, { foreignKey: 'id_user', as: 'ownerCountries' });
 
         // ✅ CORREGIDO: Cambiar de hasMany a belongsToMany para relación many-to-many
         User.belongsToMany(models.property, { 
@@ -69,7 +74,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
         User.hasMany(models.guard_country, { foreignKey: 'id_user', as: 'guardCountries' });
         User.hasMany(models.appid, { foreignKey: 'id_user', sourceKey: 'id' });
         User.hasMany(models.notification, { foreignKey: 'id_user', as: 'notifications' });
-        User.hasMany(models.password_change_request, { foreignKey: 'id_user', as: 'passwordChangeRequests' });
     };
 
     return User;

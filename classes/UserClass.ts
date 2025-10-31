@@ -14,13 +14,15 @@ class UserClass {
             }],
         });
         const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-        const cloudName = 'dkfzxplwp';
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
         const toAvatarUrl = (val?: string | null) => {
             if (!val) return placeholder;
             const s = String(val);
             if (/^https?:\/\//i.test(s)) return s; // absolute URL
             if (s.startsWith('/')) return s; // relative path, front will prefix base URL
-            return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`; // public_id
+            return cloudName
+                ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+                : s; // public_id
         };
         users.forEach((u: any) => {
             const current = u.get('avatar');
@@ -41,13 +43,15 @@ class UserClass {
             }],
         });
         const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-        const cloudName = 'dkfzxplwp';
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
         const toAvatarUrl = (val?: string | null) => {
             if (!val) return placeholder;
             const s = String(val);
             if (/^https?:\/\//i.test(s)) return s; // absolute URL
             if (s.startsWith('/')) return s; // relative path
-            return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`; // public_id
+            return cloudName
+                ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+                : s; // public_id
         };
         users.forEach((u: any) => {
             const current = u.get('avatar');

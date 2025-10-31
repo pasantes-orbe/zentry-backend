@@ -10,7 +10,20 @@ import jwt from "jsonwebtoken";
 import Uploader from "../classes/Uploader";
 
 // Desestructuramos los modelos necesarios del objeto 'db' para usarlos fácilmente.
-const { user, role, passwordChangeRequest, guard_country, guard_schedule, owner_country, user_properties, appid, notification, reservation, antipanic, checkin, checkout } = db;
+const { user, role, guard_country, guard_schedule, owner_country, user_properties, appid, notification, reservation, antipanic, checkin, checkout } = db as any;
+
+const passwordChangeRequest =
+  (db as any).passwordChangeRequest ||
+  (db as any)['password_change_request'];
+
+
+// ✅ Helper: si solo tenemos public_id, construimos URL pública
+function toCloudinaryUrlFromPublicId(publicId?: string | null) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
+  if (!publicId) return undefined;
+  if (/^https?:\/\//i.test(publicId)) return publicId; // ya es URL completa
+  return cloudName ? `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}` : publicId;
+}
 
 class UserController {
     public async getAllUsers(req: Request, res: Response) {
@@ -126,12 +139,14 @@ class UserController {
 
         if (foundUser) {
             const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-            const cloudName = 'dkfzxplwp';
+            const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
             const toAvatarUrl = (val?: string | null) => {
                 if (!val) return placeholder;
                 const s = String(val);
                 if (/^https?:\/\//i.test(s)) return s;
-                return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`;
+                return cloudName
+                    ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+                    : s;
             };
             const current = (foundUser as any).get('avatar');
             (foundUser as any).setDataValue('avatar', toAvatarUrl(current));
@@ -147,6 +162,25 @@ class UserController {
         try {
             // Cifrar password
             body.password = new PasswordHelper().hash(body.password);
+            // Si viene archivo de avatar (express-fileupload)
+            const files: any = (req as any).files;
+            if (files?.avatar && files.avatar.tempFilePath) {
+                try {
+                    const tempFilePath = files.avatar.tempFilePath;
+                    const uploader = new Uploader();
+                    const uploaded: any = await uploader.uploadImage(tempFilePath);
+
+                    // ❌ ORIGINAL:
+                    // body.avatar = uploaded?.public_id || uploaded?.secure_url || body.avatar;
+
+                    // ✅ NUEVO: priorizamos secure_url; si no existe, construimos desde public_id
+                    const secureUrl = uploaded?.secure_url || toCloudinaryUrlFromPublicId(uploaded?.public_id);
+                    body.avatar = secureUrl || body.avatar;
+
+                } catch (e) {
+                    console.error('Error subiendo avatar en register:', e);
+                }
+            }
             const createdUser = await user.create(body);
             res.json({
                 msg: "El usuario se creo con exito",
@@ -254,43 +288,29 @@ class UserController {
      * El middleware 'isTheUser' asegura que el usuario logueado sea el mismo que el ID en la URL.
      */
     public async changePassword(req: Request, res: Response) {
-        // Obtenemos el ID del usuario de los parámetros de la URL
         const { id } = req.params;
-        // Obtenemos la nueva contraseña del cuerpo de la solicitud (JSON)
         const { newPassword } = req.body;
 
-        // Validar que la nueva contraseña no esté vacía
         if (!newPassword) {
             return res.status(400).json({ msg: "La nueva contraseña es obligatoria." });
         }
 
         try {
-            // Buscar al usuario en la base de datos por el ID obtenido de la URL
             const foundUser = await user.findByPk(id);
 
-            // Si el usuario no existe, enviamos un error 404
             if (!foundUser) {
                 return res.status(404).json({ msg: "Usuario no encontrado." });
             }
 
-            // El middleware 'isTheUser' ya debería haber verificado que el 'id' de la URL
-            // coincide con el 'uid' del token. No necesitamos una verificación adicional aquí
-            // a menos que quieras una capa extra de seguridad.
-
-            // Instanciamos tu PasswordHelper para cifrar la nueva contraseña
             const passHelper = new PasswordHelper();
-            const hashedPassword = passHelper.hash(newPassword); // Ciframos la nueva contraseña
+            const hashedPassword = passHelper.hash(newPassword);
 
-            // Actualizamos la contraseña del usuario en la base de datos
             await foundUser.update({ password: hashedPassword });
 
-            // Enviamos una respuesta de éxito
             return res.status(200).json({ msg: "Contraseña actualizada exitosamente." });
 
         } catch (error) {
-            // Capturamos y registramos cualquier error que ocurra durante el proceso
             console.error("Error al cambiar la contraseña del usuario:", error);
-            // Enviamos una respuesta de error interno del servidor
             return res.status(500).json({ msg: "Error interno del servidor al cambiar la contraseña." });
         }
     }
@@ -319,25 +339,86 @@ class UserController {
         })
     }
 
+    public async updateUserStatus(req: Request, res: Response) {
+        const { id } = req.params;
+        const { isActive } = req.body as { isActive?: boolean };
+        if (typeof isActive !== 'boolean') {
+            return res.status(400).json({ msg: 'Campo isActive requerido y debe ser booleano' });
+        }
+        const foundUser = await user.findByPk(id);
+        if (!foundUser) {
+            return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
+        }
+        const updated = await (foundUser as any).update({ isActive });
+        return res.json({ msg: 'Estado actualizado', user: updated });
+    }
+
     public async updateAvatar(req: Request, res: Response) {
         const { id } = req.params;
         const { avatar } = req.body as { avatar?: string };
 
-        if (!avatar || typeof avatar !== 'string') {
+        const files: any = (req as any).files;
+
+        if ((!files?.avatar || !files.avatar.tempFilePath) && (!avatar || typeof avatar !== 'string')) {
             return res.status(400).json({ msg: 'Campo avatar requerido' });
         }
 
         try {
+            console.log('updateAvatar received:', {
+                hasFiles: !!files,
+                hasAvatarFile: !!files?.avatar,
+                hasTempFilePath: !!files?.avatar?.tempFilePath,
+                bodyHasAvatar: typeof avatar === 'string' && avatar.length > 0
+            });
             const foundUser = await user.findByPk(id);
             if (!foundUser) {
                 return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
             }
 
-            let valueToStore: string = avatar;
-            if (!/^https?:\/\//i.test(avatar)) {
-                const uploader = new Uploader();
-                const uploaded: any = await uploader.uploadImage(avatar);
-                valueToStore = uploaded?.public_id || uploaded?.secure_url || avatar;
+            let valueToStore: string | undefined = undefined;
+
+            if (files?.avatar && files.avatar.tempFilePath) {
+                const cloudOk = (!!process.env.CLOUDINARY_URL) || (!!process.env.CLOUDINARY_CLOUD_NAME && !!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
+                if (!cloudOk) {
+                    return res.status(500).json({ msg: 'Cloudinary no configurado' });
+                }
+                try {
+                    const tempFilePath = files.avatar.tempFilePath;
+                    const uploader = new Uploader();
+                    const uploaded: any = await uploader.uploadImage(tempFilePath);
+
+                    // ❌ ORIGINAL:
+                    // valueToStore = uploaded?.public_id || uploaded?.secure_url;
+
+                    // ✅ NUEVO:
+                    valueToStore = uploaded?.secure_url || toCloudinaryUrlFromPublicId(uploaded?.public_id);
+
+                } catch (e) {
+                    console.error('Error subiendo avatar en updateAvatar:', e);
+                }
+            }
+
+            if (!valueToStore && avatar) {
+                let toUpload = avatar;
+                if (!/^https?:\/\//i.test(avatar)) {
+                    const cloudOk = (!!process.env.CLOUDINARY_URL) || (!!process.env.CLOUDINARY_CLOUD_NAME && !!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
+                    if (!cloudOk) {
+                        return res.status(500).json({ msg: 'Cloudinary no configurado' });
+                    }
+                    const uploader = new Uploader();
+                    const uploaded: any = await uploader.uploadImage(avatar);
+
+                    // ❌ ORIGINAL:
+                    // toUpload = uploaded?.public_id || uploaded?.secure_url || avatar;
+
+                    // ✅ NUEVO:
+                    toUpload = uploaded?.secure_url || toCloudinaryUrlFromPublicId(uploaded?.public_id) || avatar;
+                }
+                valueToStore = toUpload;
+            }
+
+            if (!valueToStore) {
+                return res.status(400).json({ msg: 'No se pudo procesar el avatar' });
             }
 
             const updated = await (foundUser as any).update({ avatar: valueToStore });
@@ -483,4 +564,3 @@ class UserController {
     }
 }
 export default UserController;
-

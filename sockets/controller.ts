@@ -8,7 +8,7 @@ import OwnersConnectedControl from "../classes/OwnersConnectedControl";
 import db from "../models"; // Importamos el objeto db centralizado
 
 // Desestructuramos los modelos necesarios
-const { user, guard_country } = db;
+const { user, guard_country, notification } = db;
 
 class SocketController {
     public guardsUbication: GuardUbicationControl = new GuardUbicationControl();
@@ -55,11 +55,23 @@ class SocketController {
             const dni = payload['DNI']; // con el id_owner envio la notificacion
             const owner = await user.findByPk(id_owner)
             console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
-            this.notifications.notifyAExternal_User_By_ID(String(id_owner),
-                `Tienes un nuevo Check-in para Autorizar: ${guest_name} ${guest_lastname} - DNI: ${dni}`,
-                `${owner?.name}`,
-                'Nueva Solicitud de Check-in')
+            // Fallback: crear notificación en DB (sin push) para que aparezca en la campanita
+            try {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const hora = `${hh}:${mm}`;
+                await notification.create({
+                    id_user: Number(id_owner),
+                    title: 'Vigilador',
+                    content: `Ingreso de visitante (${guest_name} ${guest_lastname}, ${hora}) autorizado por vigilador`,
+                    read: false,
+                });
+            } catch (e) {
+                console.error('[Socket] Error creando notificación de check-in en DB:', e);
+            }
             const ownerConnected = this.ownerControl.getownersByUserId(id_owner)
+
             if (ownerConnected) {
                 client.to(ownerConnected.id_socket).emit('notificacion-check-in', payload)
             } else {

@@ -1,4 +1,7 @@
 //models/server.ts
+import 'dotenv/config'; // primero siempre
+import '../config/cloudinary'; // segundo, configura Cloudinary una sola vez
+
 import express, { Application } from "express";
 import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";

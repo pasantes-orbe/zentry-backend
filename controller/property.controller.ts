@@ -29,6 +29,24 @@ class PropertyController {
     }
   }
 
+  public async updateStatus(req: Request, res: Response) {
+    const { id } = req.params;
+    const { isActive } = req.body as { isActive?: boolean };
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ msg: 'Campo isActive requerido y debe ser booleano' });
+    }
+    try {
+      const found = await property.findByPk(id);
+      if (!found) {
+        return res.status(404).json({ msg: `No existe la propiedad con el id ${id}` });
+      }
+      const updated = await (found as any).update({ isActive });
+      return res.json({ msg: 'Estado actualizado', property: updated });
+    } catch (error) {
+      return res.status(500).json({ msg: 'Error al actualizar estado' });
+    }
+  }
+
   public async search(req: Request, res: Response) {
     const { search } = req.params;
 
@@ -149,9 +167,11 @@ class PropertyController {
    */
   public async getByCountry(req: Request, res: Response) {
   try {
-    // 1) Trae TODAS las propiedades del country (asignadas o no)
+    const includeInactive = String((req.query as any)?.includeInactive ?? '').toLowerCase() === 'true' || String((req.query as any)?.status ?? '').toLowerCase() === 'all';
     const properties = await property.findAll({
-      where: { id_country: req.params.id_country }
+      where: includeInactive
+        ? { id_country: req.params.id_country }
+        : { id_country: req.params.id_country, isActive: true }
     });
 
     // 2) Por cada propiedad, trae sus asignaciones en user_properties
@@ -159,18 +179,20 @@ class PropertyController {
       properties.map(async (p: any) => {
         const owners = await user_properties.findAll({
           where: { id_property: p.id },
-          include: [{ model: user, as: 'user', attributes: ['id','email','name','lastname','avatar'] }]
+          include: [{ model: user, as: 'user', attributes: ['id','email','name','lastname','avatar','isActive'], where: { isActive: true }, required: true }]
         });
 
         // Normalizar avatar del usuario incluido
         const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-        const cloudName = 'dkfzxplwp';
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
         const toAvatarUrl = (val?: string | null) => {
           if (!val) return placeholder;
           const s = String(val);
           if (/^https?:\/\//i.test(s)) return s; // absolute URL
           if (s.startsWith('/')) return s; // relative path
-          return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`; // public_id
+          return cloudName
+            ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+            : s; // public_id
         };
 
         const ownersJson = owners.map((o: any) => {
@@ -192,6 +214,53 @@ class PropertyController {
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: 'Error al obtener propiedades por país' });
+  }
+}
+
+  public async getByCountryAll(req: Request, res: Response) {
+  try {
+    const properties = await property.findAll({
+      where: { id_country: req.params.id_country }
+    });
+
+    const response = await Promise.all(
+      properties.map(async (p: any) => {
+        const owners = await user_properties.findAll({
+          where: { id_property: p.id },
+          include: [{ model: user, as: 'user', attributes: ['id','email','name','lastname','avatar','isActive'], where: { isActive: true }, required: true }]
+        });
+
+        const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
+        const toAvatarUrl = (val?: string | null) => {
+          if (!val) return placeholder;
+          const s = String(val);
+          if (/^https?:\/\//i.test(s)) return s;
+          if (s.startsWith('/')) return s;
+          return cloudName
+            ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+            : s;
+        };
+
+        const ownersJson = owners.map((o: any) => {
+          const j = o.toJSON();
+          if (j.user) {
+            j.user.avatar = toAvatarUrl(j.user.avatar);
+          }
+          return j;
+        });
+
+        return {
+          property: p.toJSON(),
+          owners: ownersJson
+        };
+      })
+    );
+
+    return res.json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al obtener todas las propiedades por país' });
   }
 }
 
@@ -242,17 +311,24 @@ class PropertyController {
     const { id } = req.params;
 
     try {
+      const found = await property.findByPk(id);
+      if (!found) {
+        return res.status(404).json({ msg: `No existe la propiedad con el id ${id}` });
+      }
       if (avatar) {
         const { tempFilePath }: any = req.files?.avatar;
         const { secure_url } = await new Uploader().uploadImage(tempFilePath);
         avatarEdit = secure_url;
       }
 
+      const currentAvatar = (found as any).get('avatar');
+      const nextAvatar = avatarEdit || currentAvatar;
+
       await property.update({
         name,
         number,
         address,
-        avatar: avatarEdit
+        avatar: nextAvatar
       }, { where: { id } });
 
       return res.json({

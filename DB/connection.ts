@@ -109,7 +109,7 @@ import { Sequelize } from "sequelize";
 const dbName = process.env.DB_NAME || 'countryapp';
 const dbUser = process.env.DB_USER || 'postgres';
 const dbHost = process.env.DB_HOST || 'localhost';
-const dbPassword = process.env.DB_PASSWORD || '1235'; //1234
+const dbPassword = process.env.DB_PASSWORD || '1234'; //1234
 
 let dbInstance: Sequelize | null = null;
 

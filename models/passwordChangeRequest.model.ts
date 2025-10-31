@@ -1,31 +1,3 @@
-//import { DataTypes } from "sequelize";
-//import { getDbInstance } from "../DB/connection";
-
-//const db = getDbInstance();
-
-//const passwordChangeRequest = db.define('password_change_request', {
-//    id: {
-//        type: DataTypes.INTEGER,
-//        primaryKey: true,
-//        autoIncrement: true
-//    },
-//    id_user: {
-//        type: DataTypes.INTEGER,
-//        allowNull: false
-//        // La asociación se hace en otro archivo
-//    },
-//    changed: {
-//        type: DataTypes.BOOLEAN
-//    },
-//    date: {
-//        type: DataTypes.DATE
-//    }
-//}, {
-//    timestamps: false
-//});
-
-//module.exports = passwordChangeRequest;
-
 //models/passwordChangeRequest.model.ts
 import { DataTypes } from "sequelize";
 

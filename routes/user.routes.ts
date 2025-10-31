@@ -19,6 +19,15 @@ const controller: UserController = new UserController();
 router.get('/', controller.getAllUsers);
 router.get('/:id', controller.getUser);
 
+// Update status (admin only)
+router.patch('/:id/status', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], controller.updateUserStatus)
+
 router.post('/', [
     check('email', 'El email es obligatorio').notEmpty(),
     check('email', 'El correo no es válido').isEmail(),
@@ -48,8 +57,10 @@ router.patch('/change-password/:id', [validateJWT, isTheUser],
     controller.changePassword);
 
 // Admin aprueba/atiende una solicitud de cambio de contraseña
-router.patch('/change-password/:id_request', [
+router.patch('/requests/password-changes/:id_request/approve', [
+    ///requests/password-changes/:id_request/approve
     validateJWT,
+    isAdmin,
     check('id_request').notEmpty(),
     check('id_request').isNumeric(),
     noErrors
@@ -100,17 +111,22 @@ router.get('/owners/get_by_country/:id_country', [
         where: {
             id_country: req.params.id_country
         },
-        include: [db.user, db.country] // Usamos los nombres de los modelos en minúsculas
+        include: [
+            { model: db.user, as: 'OwnerUser', where: { isActive: true }, required: true },
+            { model: db.country, as: 'country' }
+        ]
     })
 
     // Normalizar avatar del usuario incluido (cuando venga como public_id/relativo)
     const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
-    const cloudName = 'dkfzxplwp';
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
     const toAvatarUrl = (val?: string | null) => {
         if (!val) return placeholder;
         const s = String(val);
         if (/^https?:\/\//i.test(s)) return s;
-        return `https://res.cloudinary.com/${cloudName}/image/upload/${s}`;
+        return cloudName
+            ? `https://res.cloudinary.com/${cloudName}/image/upload/${s}`
+            : s;
     };
 
     const response = propietarios.map((p: any) => {

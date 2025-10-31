@@ -54,6 +54,35 @@ class NotificationsController {
             return res.status(500).json({ msg: "Error al marcar notificaciones como leídas" });
         }
     }
+
+    public async create(req: Request, res: Response) {
+        try {
+            const { ownerId, title, message, read, reservationId, status } = req.body || {};
+
+            const id_user = Number(ownerId);
+            if (!Number.isFinite(id_user)) {
+                return res.status(400).json({ msg: "'ownerId' debe ser un número válido (id de usuario destinatario)" });
+            }
+            if (!title || typeof title !== 'string') {
+                return res.status(400).json({ msg: "'title' es requerido" });
+            }
+            if (!message || typeof message !== 'string') {
+                return res.status(400).json({ msg: "'message' es requerido" });
+            }
+
+            const created = await notification.create({
+                id_user,
+                title,
+                content: message,
+                read: Boolean(read),
+            });
+
+            return res.status(201).json(created);
+        } catch (error) {
+            console.error("Error creating notification:", error);
+            return res.status(500).json({ msg: "Error interno al crear la notificación" });
+        }
+    }
 }
 
 export default NotificationsController;

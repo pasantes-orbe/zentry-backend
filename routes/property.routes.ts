@@ -17,11 +17,20 @@ const property: PropertyController = new PropertyController();
  */
 router.get('/', isAdmin, property.getAll);
 
+// Update property status (admin only)
+router.patch('/:id/status', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], property.updateStatus)
+
 router.get('/:id_country/:search', [
-    check('id_country', "El campo 'id_country' no debe estar vacío").notEmpty(),
-    check('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
-    check('id_country').custom(countryExists),
-    noErrors
+    check('id_country', "El campo 'id_country' no debe estar vacío").notEmpty(),
+    check('id_country', "El campo 'id_country' debe ser numérico").isNumeric(),
+    check('id_country').custom(countryExists),
+    noErrors
 ] , property.search);
 
 
@@ -29,10 +38,16 @@ router.get('/:id_country/:search', [
  * Get All By Country
  */
 router.get('/country/get_by_id/:id_country', [
-    check('id_country').notEmpty(),
-    check('id_country').isNumeric(),
-    noErrors
+    	check('id_country').notEmpty(),
+    	check('id_country').isNumeric(),
+    	noErrors
 ], property.getByCountry)
+
+router.get('/country/get_all_by_id/:id_country', [
+    check('id_country').notEmpty(),
+    check('id_country').isNumeric(),
+    noErrors
+], property.getByCountryAll)
 
 // 🟢 NUEVA RUTA: Obtener propiedades del usuario logueado
 router.get('/owner-properties', [
