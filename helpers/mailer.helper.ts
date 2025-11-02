@@ -16,7 +16,7 @@ class Mailer {
             secure: true, // upgrade later with STARTTLS
             auth: {
                 user: "contacto@orbesoftware.com.ar",
-                pass: "Orb3Erios142",
+                pass: "Erio0s/142",
             }
         });
         
@@ -64,7 +64,7 @@ class Mailer {
             secure: true,
             auth: {
                 user: "contacto@orbesoftware.com.ar",
-                pass: "Orb3Erios142",
+                pass: "Erio0s/142",
             }
         });
 

@@ -18,7 +18,7 @@ class PropertyController {
         include: [
           {
             model: user_properties,
-            as: 'UserProperties' // 🟢 Usamos el alias consistente 'UserProperties'
+            as: 'userProperty' // 🟢 Usamos el alias consistente 'UserProperties'
           }
         ]
       });
@@ -84,7 +84,7 @@ class PropertyController {
         include: [
           {
             model: user_properties,
-            as: 'UserProperties', // 🟢 Usamos el alias consistente 'UserProperties'
+            as: 'userProperty', // 🟢 Usamos el alias consistente 'UserProperties'
             include: [
               {
                 model: user,
@@ -305,9 +305,7 @@ class PropertyController {
     }
 
   public async update(req: Request, res: Response) {
-    const { name, number, address } = req.body;
-    let avatar = req.files?.avatar;
-    let avatarEdit: string = "";
+    const { name, number, address, isActive } = req.body as { name?: string; number?: string | number; address?: string; isActive?: boolean };
     const { id } = req.params;
 
     try {
@@ -315,31 +313,73 @@ class PropertyController {
       if (!found) {
         return res.status(404).json({ msg: `No existe la propiedad con el id ${id}` });
       }
-      if (avatar) {
-        const { tempFilePath }: any = req.files?.avatar;
-        const { secure_url } = await new Uploader().uploadImage(tempFilePath);
-        avatarEdit = secure_url;
-      }
 
-      const currentAvatar = (found as any).get('avatar');
-      const nextAvatar = avatarEdit || currentAvatar;
+      const payload: any = {};
+      if (typeof name !== 'undefined') payload.name = name;
+      if (typeof address !== 'undefined') payload.address = address;
+      if (typeof number !== 'undefined') payload.number = number;
+      if (typeof isActive !== 'undefined') payload.isActive = isActive;
 
-      await property.update({
-        name,
-        number,
-        address,
-        avatar: nextAvatar
-      }, { where: { id } });
+      await (found as any).update(payload);
 
-      return res.json({
-        msg: "Actualizado correctamente",
-      });
+      // Devolver la propiedad completa y actualizada
+      const updated = await property.findByPk(id);
+      return res.json(updated);
 
     } catch (error) {
       return res.status(500).send({
         msg: "Error en el servidor",
         error
       });
+    }
+  }
+
+  public async updateAvatar(req: Request, res: Response) {
+    const { id } = req.params;
+    const files: any = (req as any).files;
+    const inputFile: any = files?.file || files?.avatar;
+
+    if (!inputFile || !inputFile.tempFilePath) {
+      return res.status(400).json({ msg: 'Campo file requerido' });
+    }
+
+    try {
+      const found = await property.findByPk(id);
+      if (!found) {
+        return res.status(404).json({ msg: `No existe la propiedad con el id ${id}` });
+      }
+
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const size = Number(inputFile.size) || 0;
+      const mime = String(inputFile.mimetype || '');
+      if (size > maxSize) {
+        return res.status(413).json({ msg: 'El archivo supera el tamaño máximo de 5MB' });
+      }
+      if (!/^image\//i.test(mime)) {
+        return res.status(400).json({ msg: 'El archivo debe ser una imagen (image/*)' });
+      }
+
+      const cloudOk = (!!process.env.CLOUDINARY_URL) || (!!process.env.CLOUDINARY_CLOUD_NAME && !!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
+      if (!cloudOk) {
+        return res.status(500).json({ msg: 'Cloudinary no configurado' });
+      }
+
+      const tempFilePath = inputFile.tempFilePath;
+      const uploader = new Uploader();
+      const uploaded: any = await uploader.uploadImage(tempFilePath);
+      const secureUrl = uploaded?.secure_url;
+
+      if (!secureUrl) {
+        return res.status(500).json({ msg: 'No se pudo obtener URL de la imagen subida' });
+      }
+
+      await (found as any).update({ avatar: secureUrl });
+      const updated = await property.findByPk(id);
+      return res.json(updated);
+
+    } catch (error) {
+      console.error('updateAvatar (property) error:', error);
+      return res.status(500).json({ msg: 'Error actualizando avatar de la propiedad' });
     }
   }
 

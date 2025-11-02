@@ -27,12 +27,10 @@ const db = require('./models'); // Usamos 'require' porque models/index.js usa '
 
 const server = Server.instance; // Esto inicializa tu servidor Express
 
-// *** ¡CAMBIO CRUCIAL: Sincronización de la base de datos! ***
 // Esto es lo que va a crear o actualizar tus tablas en PostgreSQL.
 // db.sequelize.sync({ force: true }) hará que cada vez que inicies la app,
 // borre las tablas existentes y las cree de nuevo con la definición de tus modelos.
 // ¡Usa { force: true } solo en desarrollo! En producción, podrías perder datos.
-//24-8db.sequelize.sync({ force: true })
 db.sequelize.sync({alter: true}) // Solo crea las tablas si no existen
   .then(() => {
     console.log('¡Base de datos sincronizada correctamente! Todas las tablas deberían estar ahí.');

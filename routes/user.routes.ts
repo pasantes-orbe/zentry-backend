@@ -78,10 +78,32 @@ router.patch('/update-user/:id', [
 
 // Upload/Update user avatar
 router.patch('/avatar/:id', [
+    validateJWT,
+    isAdmin,
     check('id').notEmpty(),
     check('id').isNumeric(),
     noErrors
 ], controller.updateAvatar)
+
+// New: Accept POST as well for avatar upload to match frontend contract
+router.post('/:id/avatar', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], controller.updateAvatar)
+
+// Alias estándar: actualizar datos del usuario
+router.patch('/:id', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    check('email').optional().isEmail(),
+    check('birthday').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
+    noErrors
+], controller.updateUser)
 
 // Delete user by id (admin only)
 router.delete('/:id', [
