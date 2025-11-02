@@ -6,13 +6,16 @@ import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
 
 const basename = path.basename(__filename);
 
-// Conexión
+// Conexión (forzar SSL siempre para Railway en Render)
 export const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
   dialect: 'postgres',
-  dialectOptions:
-    process.env.NODE_ENV === 'production'
-      ? { ssl: { require: true, rejectUnauthorized: false } }
-      : undefined,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // <-- clave para evitar "self-signed ..."
+    },
+  },
+  logging: false,
 } as any);
 
 // Registry fuertemente tipado
