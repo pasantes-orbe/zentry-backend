@@ -235,7 +235,7 @@ router.patch('/:id_reservation/:status', [
             income_date: event.date,
             id_owner,
             id_country
-        })).filter(ci => ci.guest_name && ci.guest_lastname && ci.DNI);
+            })).filter((ci: any) => ci.guest_name && ci.guest_lastname && ci.DNI);
 
         if (invitations_to_checkin.length > 0) {
             try {

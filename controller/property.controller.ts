@@ -145,7 +145,7 @@ class PropertyController {
 
       const newProperty = await property.create(body);
 
-      console.log("PROPIEDAD CREADA:", newProperty.id);
+      console.log("PROPIEDAD CREADA:", newProperty.get('id'));  
 
       res.json({
         msg: "La propiedad se creó con éxito",
@@ -293,8 +293,9 @@ class PropertyController {
             // Mapeamos el resultado para obtener solo los objetos Property que se mostrarán en el Front
             // Usamos .toJSON() para serializar los objetos Sequelize correctamente.
             const properties = userProperties
-                .filter(up => up.property)
-                .map(up => up.property.toJSON()); // Convertimos a JSON
+                .filter((up: any) => up?.property)  
+                .map((up: any) => up.property.toJSON());
+
 
             return res.json(properties);
 

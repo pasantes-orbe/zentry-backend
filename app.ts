@@ -1,16 +1,7 @@
-//import dotenv from "dotenv";
-//import Server from "./models/server";
-// Config .env
-//dotenv.config({
-//    path: "./.env"
-//});
-//console.log(process.env.TZ);
-//require('./models/associations');
-//const server = Server.instance;
-//server.startServer(); 
-//app.ts
 import dotenv from "dotenv";
 import Server from "./models/server";
+import 'reflect-metadata';
+
 // Configurar dotenv para cargar las variables de entorno desde el archivo .env
 dotenv.config({
     path: "./.env"

@@ -61,7 +61,3 @@ export interface DbInterface {
 // ======================================================================
 // 3. DECLARACIÓN DEL MÓDULO
 // ======================================================================
-declare module "../models" {
-    const db: DbInterface;
-    export default db;
-}

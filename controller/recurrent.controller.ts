@@ -1,15 +1,21 @@
 // controller/recurrent.controller.ts
 import { Request, Response } from "express";
-import { Op } from "sequelize";
+import { Op, Model, ModelStatic } from "sequelize";
 import db from "../models";
 
-const { recurrent, property, user_properties } = db;
+// -------- Helpers --------
+const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
+
+// -------- Modelos (tipado laxo) --------
+const RecurrentModel      = db.recurrent       as unknown as ModelStatic<Model<any, any>>;
+const PropertyModel       = db.property        as unknown as ModelStatic<Model<any, any>>;
+const UserPropertiesModel = db.user_properties as unknown as ModelStatic<Model<any, any>>;
 
 class RecurrentController {
   public async getAll(req: Request, res: Response) {
     try {
-      const recurrents = await recurrent.findAll({
-        include: [{ model: property, as: "property" }],
+      const recurrents = await RecurrentModel.findAll({
+        include: [{ model: PropertyModel, as: "property" }],
       });
       return res.json(recurrents);
     } catch (error) {
@@ -24,8 +30,8 @@ class RecurrentController {
     if (isNaN(id)) return res.status(400).json({ msg: "ID inválido" });
 
     try {
-      const foundRecurrent = await recurrent.findByPk(id, {
-        include: [{ model: property, as: "property" }],
+      const foundRecurrent = await RecurrentModel.findByPk(id, {
+        include: [{ model: PropertyModel, as: "property" }],
       });
       if (foundRecurrent) return res.json(foundRecurrent);
       return res
@@ -44,10 +50,10 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de country inválido" });
 
     try {
-      const recurrentsByCountry = await recurrent.findAll({
+      const recurrentsByCountry = await RecurrentModel.findAll({
         include: [
           {
-            model: property,
+            model: PropertyModel,
             as: "property",
             where: { id_country },
           },
@@ -67,7 +73,7 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de propiedad inválido" });
 
     try {
-      const list = await recurrent.findAll({ where: { id_property } });
+      const list = await RecurrentModel.findAll({ where: { id_property } });
       return res.json(list);
     } catch (error) {
       return res
@@ -83,22 +89,21 @@ class RecurrentController {
     }
 
     try {
-      // 1) Obtener las propiedades asignadas al usuario (owner)
-      const links = await user_properties.findAll({
+      // 1) Propiedades asignadas al owner
+      const links = await UserPropertiesModel.findAll({
         where: { id_user: id_owner },
         attributes: ["id_property"],
       });
 
-      const propertyIds = links.map((up: any) => up.id_property);
-
+      const propertyIds = links.map((up) => getVal(up, "id_property")).filter(Boolean);
       if (propertyIds.length === 0) {
         return res.json([]); // no tiene propiedades asignadas
       }
 
-      // 2) Traer los recurrentes de esas propiedades
-      const recurrentsOfOwner = await recurrent.findAll({
+      // 2) Recurrentes de esas propiedades
+      const recurrentsOfOwner = await RecurrentModel.findAll({
         where: { id_property: { [Op.in]: propertyIds } },
-        include: [{ model: property, as: "property" }],
+        include: [{ model: PropertyModel, as: "property" }],
       });
 
       return res.json(recurrentsOfOwner);
@@ -116,28 +121,31 @@ class RecurrentController {
     try {
       // completar id_country desde la propiedad si no vino
       if (!body.id_country && body.id_property) {
-        const prop = await property.findByPk(body.id_property);
-        if (prop?.id_country) body.id_country = prop.id_country;
-        else
+        const prop = await PropertyModel.findByPk(body.id_property);
+        const idCountry = prop ? getVal(prop, "id_country") : undefined;
+        if (idCountry) body.id_country = idCountry;
+        else {
           return res.status(400).json({
             msg: "No se pudo obtener el country a partir de la propiedad",
           });
+        }
       }
 
       // evitar duplicados por dni + propiedad
-      const exists = await recurrent.findOne({
+      const exists = await RecurrentModel.findOne({
         where: { dni: body.dni, id_property: body.id_property },
-        include: [{ model: property, as: "property" }],
+        include: [{ model: PropertyModel, as: "property" }],
       });
       if (exists) {
-        const propertyName = (exists as any).property?.name;
+        const propertyName =
+          (exists as any).property?.name ?? getVal((exists as any).property, "name");
         return res.status(400).send({
           msg: `Ya existe un invitado recurrente con el DNI ${body.dni} para el country ${propertyName ?? "desconocido"}`,
           guest: exists,
         });
       }
 
-      const newRecurrent = await recurrent.create({
+      const newRecurrent = await RecurrentModel.create({
         ...body,
         status: true,
       });
@@ -161,7 +169,7 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de recurrente inválido" });
 
     try {
-      const changed = await recurrent.update(
+      const changed = await RecurrentModel.update(
         { status },
         { where: { id: recurrentID } }
       );
@@ -178,16 +186,23 @@ class RecurrentController {
     }
 
     try {
-      const deleted = await recurrent.destroy({ where: { id: recurrentID } });
+      const deleted = await RecurrentModel.destroy({ where: { id: recurrentID } });
       if (deleted === 0) {
-        return res.status(404).json({ msg: `No existe el invitado recurrente con el id ${recurrentID}` });
+        return res
+          .status(404)
+          .json({ msg: `No existe el invitado recurrente con el id ${recurrentID}` });
       }
-      return res.status(200).json({ msg: "Invitado recurrente eliminado correctamente" });
+      return res
+        .status(200)
+        .json({ msg: "Invitado recurrente eliminado correctamente" });
     } catch (error) {
-      return res.status(500).json({ msg: "Error al eliminar el invitado recurrente", error });
+      return res
+        .status(500)
+        .json({ msg: "Error al eliminar el invitado recurrente", error });
     }
   }
 }
 
 export default RecurrentController;
+
 
