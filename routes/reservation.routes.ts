@@ -283,6 +283,77 @@ router.patch('/:id_reservation/:status', [
             console.error('Error al notificar al propietario sobre el estado de la reserva:', e);
         }
 
+        // 🆕 NOTIFICAR A LOS GUARDIAS SI LA RESERVA FUE APROBADA
+        if (newStatus === 'aprobado') {
+            try {
+                // Formatear fecha para los guardias
+                const dt = new Date(event.date);
+                const dd = String(dt.getDate()).padStart(2, '0');
+                const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                const hh = String(dt.getHours()).padStart(2, '0');
+                const mi = String(dt.getMinutes()).padStart(2, '0');
+                const whenStr = `${dd}/${mm} ${hh}:${mi}`;
+
+                const amenityName = (event as any).amenity?.name ?? 'Amenidad';
+                const ownerName = `${event.user?.name ?? ''} ${event.user?.lastname ?? ''}`.trim() || 'Propietario';
+
+                // Obtener todos los guardias del country
+                const { role, guard_country } = db;
+                
+                // Buscar el rol de vigilador
+                const guardRole = await role.findOne({ where: { name: 'vigilador' } });
+                
+                if (guardRole) {
+                    // Obtener guardias asignados a este country
+                    const guardsInCountry = await guard_country.findAll({
+                        where: { id_country },
+                        include: [{
+                            model: user,
+                            as: 'user',
+                            where: { role_id: (guardRole as any).id }
+                        }]
+                    });
+
+                    const serverInstance = Server.instance;
+
+                    // Crear notificación para cada guardia
+                    for (const guardCountry of guardsInCountry) {
+                        const guard = (guardCountry as any).user;
+                        if (!guard) continue;
+
+                        const guardNotification = await notification.create({
+                            id_user: guard.id,
+                            title: 'Nuevo Evento Aprobado',
+                            content: `${ownerName} tiene un evento en ${amenityName} (${whenStr})`,
+                            read: false
+                        });
+
+                        console.log(`✅ Notificación enviada a guardia ID: ${guard.id}`);
+
+                        // Emitir por WebSocket
+                        if (serverInstance && serverInstance.io) {
+                            const payload = {
+                                ...(guardNotification as any).toJSON?.() ?? guardNotification,
+                                id_user: guard.id,
+                                type: 'reservation_status',
+                                reservation_id: Number(id_reservation),
+                                amenityName,
+                                ownerName,
+                                whenStr,
+                                read: false
+                            };
+                            serverInstance.io.emit('new-notification', payload);
+                        }
+                    }
+
+                    console.log(`📢 Notificaciones enviadas a ${guardsInCountry.length} guardias del country ${id_country}`);
+                }
+            } catch (e) {
+                console.error('❌ Error al notificar a los guardias sobre el evento aprobado:', e);
+                // No interrumpir el flujo principal
+            }
+        }
+
     } catch (error) {
         return res.status(500).send({
             msg: "Error interno en el servidor"

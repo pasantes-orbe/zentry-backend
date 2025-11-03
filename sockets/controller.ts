@@ -53,6 +53,13 @@ class SocketController {
             const guest_name = payload['guest_name']; // con el id_owner envio la notificacion
             const guest_lastname = payload['guest_lastname']; // con el id_owner envio la notificacion
             const dni = payload['DNI']; // con el id_owner envio la notificacion
+            
+            // Si no hay propietario (id_owner es null/0), no crear notificación
+            if (!id_owner || id_owner === 0 || id_owner === null) {
+                console.log('[Socket] Check-in sin propietario, no se crea notificación para owner');
+                return;
+            }
+            
             const owner = await user.findByPk(id_owner)
             console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
             // Fallback: crear notificación en DB (sin push) para que aparezca en la campanita
@@ -286,6 +293,29 @@ class SocketController {
             // Opcional: aquí podrías integrar notificación push fallback si aplica.
         }
     }
+    // ✅ Escuchar cuando un guardia aprueba un servicio sin propietario
+    public escucharServiceApprovedByGuard(client: Socket) {
+        client.on('service-approved-by-guard', async (payload) => {
+            console.log('[Socket] Guardia aprobó servicio:', payload);
+            
+            // Reemitir a todos los clientes (admin y otros guardias)
+            client.broadcast.emit('service-approved-by-guard', payload);
+            
+            console.log('[Socket] Evento service-approved-by-guard reemitido a todos los clientes');
+        });
+    }
+
+    // ✅ Escuchar cuando un admin aprueba un servicio sin propietario
+    public escucharServiceApprovedByAdmin(client: Socket) {
+        client.on('service-approved-by-admin', async (payload) => {
+            console.log('[Socket] Admin aprobó servicio:', payload);
+            
+            // Reemitir a todos los clientes (guardias)
+            client.broadcast.emit('service-approved-by-admin', payload);
+            
+            console.log('[Socket] Evento service-approved-by-admin reemitido a todos los clientes');
+        });
+    }
 
 } 
 

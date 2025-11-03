@@ -204,7 +204,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         },
         id_owner: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true, // ✅ CAMBIO: Ahora permite NULL para check-ins sin propietario
         },
         confirmed_by_owner: {
             type: DataTypes.BOOLEAN,

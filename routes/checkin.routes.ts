@@ -5,6 +5,7 @@ import AuthController from "../controller/auth.controller";
 import CheckInController from "../controller/checkin.controller"; 
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
+import optionalUserExists from "../middlewares/customs/optionalUserExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import checkinController from "../controller/checkin.controller";
 import { CheckoutInterface } from "../interfaces/checkout.interface";
@@ -18,10 +19,16 @@ router.post('/', [
     check('guest_lastname', "Campo 'guest_lastname' es obligatorio").notEmpty(),
     check('DNI', "Campo 'DNI' es obligatorio").notEmpty(),
     check('DNI', "Campo 'DNI' debe ser numérico").isNumeric(),
-    check('id_owner', "Campo 'id_owner' es obligatorio").notEmpty(),
-    check('id_owner', "Campo 'id_owner' debe ser numérico").isNumeric(),
+    // ✅ CAMBIO: id_owner ahora es OPCIONAL (permite null, undefined, 0)
+    check('id_owner')
+        .optional({ nullable: true, checkFalsy: true })
+        .isNumeric()
+        .withMessage("Campo 'id_owner' debe ser numérico si se proporciona"),
+    check('id_owner')
+        .optional({ nullable: true, checkFalsy: true })
+        .custom(optionalUserExists)
+        .withMessage("El usuario especificado no existe"),
     check('income_date', "Campo 'income_date' es obligatorio").notEmpty(),
-    check('id_owner').custom(userExists),
     check('id_country').custom(countryExists),
     check('id_country', "Campo id_country es obligatorio").notEmpty(),
     noErrors
