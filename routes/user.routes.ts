@@ -9,9 +9,7 @@ import isTheUser from "../middlewares/jwt/isTheUser.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import validateJWT from "../middlewares/jwt/validateJWT.middleware";
-
-// Importamos el objeto 'db' centralizado de forma correcta para TypeScript
-import db from '../models';
+import { getModels } from "../models/getModels";
 
 const router = Router();
 const controller: UserController = new UserController();
@@ -129,13 +127,14 @@ router.get('/owners/get_by_country/:id_country', [
     noErrors
 ], async (req: Request, res: Response) => {
     // Usamos los nombres de los modelos en minúsculas
-    const propietarios = await db.owner_country.findAll({
+    const { owner_country, user, country } = getModels();
+    const propietarios = await owner_country.findAll({
         where: {
             id_country: req.params.id_country
         },
         include: [
-            { model: db.user, as: 'OwnerUser', where: { isActive: true }, required: true },
-            { model: db.country, as: 'country' }
+            { model: user, as: 'OwnerUser', where: { isActive: true }, required: true },
+            { model: country, as: 'country' }
         ]
     })
 

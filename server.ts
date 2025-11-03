@@ -174,6 +174,8 @@ class Server {
       controller.escucharAntipanicoFinalizado(socket);
       controller.escucharNuevaPosicionGuardia(socket);
       controller.escucharGuardDisconnected(socket);
+      controller.escucharServiceApprovedByGuard(socket);
+      controller.escucharServiceApprovedByAdmin(socket);
     });
   }
 

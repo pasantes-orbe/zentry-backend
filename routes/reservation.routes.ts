@@ -301,7 +301,7 @@ router.patch('/:id_reservation/:status', [
                 const ownerName = `${event.user?.name ?? ''} ${event.user?.lastname ?? ''}`.trim() || 'Propietario';
 
                 // Obtener todos los guardias del country
-                const { role, guard_country } = db;
+                const { role, guard_country, user } = getModels();
                 
                 // Buscar el rol de vigilador
                 const guardRole = await role.findOne({ where: { name: 'vigilador' } });

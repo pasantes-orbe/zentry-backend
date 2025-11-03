@@ -1,7 +1,5 @@
 // middlewares/customs/optionalUserExists.middleware.ts
-import db from "../../models"; // Importamos el objeto 'db' centralizado
-
-const { user } = db; // Desestructuramos el modelo 'user'
+import { getModels } from "../../models/getModels"; // Obtener modelos on-demand
 
 /**
  * Middleware de validación opcional para verificar si un usuario existe.
@@ -15,6 +13,7 @@ async function optionalUserExists(id: number) {
     }
     
     // Si viene un ID, verificar que exista en la base de datos
+    const { user } = getModels();
     const exists = await user.findByPk(id);
     
     if (!exists) {

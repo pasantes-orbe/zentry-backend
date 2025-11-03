@@ -3,8 +3,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-// Cambiar la importación a 'require' para asegurar la compatibilidad con el archivo index.js
-const db = require("../models");
+import { getModels } from "../models/getModels";
 const generateToken = require("../helpers/jwt/generateToken").default; // Asumiendo que generateToken es un export default
 
 // Obtenemos el secreto JWT del entorno o usamos un valor por defecto
@@ -35,9 +34,10 @@ class AuthController {
 
             // Buscamos el usuario en la base de datos, incluyendo su rol.
             // Accedemos a los modelos directamente desde el objeto 'db'
-            const foundUser = await db.user.findOne({
+            const { user, role, user_properties, property, owner_country, country } = getModels();
+            const foundUser: any = await user.findOne({
                 where: { email: emailMinusculas },
-                include: [{ model: db.role, as: 'userRole' }],
+                include: [{ model: role, as: 'userRole' }],
             });
 
             // Verificamos si el usuario existe y si la contraseña es válida
@@ -62,7 +62,7 @@ class AuthController {
             };
             
             // Eliminamos la propiedad 'userRole' para evitar duplicados en la respuesta
-            delete userResponse.userRole;
+            delete (userResponse as any).userRole;
 
             // Normalizar avatar a URL absoluta de Cloudinary o usar placeholder
             const placeholder = 'https://ionicframework.com/docs/img/demos/avatar.svg';
@@ -84,9 +84,9 @@ class AuthController {
                 console.log('🔍 ID usuario:', foundUser.id);
 
                 // 1) Buscar la propiedad asignada al usuario
-                const propertyAssignment = await db.user_properties.findOne({
+                const propertyAssignment: any = await user_properties.findOne({
                     where: { id_user: foundUser.id },
-                    include: [{ model: db.property, as: 'property' }]
+                    include: [{ model: property, as: 'property' }]
                 });
                 console.log('📍 Propiedad encontrada:', propertyAssignment ? 'SÍ' : 'NO');
                 if (propertyAssignment) {
@@ -96,9 +96,9 @@ class AuthController {
                 }
 
                 // 2) Buscar el país asignado al usuario
-                const ownerCountry = await db.owner_country.findOne({
+                const ownerCountry: any = await owner_country.findOne({
                     where: { id_user: foundUser.id },
-                    include: [{ model: db.country, as: 'country' }]
+                    include: [{ model: country, as: 'country' }]
                 });
                 console.log('Country encontrado:', ownerCountry ? 'SÍ' : 'NO');
                 if (ownerCountry) {
@@ -177,7 +177,8 @@ class AuthController {
                 return res.status(400).json({ ok: false, msg: "Contraseña demasiado corta" });
             }
 
-            const foundUser = await db.user.findByPk(uid);
+            const { user } = getModels();
+            const foundUser: any = await user.findByPk(uid);
             if (!foundUser || !foundUser.password) {
                 return res.status(404).json({ ok: false, msg: "Usuario no encontrado" });
             }
@@ -188,7 +189,7 @@ class AuthController {
             }
 
             const hashed = await bcrypt.hash(newPassword, 10);
-            await db.user.update({ password: hashed }, { where: { id: uid } });
+            await user.update({ password: hashed }, { where: { id: uid } });
             return res.status(200).json({ ok: true, msg: "Contraseña actualizada" });
         } catch (error) {
             console.error('changePassword error:', error);
@@ -222,13 +223,14 @@ class AuthController {
             }
 
             const uid = String(payload.uid);
-            const foundUser = await db.user.findByPk(uid);
+            const { user } = getModels();
+            const foundUser: any = await user.findByPk(uid);
             if (!foundUser) {
                 return res.status(404).json({ ok: false, msg: 'Usuario no encontrado' });
             }
 
             const hashed = await bcrypt.hash(newPassword, 10);
-            await db.user.update({ password: hashed }, { where: { id: uid } });
+            await user.update({ password: hashed }, { where: { id: uid } });
 
             return res.status(200).json({ ok: true, msg: 'Contraseña actualizada' });
         } catch (error) {
@@ -250,7 +252,8 @@ class AuthController {
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            const foundUser = await db.user.findByPk(uid);
+            const { user } = getModels();
+            const foundUser = await user.findByPk(uid);
             if (!foundUser) {
                 return res.status(404).json({ msg: "El usuario no existe" });
             }
@@ -274,8 +277,9 @@ class AuthController {
 
         try {
             const { uid } = jwt.verify(token, JWT_SECRET) as TokenPayload;
-            const foundUser = await db.user.findByPk(uid, {
-                include: [{ model: db.role, as: "userRole" }],
+            const { user, role } = getModels();
+            const foundUser: any = await user.findByPk(uid, {
+                include: [{ model: role, as: "userRole" }],
             });
 
             if (!foundUser) {

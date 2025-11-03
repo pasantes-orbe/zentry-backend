@@ -1,9 +1,10 @@
 // middlewares/customs/roleAlreadyExists.middleware.ts
-import db from "../../models";
+import { getModels } from "../../models/getModels";
 
 /** Obtiene el modelo role de forma segura (evita undefined en tiempo de carga) */
 function getRoleModel() {
-  const m: any = (db as any).role ?? (db as any).roles;
+  const db: any = getModels() as any;
+  const m: any = db.role ?? db.roles;
   if (!m) {
     console.error(
       "[roleAlreadyExists] Modelo 'role' no encontrado. Modelos cargados:",
