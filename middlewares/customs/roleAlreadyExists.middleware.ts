@@ -1,22 +1,40 @@
+// middlewares/customs/roleAlreadyExists.middleware.ts
 import db from "../../models";
 
-// Desestructuramos el modelo 'role' de la base de datos
-const { role } = db;
-
-// Adaptamos la función para que funcione como un validador de Express Validator
-const roleAlreadyExists = async (name: string) => {
-    // Buscamos el rol usando el modelo correcto
-    const exists = await role.findOne({
-        where: { name }
-    });
-    
-    // Si el rol ya existe, lanzamos un error que Express Validator capturará
-    if (exists) {
-        throw new Error(`El rol ${name} ya se encuentra registrado`);
-    }
-
-    // Si no existe, la validación pasa
-    return true;
+/** Obtiene el modelo role de forma segura (evita undefined en tiempo de carga) */
+function getRoleModel() {
+  const m: any = (db as any).role ?? (db as any).roles;
+  if (!m) {
+    console.error(
+      "[roleAlreadyExists] Modelo 'role' no encontrado. Modelos cargados:",
+      Object.keys(db || {})
+    );
+  }
+  return m;
 }
+
+/**
+ * Validador para express-validator:
+ *  - Normaliza el nombre (trim + toLowerCase)
+ *  - Falla si ya existe un rol con ese nombre
+ */
+const roleAlreadyExists = async (rawName: string) => {
+  const role = getRoleModel();
+  if (!role) {
+    throw new Error("Modelo 'role' no disponible");
+  }
+
+  const name = String(rawName ?? "").trim().toLowerCase();
+  if (!name) {
+    throw new Error("El nombre del rol es obligatorio");
+  }
+
+  const exists = await role.findOne({ where: { name } });
+  if (exists) {
+    throw new Error(`El rol '${name}' ya se encuentra registrado`);
+  }
+
+  return true;
+};
 
 export default roleAlreadyExists;

@@ -7,13 +7,12 @@ import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
-import db from "../models";
-
-const { user_properties, owner_country, property, user, country } = db; 
+import { getModels } from "../models/getModels";
 
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
+    const { user_properties, property, user } = getModels() as any;
     const keys = await user_properties.findAll({
         include: [
             { model: property, as: 'property' },
@@ -28,6 +27,7 @@ router.get('/:id_owner', [
     check('id_owner').custom(userExists),
     noErrors
 ], async (req: Request, res: Response) => {
+    const { user_properties, property } = getModels() as any;
     const foundProperty = await user_properties.findOne({
         where: { id_user: req.params.id_owner },
         include: [{ model: property, as: 'property' }]
@@ -42,6 +42,7 @@ router.get('/properties/:id_owner', [
     noErrors
 ], async (req: Request, res: Response) => {
     try {
+        const { user_properties, property } = getModels() as any;
         const items = await user_properties.findAll({
             where: { id_user: req.params.id_owner },
             include: [{ model: property, as: 'property' }]
@@ -73,6 +74,7 @@ router.get('/country/get_by_id/:id_country', [
     noErrors
 ], async (req: Request, res: Response) => {
     try {
+        const { owner_country, user, property, country } = getModels() as any;
         const id_country = +req.params.id_country;
         
         const owners = await owner_country.findAll({
@@ -161,6 +163,7 @@ router.post('/', [
 
     // Verificar si ya existe
     console.log('🔍 Verificando si la relación ya existe...');
+    const { user_properties } = getModels() as any;
     const alreadyExists = await user_properties.findOne({
         where: {
             id_user: req.body.id_user,
@@ -211,6 +214,7 @@ router.post('/assign', [
         return res.status(400).send({ msg: "No es un usuario propietario" });
     }
     
+    const { owner_country } = getModels() as any;
     const alreadyExists = await owner_country.findOne({
         where: {
             id_user: req.body.id_user,
@@ -246,6 +250,7 @@ router.delete('/', [
     noErrors
 ], async (req: Request, res: Response) => {
     try {
+        const { user_properties } = getModels() as any;
         const uid = Number(req.body.id_user);
         const pid = Number(req.body.id_property);
 

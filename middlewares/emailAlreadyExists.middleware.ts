@@ -1,24 +1,18 @@
 // middlewares/emailAlreadyExists.middleware.ts
 import { NextFunction, Request, Response } from "express";
-// ❌ ANTES: import { User } from "../models/user.model";
-// Ajusta la ruta según la ubicación real de tu carpeta 'models'
-import db from "../models"; // ⬅️ Importa el objeto central de modelos
-const { user: User } = db;     // ⬅️ Desestructura el modelo 'user' y asígnale el alias 'User'
+import { getModels } from "../models/getModels";
 
-async function emailAlreadyExists(req:Request, res:Response, next:NextFunction): Promise<void> {
-    // Utilizamos el alias 'User' que creamos arriba
-    const exists = await User.findOne({ 
-        where: {
-            email: req.body.email
-        }
-    });
+async function emailAlreadyExists(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { user } = getModels();
+    const exists = await user.findOne({
+        where: { email: req.body.email }
+    });
 
-    if(exists){
-        // El uso de 'throw new Error' detendrá la ejecución y será capturado por un 'catch'
-        throw new Error(`El email ya existe`) 
-    }
+    if (exists) {
+        throw new Error(`El email ya existe`);
+    }
 
-    next();
+    next();
 }
 
 export default emailAlreadyExists;

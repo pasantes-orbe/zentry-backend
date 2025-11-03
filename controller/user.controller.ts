@@ -1,20 +1,14 @@
 //controller/user.controller.ts
 import { Request, Response } from "express";
-// Importamos el objeto 'db' centralizado que contiene todos los modelos inicializados.
-import db from "../models"; 
+import { getModels } from "../models/getModels"; 
 import PasswordHelper from "../helpers/password.helper"; 
 import UserClass from "../classes/UserClass";
 import Mailer from "../helpers/mailer.helper";
-import Server from "../models/server";
+import Server from "../server";
 import jwt from "jsonwebtoken";
 import Uploader from "../classes/Uploader";
 
-// Desestructuramos los modelos necesarios del objeto 'db' para usarlos fácilmente.
-const { user, role, guard_country, guard_schedule, owner_country, user_properties, appid, notification, reservation, antipanic, checkin, checkout } = db as any;
-
-const passwordChangeRequest =
-  (db as any).passwordChangeRequest ||
-  (db as any)['password_change_request'];
+// Los modelos se obtienen dentro de cada método con getModels()
 
 
 // ✅ Helper: si solo tenemos public_id, construimos URL pública
@@ -56,6 +50,8 @@ class UserController {
             return res.status(400).json({ msg: 'Parámetro id_request inválido' });
         }
 
+        const models: any = getModels();
+        const passwordChangeRequest = models.passwordChangeRequest || models['password_change_request'];
         if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json({ msg: 'Modelo de solicitud de cambio de contraseña no disponible' });
@@ -71,9 +67,9 @@ class UserController {
 
             // Notificar al propietario con instrucciones (opcional)
             try {
-                const notificationModel: any = (db as any).notification;
+                const notificationModel: any = models.notification;
                 const requesterUserId = (reqRow as any).id_user;
-                const owner = await user.findByPk(requesterUserId);
+                const owner = await models.user.findByPk(requesterUserId);
                 const ownerName = `${(owner as any)?.name || ''} ${(owner as any)?.lastname || ''}`.trim() || 'Propietario';
                 const title = 'Instrucciones para restablecer contraseña';
                 const content = 'Tu solicitud fue aprobada. Revisa tu email para cambiar la contraseña.';
@@ -129,6 +125,7 @@ class UserController {
 
     public async getUser(req: Request, res: Response) {
         const { id } = req.params;
+        const { user, role } = getModels() as any;
         const foundUser = await user.findByPk(id, {
             attributes: { exclude: ['password', 'role_id'] },
             include: {
@@ -181,6 +178,7 @@ class UserController {
                     console.error('Error subiendo avatar en register:', e);
                 }
             }
+            const { user } = getModels() as any;
             const createdUser = await user.create(body);
             res.json({
                 msg: "El usuario se creo con exito",
@@ -196,6 +194,7 @@ class UserController {
 
     public async RequestChangePassword(req: Request, res: Response) {
         const { email } = req.body;
+        const { user } = getModels() as any;
         const exists = await user.findOne({
             where: { email }
         })
@@ -209,6 +208,8 @@ class UserController {
             date: Date.now(),
             changed: false
         }
+        const models: any = getModels();
+        const passwordChangeRequest = models.passwordChangeRequest || models['password_change_request'];
         if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json({ msg: "Modelo de solicitud de cambio de contraseña no disponible" });
@@ -217,7 +218,7 @@ class UserController {
 
         // Crear notificación para Admin y emitir por WebSocket
         try {
-            const notificationModel: any = (db as any).notification;
+            const notificationModel: any = models.notification;
             const adminId = 1; // Destinatario: Admin principal (ajustar si hay multi-admin)
 
             const ownerName = `${exists.get('name') || ''} ${exists.get('lastname') || ''}`.trim() || 'Propietario';
@@ -261,6 +262,9 @@ class UserController {
     public async allPasswordChangeRequests(req: Request, res: Response) {
         const { pendient } = req.query;
         if (pendient) {
+            const models: any = getModels();
+            const passwordChangeRequest = models.passwordChangeRequest || models['password_change_request'];
+            const { user } = models;
             const requests = await passwordChangeRequest.findAll({
                 where: {
                     changed: false
@@ -273,6 +277,8 @@ class UserController {
             })
             return res.json(requests);
         }
+        const models: any = getModels();
+        const passwordChangeRequest = models.passwordChangeRequest || models['password_change_request'];
         if (!passwordChangeRequest) {
             console.error('Modelo passwordChangeRequest no registrado en db');
             return res.status(500).json([]);
@@ -296,6 +302,7 @@ class UserController {
         }
 
         try {
+            const { user } = getModels() as any;
             const foundUser = await user.findByPk(id);
 
             if (!foundUser) {
@@ -318,6 +325,7 @@ class UserController {
     public async updateUser(req: Request, res: Response) {
         const { id } = req.params
         const { name, lastname, email, birthday, phone } = req.body
+        const { user } = getModels() as any;
         const foundUser = await user.findByPk(id)
         if (!foundUser) {
             return res.status(404).send({
@@ -345,6 +353,7 @@ class UserController {
         if (typeof isActive !== 'boolean') {
             return res.status(400).json({ msg: 'Campo isActive requerido y debe ser booleano' });
         }
+        const { user } = getModels() as any;
         const foundUser = await user.findByPk(id);
         if (!foundUser) {
             return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
@@ -372,6 +381,7 @@ class UserController {
                 hasTempFilePath: !!inputFile?.tempFilePath,
                 bodyHasAvatar: typeof avatar === 'string' && avatar.length > 0
             });
+            const { user } = getModels() as any;
             const foundUser = await user.findByPk(id);
             if (!foundUser) {
                 return res.status(404).json({ msg: `No existe usuario con el id ${id}` });
@@ -445,19 +455,9 @@ class UserController {
         const { id } = req.params;
 
         try {
-            // Debug: Verificar qué modelos están disponibles
-            console.log('Modelos disponibles:', {
-                user: !!user,
-                guard_country: !!guard_country,
-                guard_schedule: !!guard_schedule,
-                owner_country: !!owner_country,
-                user_properties: !!user_properties,
-                notification: !!notification,
-                reservation: !!reservation,
-                appid: !!appid,
-                passwordChangeRequest: !!passwordChangeRequest,
-                antipanic: !!antipanic
-            });
+            const models: any = getModels();
+            const { user, guard_country, guard_schedule, owner_country, user_properties, notification, reservation, appid, antipanic, checkin } = models;
+            const passwordChangeRequest = models.passwordChangeRequest || models['password_change_request'];
 
             // Buscar el usuario
             const foundUser = await user.findByPk(id);

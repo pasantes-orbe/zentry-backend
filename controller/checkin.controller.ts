@@ -1,18 +1,15 @@
 // controller/checkin.controller.ts
 import { Request, Response } from "express";
-import { Op, Model, ModelStatic } from "sequelize";
-import db from "../models";
+import { Op, Model } from "sequelize";
+import { getModels } from "../models/getModels";
 import CheckIn from "../classes/CheckIn";
-import Server from "../models/server";
+import Server from "../server";
 import Guard from "../classes/Guard";
 
 // ---------- Helpers de acceso seguros ----------
 const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
 
-// ---------- Modelos (tipado laxo para TS) ----------
-const CheckinModel = db.checkin as unknown as ModelStatic<Model<any, any>>;
-const CheckoutModel = db.checkout as unknown as ModelStatic<Model<any, any>>;
-const UserModel = db.user as unknown as ModelStatic<Model<any, any>>;
+// ---------- Modelos (obtener dentro de cada método) ----------
 
 class CheckInController {
   public async create(req: Request, res: Response) {
@@ -48,7 +45,8 @@ class CheckInController {
         }
       }
 
-      const newCheckIn = await CheckinModel.create(req.body);
+      const { checkin } = getModels();
+      const newCheckIn = await checkin.create(req.body);
 
       // Emitir por socket
       const server = Server.instance;
@@ -77,7 +75,8 @@ class CheckInController {
   public async approve(req: Request, res: Response) {
     try {
       const id = Number(req.params.id_checkin);
-      const checkIn = await CheckinModel.findByPk(id);
+      const { checkin } = getModels();
+      const checkIn = await checkin.findByPk(id);
 
       if (!checkIn) {
         return res.status(404).json({ msg: "Check-In no existe" });
@@ -95,7 +94,8 @@ class CheckInController {
   public async ownerConfirm(req: Request, res: Response) {
     try {
       const id = Number(req.params.id_checkin);
-      const checkIn = await CheckinModel.findByPk(id);
+      const { checkin } = getModels();
+      const checkIn = await checkin.findByPk(id);
 
       if (!checkIn) {
         return res.status(404).json({ msg: "Check-In no existe" });
@@ -123,6 +123,7 @@ class CheckInController {
       const { id_checkin } = req.params;
       const { new_status } = req.body;
 
+      const { checkin } = getModels();
       const update = await new CheckIn().changeStatus(+id_checkin, new_status);
       if (!update) {
         return res.status(404).json({ msg: "Check-in no existe" });
@@ -138,11 +139,12 @@ class CheckInController {
   public async getApproved(req: Request, res: Response) {
     try {
       const { id_country } = req.params;
-      const checkins = await CheckinModel.findAll({
+      const { checkin, user } = getModels();
+      const checkins = await checkin.findAll({
         where: { id_country, check_in: true },
         include: [
-          { model: UserModel, as: "guardUser" },
-          { model: UserModel, as: "ownerUser" },
+          { model: user, as: "guardUser" },
+          { model: user, as: "ownerUser" },
         ],
       });
       return res.json(checkins);
@@ -155,11 +157,12 @@ class CheckInController {
   public async getConfirmedByOwner(req: Request, res: Response) {
     try {
       const { id_country } = req.params;
-      const checkins = await CheckinModel.findAll({
+      const { checkin, user } = getModels();
+      const checkins = await checkin.findAll({
         where: { confirmed_by_owner: true, check_in: false, id_country },
         include: [
-          { model: UserModel, as: "guardUser" },
-          { model: UserModel, as: "ownerUser" },
+          { model: user, as: "guardUser" },
+          { model: user, as: "ownerUser" },
         ],
       });
       return res.json(checkins);
@@ -175,14 +178,14 @@ class CheckInController {
     try {
       const { id_country } = req.params;
       const responseArray: any[] = [];
-
-      const checkins = await CheckinModel.findAll({
+      const { checkin, checkout } = getModels();
+      const checkins = await checkin.findAll({
         where: { id_country, check_in: true },
       });
 
       for (const ci of checkins) {
         const idCheckin = getVal(ci, "id");
-        const checkedOut = await CheckoutModel.findOne({
+        const checkedOut = await checkout.findOne({
           where: { id_checkin: idCheckin },
         });
 
@@ -198,11 +201,12 @@ class CheckInController {
 
   public async getCheckOutFalse(req: Request, res: Response) {
     try {
-      const checkins = await CheckinModel.findAll({
+      const { checkin, user } = getModels();
+      const checkins = await checkin.findAll({
         where: { check_out: false, check_in: true, confirmed_by_owner: true },
         include: [
-          { model: UserModel, as: "guardUser" },
-          { model: UserModel, as: "ownerUser" },
+          { model: user, as: "guardUser" },
+          { model: user, as: "ownerUser" },
         ],
       });
       return res.json(checkins);
@@ -217,7 +221,8 @@ class CheckInController {
   public async getByOwner(req: Request, res: Response) {
     try {
       const { id_owner } = req.params;
-      const checkins = await CheckinModel.findAll({
+      const { checkin } = getModels();
+      const checkins = await checkin.findAll({
         where: { id_owner },
         include: [{ all: true }],
       });
@@ -252,7 +257,8 @@ class CheckInController {
       const NOW = new Date();
       NOW.setHours(23, 59, 59, 999);
 
-      const checkins = await CheckinModel.findAll({
+      const { checkin, user } = getModels();
+      const checkins = await checkin.findAll({
         where: {
           id_owner,
           income_date: {
@@ -261,8 +267,8 @@ class CheckInController {
           },
         },
         include: [
-          { model: UserModel, as: "ownerUser" },
-          { model: UserModel, as: "guardUser" },
+          { model: user, as: "ownerUser" },
+          { model: user, as: "guardUser" },
         ],
       });
       return res.json(checkins);

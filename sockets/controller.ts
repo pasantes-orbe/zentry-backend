@@ -5,16 +5,13 @@ import { Server as SocketIOServer } from "socket.io";
 import GuardUbicationControl from "../classes/GuardsUbicationControl";
 import Notifications from "../classes/Notifications";
 import OwnersConnectedControl from "../classes/OwnersConnectedControl";
-import db from "../models";
-import { Model, ModelStatic } from "sequelize";
+import { getModels } from "../models/getModels";
+import { Model } from "sequelize";
 
 // ---- helpers de acceso seguro a campos de Sequelize ----
 const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
 
-// ---- Modelos (tipado laxo para TS) ----
-const UserModel          = db.user as unknown as ModelStatic<Model<any, any>>;
-const GuardCountryModel  = db.guard_country as unknown as ModelStatic<Model<any, any>>;
-const NotificationModel  = db.notification as unknown as ModelStatic<Model<any, any>>;
+// Los modelos se obtienen dentro de cada método/handler con getModels()
 
 class SocketController {
   public guardsUbication: GuardUbicationControl = new GuardUbicationControl();
@@ -60,7 +57,8 @@ class SocketController {
       const guest_lastname = payload["guest_lastname"];
       const dni = payload["DNI"];
 
-      const owner = await UserModel.findByPk(id_owner);
+      const { user, notification } = getModels();
+      const owner = await (user as any).findByPk(id_owner);
       console.log("ESTE ES EL ID QUE SE PASA AL CREAR EL CHECKIN", id_owner);
 
       // Fallback: crear notificación en DB (sin push) para que aparezca en la campanita
@@ -70,7 +68,7 @@ class SocketController {
         const mm = String(now.getMinutes()).padStart(2, "0");
         const hora = `${hh}:${mm}`;
 
-        await NotificationModel.create({
+        await (notification as any).create({
           id_user: Number(id_owner),
           title: "Vigilador",
           content: `Ingreso de visitante (${guest_name} ${guest_lastname}, ${hora}) autorizado por vigilador`,
@@ -171,7 +169,8 @@ class SocketController {
       const guest_lastname = payload["guest_lastname"];
       const dni = payload["DNI"];
 
-      const owner = await UserModel.findByPk(payload["id_owner"]);
+      const { user } = getModels();
+      const owner = await (user as any).findByPk(payload["id_owner"]);
       const ownerName = getVal(owner, "name");
 
       if (payload["check_out"] == true) {

@@ -9,19 +9,19 @@ import amenityExists from "../middlewares/customs/amenityExists.middleware";
 import countryExists from "../middlewares/customs/countryExists.middleware";
 import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import db from "../models";
+import { getModels } from "../models/getModels";
 
 // ---- helpers de acceso seguros ----
 const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
 
-// ---- modelo (tipado laxo para TS) ----
-const AmenityModel = db.amenity as unknown as ModelStatic<Model<any, any>>;
+// los modelos se obtienen dentro de cada handler con getModels()
 
 const router = Router();
 
 // Obtener todos los amenities
 router.get("/", async (_req: Request, res: Response) => {
-  const amenities = await AmenityModel.findAll();
+  const { amenity } = getModels();
+  const amenities = await amenity.findAll();
   res.json(amenities);
 });
 
@@ -35,7 +35,8 @@ router.get(
     noErrors,
   ],
   async (req: Request, res: Response) => {
-    const amenities = await AmenityModel.findAll({
+    const { amenity } = getModels();
+    const amenities = await amenity.findAll({
       where: { id_country: req.params.id_country },
     });
     res.json(amenities);
@@ -54,7 +55,8 @@ router.get(
     noErrors,
   ],
   async (req: Request, res: Response) => {
-    const foundAmenity = await AmenityModel.findOne({
+    const { amenity } = getModels();
+    const foundAmenity = await amenity.findOne({
       where: {
         id: req.params.id,
         id_country: req.params.id_country,
@@ -73,7 +75,8 @@ router.get(
     noErrors,
   ],
   async (req: Request, res: Response) => {
-    const foundAmenity = await AmenityModel.findByPk(req.params.id);
+    const { amenity } = getModels();
+    const foundAmenity = await amenity.findByPk(req.params.id);
     res.json(foundAmenity);
   }
 );
@@ -134,7 +137,8 @@ router.delete(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-      await AmenityModel.destroy({ where: { id } });
+      const { amenity } = getModels();
+      await amenity.destroy({ where: { id } });
       return res.json({ msg: "Eliminado correctamente" });
     } catch (error) {
       return res.status(500).send(error);
@@ -158,7 +162,8 @@ router.patch(
     const { name, address } = req.body;
 
     try {
-      const amenityToUpdate = await AmenityModel.findByPk(id);
+      const { amenity } = getModels();
+      const amenityToUpdate = await amenity.findByPk(id);
 
       if (!amenityToUpdate) {
         return res.status(404).json({ msg: "Amenity no encontrado" });

@@ -1,16 +1,13 @@
 // controller/notifications.controller.ts
 import { Request, Response } from "express";
-// Importamos el objeto 'db' centralizado
-import db from "../models"; 
-
-// Desestructuramos el modelo notification del objeto 'db' con el nombre correcto
-const { notification } = db;
+import { getModels } from "../models/getModels"; 
 
 class NotificationsController {
     public async getAllByIdUser(req: Request, res: Response) {
         const { id_user } = req.params;
 
         try {
+            const { notification } = getModels();
             const notifications = await notification.findAll({
                 where: { id_user },
                 order: [["id", "DESC"]] // opcional: muestra las más recientes primero
@@ -28,6 +25,7 @@ class NotificationsController {
     public async getUnreadCount(req: Request, res: Response) {
         const { id_user } = req.params;
         try {
+            const { notification } = getModels();
             const count = await notification.count({ where: { id_user, read: false } });
             return res.status(200).json({ count });
         } catch (error) {
@@ -47,6 +45,7 @@ class NotificationsController {
             return res.status(400).json({ msg: "Debe enviar un arreglo 'notificationIds' (o 'ids') con notificaciones a marcar como leídas" });
         }
         try {
+            const { notification } = getModels();
             await notification.update({ read: true }, { where: { id: idList } });
             return res.status(200).json({ msg: "Notificaciones marcadas como leídas", ids: idList });
         } catch (error) {
@@ -70,6 +69,7 @@ class NotificationsController {
                 return res.status(400).json({ msg: "'message' es requerido" });
             }
 
+            const { notification } = getModels();
             const created = await notification.create({
                 id_user,
                 title,

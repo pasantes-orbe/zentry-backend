@@ -3,10 +3,7 @@ import { Router, Request, Response } from "express";
 import { check, body } from "express-validator";
 import NotificationsController from "../controller/notifications.controller";
 import noErrors from "../middlewares/noErrors.middleware";
-import db from "../models"; // Importamos el objeto 'db' centralizado
-
-// Desestructuramos el modelo 'notification' del objeto 'db'
-const { notification } = db;
+import { getModels } from "../models/getModels";
 
 const router = Router();
 
@@ -27,18 +24,18 @@ router.get('/user/:id_user', [
 ], (req: Request, res: Response) => notificationController.getAllByIdUser(req, res));
 
 // GET ALL NOTIFICATIONS BY USER
-router.get('/:id_user',
-[check('id_user').notEmpty(),
-check('id_user').isNumeric(),
-noErrors] 
-,notificationController.getAllByIdUser);
+router.get('/:id_user', [
+    check('id_user').notEmpty(),
+    check('id_user').isNumeric(),
+    noErrors
+], (req: Request, res: Response) => notificationController.getAllByIdUser(req, res));
 
 router.patch('/read/:id_notification', [
     check('id_notification').isNumeric(),
     noErrors
 ], (req: Request, res: Response) => {
-    // Lógica para marcar la notificación como leída
     const { id_notification } = req.params;
+    const { notification } = getModels();
     notification.update(
         { read: true },
         { where: { id: id_notification } }

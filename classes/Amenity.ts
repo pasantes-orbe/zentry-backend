@@ -1,8 +1,7 @@
-import db from "../models";
+import { getModels } from "../models/getModels";
 import Country from "./Country";
 
 // Desestructuramos el modelo 'amenity' (en minúscula)
-const { amenity } = db;
 
 class Amenity {
     private name!: string;
@@ -26,7 +25,8 @@ class Amenity {
             console.log(this.getAvatar());
             console.log(this.getAddress());
 
-            // Usamos la instancia del modelo 'amenity' corregida
+            const models = getModels();
+            const { amenity } = models;
             const amenityToSave = amenity.build({
                 name: this.getName(),
                 image: this.getAvatar(),

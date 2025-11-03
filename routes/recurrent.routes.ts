@@ -5,7 +5,7 @@ import RecurrentController from "../controller/recurrent.controller";
 import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import recurrentExists from "../middlewares/customs/recurrentExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import db from "../models";
+import { getModels } from "../models/getModels";
 
 const router = Router();
 // Usar un nombre claro para la instancia del controlador
@@ -79,7 +79,7 @@ router.patch(
     noErrors,
   ],
   async (req: Request, res: Response) => {
-    const { recurrent, property } = db as any;
+    const { recurrent, property } = getModels() as any;
     const recurrentID = Number(req.params.id_recurrent);
     if (isNaN(recurrentID)) {
       return res.status(400).json({ msg: "ID de recurrente inválido" });

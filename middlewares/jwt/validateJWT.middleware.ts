@@ -1,8 +1,7 @@
 //middlewares/jwt/validateJWT.middleware.ts
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import db from "../../models"; // Importa el objeto db
-const { user } = db; // Desestructura el modelo de usuario
+import { getModels } from "../../models/getModels";
 
 const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
     // Busca el encabezado de autorización que contiene el token
@@ -35,6 +34,7 @@ const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
         const decoded = jwt.verify(token, secret) as { uid: string };
         const { uid } = decoded;
 
+        const { user } = getModels();
         // Buscamos el usuario en la base de datos usando el modelo del objeto 'db'
         const foundUser = await user.findByPk(uid);
 

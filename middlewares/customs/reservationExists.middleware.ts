@@ -1,10 +1,9 @@
 // middlewares/customs/reservationExists.middleware.ts
 import { NextFunction, Request, Response } from 'express';
-import db from '../../models';
+import { getModels } from '../../models/getModels';
 import { ReservationAttributes } from '../../interfaces/reservation.interface';
 
-// Accedemos al modelo de reserva ya inicializado desde el objeto 'db'
-const { reservation } = db;
+// Accedemos al modelo de reserva vía getModels() dentro del middleware
 
 const reservationExists = async (req: Request, res: Response, next: NextFunction) => {
     const id: number = parseInt(req.params.id_reservation) || parseInt(req.body.id_reservation);
@@ -12,8 +11,8 @@ const reservationExists = async (req: Request, res: Response, next: NextFunction
     if (!id) {
         return res.status(400).json({ msg: "El campo 'id_reservation' es obligatorio" });
     }
-
     try {
+        const { reservation } = getModels();
         const exists = await reservation.findByPk(id);
 
         if (!exists) {

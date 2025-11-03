@@ -1,12 +1,9 @@
 // middlewares/customs/userExists.middleware.ts
 import { NextFunction, Request, Response } from "express";
-import db from "../../models"; // Importamos el objeto 'db' centralizado
-
-const { user } = db; // Desestructuramos el modelo 'user'
+import { getModels } from "../../models/getModels";
 
 async function userExists(id: number){
-
-    // Usamos la instancia del modelo 'user' corregida para la consulta
+    const { user } = getModels();
     const exists = await user.findByPk(id);
 
     if(!exists){

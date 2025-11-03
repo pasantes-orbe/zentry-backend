@@ -2,53 +2,46 @@
 import { NextFunction, Request, Response } from "express";
 import { RoleInterface } from "../../interfaces/role.interface";
 import jwt from "jsonwebtoken";
-// Importamos el objeto 'db' centralizado para acceder a los modelos
-import db from "../../models";
-
-// Desestructuramos los modelos 'user' y 'role' del objeto 'db'
-const { user, role } = db;
+import { getModels } from "../../models/getModels";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SUPER_SECRET_PASSWORD";
 console.log("JWT_SECRET siendo utilizado en isAdmin.middleware:", JWT_SECRET);
 
 async function isAdmin(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.header("Authorization");
+    const authHeader = req.header("Authorization");
 
-    if (!authHeader) {
-        return res.status(401).json({
-            msg: "No hay token de autorización",
-        });
-    }
+    if (!authHeader) {
+        return res.status(401).json({
+            msg: "No hay token de autorización",
+        });
+    }
 
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
-    if (!token) {
-        return res.status(401).json({
-            msg: "Token mal formado o ausente.",
-        });
-    }
+    if (!token) {
+        return res.status(401).json({
+            msg: "Token mal formado o ausente.",
+        });
+    }
 
-    try {
-        const { uid } = jwt.verify(token, JWT_SECRET) as { uid: string };
+    try {
+        const { uid } = jwt.verify(token, JWT_SECRET) as { uid: string };
 
-        // Buscamos el usuario en la base de datos usando el modelo 'user'
-        const foundUser = await user.findByPk(uid, {
-            // Incluimos el modelo 'role' para acceder a la asociación
-            include: {
-                model: role,
-                // 🚨 CORRECCIÓN CRÍTICA: Se cambia el alias a 'userRole' según el error de Sequelize.
-                // El error de 'EagerLoadingError' indicaba que la asociación usa el alias 'userRole'.
-                as: 'userRole',
-                attributes: ["name"],
-            },
-            attributes: { exclude: ["password", "role_id"] },
-        });
+        const { user, role } = getModels();
+        const foundUser = await user.findByPk(uid, {
+            include: {
+                model: role,
+                as: 'userRole',
+                attributes: ["name"],
+            },
+            attributes: { exclude: ["password", "role_id"] },
+        });
 
-        if (!foundUser) {
-            return res.status(404).json({
-                msg: "El usuario no existe",
-            });
-        }
+        if (!foundUser) {
+            return res.status(404).json({
+                msg: "El usuario no existe",
+            });
+        }
 
         // Accedemos a la asociación role con get()
         // ⚠️ Nota: Si después de corregir el 'include' la línea de abajo da un error al acceder

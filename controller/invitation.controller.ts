@@ -1,15 +1,12 @@
 // controller/invitation.controller.ts
 import { Request, Response } from "express";
-// Importamos el objeto 'db' centralizado
-import db from "../models";
-
-// Desestructuramos el modelo invitation del objeto 'db' con el nombre correcto
-const { invitation } = db;
+import { getModels } from "../models/getModels";
 
 class InvitationController {
 
     public async create(req: Request, res: Response) {
         try {
+            const { invitation } = getModels();
             const { guests: guestArr } = req.body;
             const { id_reservation } = req.params;
 
@@ -35,6 +32,7 @@ class InvitationController {
 
     public async getInvitations(req: Request, res: Response) {
         try {
+            const { invitation } = getModels();
             const { id_reservation } = req.params;
 
             if (!id_reservation) {

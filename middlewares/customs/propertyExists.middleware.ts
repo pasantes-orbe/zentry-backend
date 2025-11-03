@@ -1,10 +1,8 @@
-import db from "../../models";
-
-// Desestructuramos el modelo 'property' del objeto 'db'
-const { property } = db;
+import { getModels } from "../../models/getModels";
 
 // La función debe recibir solo el valor a validar si se usa con `check().custom()`
 async function propertyExists(id: number) {
+    const { property } = getModels();
 
     // Usamos el modelo correcto 'property' para buscar por clave primaria
     const exists = await property.findByPk(id);

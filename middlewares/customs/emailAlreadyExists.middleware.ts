@@ -1,9 +1,8 @@
-import db from "../../models";
-
-const { user } = db;
+import { getModels } from "../../models/getModels";
 
 // Corregimos la función para que funcione como un validador de Express Validator
 const emailAlreadyExistsValidator = async (email: string) => {
+    const { user } = getModels();
     // Usamos el modelo 'user' del objeto 'db'
     const exists = await user.findOne({
         where: { email }

@@ -1,9 +1,6 @@
 // controller/user_properties.controller.ts
 import { Request, Response } from "express";
-import db from "../models"; 
-
-// Desestructuramos el modelo de la tabla intermedia
-const { user_properties } = db;
+import { getModels } from "../models/getModels"; 
 
 class UserPropertiesController {
 
@@ -20,6 +17,7 @@ class UserPropertiesController {
         }
 
         try {
+            const { user_properties } = getModels();
             // 1. Verificar si la asignación ya existe para evitar duplicados.
             const existingAssignment = await user_properties.findOne({
                 where: { id_user, id_property }

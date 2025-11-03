@@ -1,10 +1,9 @@
 //middlewares/customs/countryExists.middleware.ts
-import db from "../../models";
-
-const { country } = db;
+import { getModels } from "../../models/getModels";
 
 // La función debe recibir solo el valor a validar si se usa con `check().custom()`
 async function countryExists(id: number){
+    const { country } = getModels();
     const exists = await country.findByPk(id);
 
     if(!exists){

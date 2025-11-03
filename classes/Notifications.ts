@@ -1,10 +1,7 @@
 // classes/Notifications.ts
 import axios from "axios";
-import db from "../models";
+import { getModels } from "../models/getModels";
 import { Op } from "sequelize";
-
-// Desestructuramos los modelos con sus nombres en minúscula
-const { notification, guard_country, user, role } = db;
 
 class Notifications {
     private _app_id: string = "df4ae4bb-9ade-4eba-9d09-06da4069a8c7";
@@ -32,6 +29,7 @@ class Notifications {
             );
 
             if (send.status === 200) {
+                const { notification } = getModels();
                 await notification.create({
                     title: heading,
                     content: msg,
@@ -49,6 +47,7 @@ class Notifications {
 
     async notifyAllGuards(id_country: any, msg: string, heading: string, name: string) {
         try {
+            const { guard_country, user, role, notification } = getModels();
             const guards = await guard_country.findAll({
                 where: { id_country },
                 include: [

@@ -1,17 +1,16 @@
 // controller/reservations.controller.ts
 import { Request, Response } from "express";
-// Importamos el objeto 'db' centralizado
-import db from "../models";
-import Server from "../models/server"; // Asumimos que esta clase tiene el socket.io
-import io from "../sockets/controller"; // ¡Esta importación no es necesaria!
+import { getModels } from "../models/getModels";
+import Server from "../server"; // Asumimos que esta clase tiene el socket.io
 
 const createReservation = async (req: Request, res: Response) => {
   try {
+    const { reservation, notification } = getModels();
     // 1. Lógica para guardar la nueva reserva en la base de datos
-    const newReservation = await db.reservation.create(req.body);
+    const newReservation = await reservation.create(req.body);
 
     // 2. Crear y guardar la notificación en la base de datos
-    const newNotification = await db.notification.create({
+    const newNotification = await notification.create({
       id_user: req.body.ownerId, // O el ID del administrador
       title: 'Nueva reserva recibida',
       content: `Se ha solicitado una reserva para ${req.body.amenity}.`,

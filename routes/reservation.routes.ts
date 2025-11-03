@@ -6,17 +6,16 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import reservationExists from "../middlewares/customs/reservationExists.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-import db from "../models";
+import { getModels } from "../models/getModels";
 import { Model } from "sequelize";
 import { ReservationAttributes } from '../interfaces/reservation.interface';
 
 // IMPORTACIÓN NECESARIA PARA ACCEDER AL SOCKET.IO
 // Asumimos que Server.ts exporta la clase Server por defecto
-import Server from "../models/server";
+import Server from "../server";
 import Notifications from "../classes/Notifications";
 
-// Desestructuramos los modelos necesarios del objeto 'db'
-const { reservation, invitation, checkin, amenity, user, notification } = db;
+// Los modelos se obtienen dentro de cada handler con getModels()
 
 const router = Router();
 
@@ -31,6 +30,7 @@ router.post('/', [
     check('date', "El campo 'date' no puede estar vacío").notEmpty(),
     noErrors
 ], async (req: Request, res: Response) => {
+    const { reservation, invitation, amenity, user, notification, checkin } = getModels();
     let { date, details, id_user, id_amenity, guests } = req.body;
 
     // Normalizar guests si viene como string (multipart/form-data)
@@ -134,6 +134,7 @@ router.get('/:id_country', async (req: Request, res: Response) => {
 
     if (status) {
         if (typeof status === 'string') {
+            const { reservation, amenity, invitation, user } = getModels();
             const reservations = await reservation.findAll({
                 where: { status },
                 include: [
@@ -154,6 +155,7 @@ router.get('/:id_country', async (req: Request, res: Response) => {
         }
     }
 
+    const { reservation, amenity, invitation, user } = getModels();
     const reservations = await reservation.findAll({
         include: [
             { model: amenity, as: 'amenity' },
@@ -178,6 +180,7 @@ router.patch('/:id_reservation/:status', [
     reservationExists, // Aquí se usa el middleware correctamente
     noErrors
 ], async (req: Request, res: Response) => {
+    const { reservation, invitation, user, amenity, checkin, notification } = getModels();
     let msg = "";
     let newStatus = "";
     const { status, id_reservation } = req.params;
@@ -297,6 +300,7 @@ router.get('/get_by_user/:id_user', [
     check('id_user').custom(userExists)
 ], async (req: Request, res: Response) => {
     const { id_user } = req.params;
+    const { reservation } = getModels();
     const reservations = await reservation.findAll({
         where: { id_user }
     });
@@ -308,22 +312,23 @@ router.get('/country/get_by_id/:id_country', [
     check('id_country', "El campo 'id_country' es obligatorio").notEmpty(),
     check('id_country').custom(countryExists)
 ], async (req: Request, res: Response) => {
-    const { id_country } = req.params;
-    const idCountryNum = Number(id_country);
+    const { reservation, user, amenity } = getModels();
+    const { id_country } = req.params;
+    const idCountryNum = Number(id_country);
 
-    const reservations = await reservation.findAll({
-        include: [
-            { model: user, as: 'user' },
-            { model: amenity, as: 'amenity' }
-        ]
-    });
+    const reservations = await reservation.findAll({
+        include: [
+            { model: user, as: 'user' },
+            { model: amenity, as: 'amenity' }
+        ]
+    });
 
-    const filtered = reservations.filter((reservation: any) => {
-        const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
-        return amenity?.id_country === idCountryNum;
-    });
+    const filtered = reservations.filter((reservation: any) => {
+        const amenity = reservation.get('amenity') as Model & { id_country?: number } | null;
+        return amenity?.id_country === idCountryNum;
+    });
 
-    return res.json(filtered);
+    return res.json(filtered);
 });
 
 export default router;

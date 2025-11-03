@@ -1,14 +1,12 @@
 //classes/Guard.ts
 import { Model } from "sequelize";
-import db from "../models";
+import { getModels } from "../models/getModels";
 import { GuardInterface } from '../interfaces/guard.interface';
-
-// Desestructuramos los modelos desde el objeto 'db'
-const { user, role, guard_country, country } = db;
 
 class Guard {
 
     public async getAll(){
+        const { user, role } = getModels();
         // CORRECCIÓN: Usar la sintaxis completa de include con el alias 'userRole'
         const guards = await user.findAll({
             // CORRECCIÓN: Referenciar el rol con el alias '$userRole.name$'
@@ -23,6 +21,7 @@ class Guard {
     }
 
     public async exists(id_user: number){
+        const { user, role } = getModels();
         // CORRECCIÓN: Usar la sintaxis completa de include con el alias 'userRole'
         const exists = await user.findByPk(id_user, {
             include: [{ model: role, as: 'userRole' }] 
@@ -36,6 +35,7 @@ class Guard {
     }
 
     public async getByCountry(id_country: number){
+        const { guard_country } = getModels();
         // Esta función está bien, ya que solo consulta guard_country sin inclusiones complejas
         const guards = await guard_country.findAll({
             where: {id_country}
@@ -45,6 +45,7 @@ class Guard {
     }
 
     public async getCountry(id_user: number){
+        const { guard_country, country } = getModels();
         // Renombramos la variable local a 'foundCountry' para evitar colisiones
         const foundCountry = await guard_country.findOne({
             where: {
@@ -60,6 +61,7 @@ class Guard {
 
     public async assignCountry(guard: GuardInterface) {
         try {
+            const { guard_country } = getModels();
             if (await this.alreadyAssigned(guard)) {
                 return "Este vigilador ya fue asignado a este country";
             }
@@ -77,6 +79,7 @@ class Guard {
     }
 
     private async alreadyAssigned(guard: GuardInterface){
+        const { guard_country } = getModels();
         const alreadyAssigned = await guard_country.findOne({
             where: {
                 id_user: guard.id_user,

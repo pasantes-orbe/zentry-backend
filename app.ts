@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import Server from "./models/server";
+import Server from "./server";
 import 'reflect-metadata';
 
 // Configurar dotenv para cargar las variables de entorno desde el archivo .env

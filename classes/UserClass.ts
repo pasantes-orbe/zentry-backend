@@ -1,10 +1,8 @@
 // classes/UserClass.ts
-import db from "../models";
-import { Model, ModelStatic } from "sequelize";
+import { getModels } from "../models/getModels";
+import { Model } from "sequelize";
 
-// Tipados laxos de los modelos para evitar errores de "this context" en TS
-const userModel = db.user as unknown as ModelStatic<Model<any, any>>;
-const roleModel = db.role as unknown as ModelStatic<Model<any, any>>;
+// Tipados y helpers
 
 // Helper seguro para leer/escribir campos en instancias de Sequelize
 const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
@@ -26,9 +24,10 @@ const toAvatarUrl = (val?: string | null) => {
 
 class UserClass {
   public async getAll(): Promise<Model<any, any>[]> {
-    const users = (await userModel.findAll({
+    const { user, role } = getModels();
+    const users = (await (user as any).findAll({
       attributes: { exclude: ["password", "role_id"] },
-      include: [{ model: roleModel, as: "userRole" }],
+      include: [{ model: role, as: "userRole" }],
     })) as Model<any, any>[];
 
     users.forEach((u) => {
@@ -40,10 +39,11 @@ class UserClass {
   }
 
   public async getAllByRole(roleName: string): Promise<Model<any, any>[]> {
-    const users = (await userModel.findAll({
+    const { user, role } = getModels();
+    const users = (await (user as any).findAll({
       where: { "$userRole.name$": roleName },
       attributes: { exclude: ["password", "role_id"] },
-      include: [{ model: roleModel, as: "userRole" }],
+      include: [{ model: role, as: "userRole" }],
     })) as Model<any, any>[];
 
     users.forEach((u) => {
@@ -55,9 +55,10 @@ class UserClass {
   }
 
   public async is(roleName: string, id: number | string): Promise<boolean> {
-    const foundUser = (await userModel.findByPk(id, {
+    const { user, role } = getModels();
+    const foundUser = (await (user as any).findByPk(id, {
       attributes: { exclude: ["password", "role_id"] },
-      include: [{ model: roleModel, as: "userRole" }],
+      include: [{ model: role, as: "userRole" }],
     })) as Model<any, any> | null;
 
     const userRole = foundUser ? getVal(foundUser, "userRole") : null;

@@ -1,21 +1,19 @@
 // controller/recurrent.controller.ts
 import { Request, Response } from "express";
-import { Op, Model, ModelStatic } from "sequelize";
-import db from "../models";
+import { Op } from "sequelize";
+import { getModels } from "../models/getModels";
 
 // -------- Helpers --------
 const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
 
-// -------- Modelos (tipado laxo) --------
-const RecurrentModel      = db.recurrent       as unknown as ModelStatic<Model<any, any>>;
-const PropertyModel       = db.property        as unknown as ModelStatic<Model<any, any>>;
-const UserPropertiesModel = db.user_properties as unknown as ModelStatic<Model<any, any>>;
+// -------- Modelos: se obtienen dentro de cada método --------
 
 class RecurrentController {
   public async getAll(req: Request, res: Response) {
     try {
-      const recurrents = await RecurrentModel.findAll({
-        include: [{ model: PropertyModel, as: "property" }],
+      const { recurrent, property } = getModels();
+      const recurrents = await recurrent.findAll({
+        include: [{ model: property, as: "property" }],
       });
       return res.json(recurrents);
     } catch (error) {
@@ -30,8 +28,9 @@ class RecurrentController {
     if (isNaN(id)) return res.status(400).json({ msg: "ID inválido" });
 
     try {
-      const foundRecurrent = await RecurrentModel.findByPk(id, {
-        include: [{ model: PropertyModel, as: "property" }],
+      const { recurrent, property } = getModels();
+      const foundRecurrent = await recurrent.findByPk(id, {
+        include: [{ model: property, as: "property" }],
       });
       if (foundRecurrent) return res.json(foundRecurrent);
       return res
@@ -50,10 +49,11 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de country inválido" });
 
     try {
-      const recurrentsByCountry = await RecurrentModel.findAll({
+      const { recurrent, property } = getModels();
+      const recurrentsByCountry = await recurrent.findAll({
         include: [
           {
-            model: PropertyModel,
+            model: property,
             as: "property",
             where: { id_country },
           },
@@ -73,7 +73,8 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de propiedad inválido" });
 
     try {
-      const list = await RecurrentModel.findAll({ where: { id_property } });
+      const { recurrent } = getModels();
+      const list = await recurrent.findAll({ where: { id_property } });
       return res.json(list);
     } catch (error) {
       return res
@@ -89,8 +90,9 @@ class RecurrentController {
     }
 
     try {
+      const { user_properties, recurrent, property } = getModels();
       // 1) Propiedades asignadas al owner
-      const links = await UserPropertiesModel.findAll({
+      const links = await user_properties.findAll({
         where: { id_user: id_owner },
         attributes: ["id_property"],
       });
@@ -101,9 +103,9 @@ class RecurrentController {
       }
 
       // 2) Recurrentes de esas propiedades
-      const recurrentsOfOwner = await RecurrentModel.findAll({
+      const recurrentsOfOwner = await recurrent.findAll({
         where: { id_property: { [Op.in]: propertyIds } },
-        include: [{ model: PropertyModel, as: "property" }],
+        include: [{ model: property, as: "property" }],
       });
 
       return res.json(recurrentsOfOwner);
@@ -119,9 +121,10 @@ class RecurrentController {
   public async create(req: Request, res: Response) {
     const { body } = req;
     try {
+      const { recurrent, property } = getModels();
       // completar id_country desde la propiedad si no vino
       if (!body.id_country && body.id_property) {
-        const prop = await PropertyModel.findByPk(body.id_property);
+        const prop = await property.findByPk(body.id_property);
         const idCountry = prop ? getVal(prop, "id_country") : undefined;
         if (idCountry) body.id_country = idCountry;
         else {
@@ -132,9 +135,9 @@ class RecurrentController {
       }
 
       // evitar duplicados por dni + propiedad
-      const exists = await RecurrentModel.findOne({
+      const exists = await recurrent.findOne({
         where: { dni: body.dni, id_property: body.id_property },
-        include: [{ model: PropertyModel, as: "property" }],
+        include: [{ model: property, as: "property" }],
       });
       if (exists) {
         const propertyName =
@@ -145,7 +148,7 @@ class RecurrentController {
         });
       }
 
-      const newRecurrent = await RecurrentModel.create({
+      const newRecurrent = await recurrent.create({
         ...body,
         status: true,
       });
@@ -169,7 +172,8 @@ class RecurrentController {
       return res.status(400).json({ msg: "ID de recurrente inválido" });
 
     try {
-      const changed = await RecurrentModel.update(
+      const { recurrent } = getModels();
+      const changed = await recurrent.update(
         { status },
         { where: { id: recurrentID } }
       );
@@ -186,7 +190,8 @@ class RecurrentController {
     }
 
     try {
-      const deleted = await RecurrentModel.destroy({ where: { id: recurrentID } });
+      const { recurrent } = getModels();
+      const deleted = await recurrent.destroy({ where: { id: recurrentID } });
       if (deleted === 0) {
         return res
           .status(404)

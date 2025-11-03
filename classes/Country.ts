@@ -77,16 +77,10 @@ class Country {
     public getRecurrents(): [] {
         return this.recurrents;
     }
-    public setRecurrents(recurrents: []): void {
-        this.recurrents = recurrents;
-    }
 }
-export default Country;*/
-
+*/
 // classes/Country.ts
-import db from '../models';
-const { country } = db;
-
+import { getModels } from '../models/getModels';
 
 class Country {
     private id?: number;
@@ -118,6 +112,7 @@ class Country {
     // Método asincrónico para guardar correctamente en Sequelize
     public async save(): Promise<boolean> {
         try {
+            const { country } = getModels();
             await country.create({
                 name: this.name,
                 avatar: this.image,

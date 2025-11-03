@@ -28,7 +28,7 @@ type Registry = Record<string, AnyModel> & { sequelize: Sequelize; Sequelize: ty
 const registry = {} as Registry;
 
 fs.readdirSync(__dirname)
-  .filter(f => f !== basename && !f.endsWith('.d.ts') && (f.endsWith('.js') || f.endsWith('.ts')))
+  .filter(f => f !== basename && !f.endsWith('.d.ts') && /\.model\.(js|ts)$/.test(f))
   .forEach((file) => {
     const mod = require(path.join(__dirname, file));
     const definer =

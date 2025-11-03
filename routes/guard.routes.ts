@@ -7,15 +7,11 @@ import countryExists from "../middlewares/customs/countryExists.middleware";
 import isGuard from "../middlewares/customs/isGuard.middleware";
 import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
-
-// Importamos el objeto 'db' para acceder a todos los modelos inicializados
-import db from "../models";
+import { getModels } from "../models/getModels";
 import moment from "moment";
 import DatesHelper from "../classes/Dates";
 
 const router = Router();
-// Desestructuramos los modelos desde el objeto 'db'
-const { guard_schedule, user } = db;
 
 /**
  * Get All
@@ -71,13 +67,12 @@ router.get('/schedule/all/:id_country', [
     check('id_country').isNumeric(),
     check('id_country').notEmpty(),
 ], async (req: Request, res: Response) => {
-    // Usamos el modelo inicializado 'guard_schedule'
+    const { guard_schedule, user } = getModels();
     const guards = await guard_schedule.findAll({
         where: {
             id_country: req.params.id_country
         },
-        // Usamos el modelo inicializado 'user'
-        include: [{ model: user, as: 'user' }] // incluimos la relación con alias
+        include: [{ model: user, as: 'user' }]
     });
 
     const now = moment();
@@ -103,7 +98,7 @@ router.get('/schedule/:id_user', [
     check('id_user').isNumeric(),
     check('id_user').notEmpty(),
 ], async (req: Request, res: Response) => {
-    // Usamos el modelo inicializado 'guard_schedule'
+    const { guard_schedule } = getModels();
     const guards = await guard_schedule.findAll({
         where: {
             id_user: req.params.id_user
@@ -139,7 +134,7 @@ router.put(`/schedule/:id`, [
     console.log(newExit);
     console.log(week_day)
     const { id } = req.params
-    // Usamos el modelo inicializado 'guard_schedule'
+    const { guard_schedule } = getModels();
     const schedule = await guard_schedule.findByPk(id)
     if (!schedule) {
         return res.status(404).send('No se encontró calendario')
@@ -170,8 +165,8 @@ router.post('/schedule', [
     req.body.week_day = req.body.week_day.toLowerCase();
 
     try {
-        // Usamos el modelo inicializado 'guard_schedule'
-        const schedule = await guard_schedule.create(req.body); // ✅ Usar .create()
+        const { guard_schedule } = getModels();
+        const schedule = await guard_schedule.create(req.body);
         return res.json(schedule);
     } catch (error) {
         console.error("Error al crear horario:", error);

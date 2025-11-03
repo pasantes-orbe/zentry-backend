@@ -1,11 +1,10 @@
 // classes/Countries.ts
-import db from '../models';
-
-const { country } = db;
+import { getModels } from '../models/getModels';
 
 class Countries {
   public async getAll() {
     try {
+      const { country } = getModels();
       return await country.findAll({
         attributes: [
           'id',
@@ -28,6 +27,7 @@ class Countries {
 
   public async getOne(id: number) {
     try {
+      const { country } = getModels();
       const row = await country.findByPk(id, {
         attributes: [
           'id',

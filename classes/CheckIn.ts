@@ -1,14 +1,12 @@
 // classes/checkin.classes.ts
-import db from "../models"; // Importamos el objeto db central
+import { getModels } from "../models/getModels"; // Importamos getModels on-demand
 import { Model } from "sequelize";
 
-// Desestructuramos el modelo 'checkin' del objeto db
-const { checkin } = db;
-
+// Desestructuración dentro de cada método usando getModels()
 class CheckIn {
     
     public async approve(id_checkin: number){
-
+        const { checkin } = getModels();
         const checkinInstance = await checkin.findByPk(id_checkin);
 
         if(checkinInstance && checkinInstance.get('confirmed_by_owner')){
@@ -22,7 +20,7 @@ class CheckIn {
     }
 
     public async ownerConfirm(id_checkin: number){
-
+        const { checkin } = getModels();
         const checkinInstance = await checkin.findByPk(id_checkin);
 
         if(checkinInstance){
@@ -36,7 +34,7 @@ class CheckIn {
     }
     
     public async changeStatus(id_checkin: number, newStatus: boolean){
-
+        const { checkin } = getModels();
         const checkinInstance = await checkin.findByPk(id_checkin);
 
         if(checkinInstance){
@@ -50,7 +48,7 @@ class CheckIn {
     }
 
     public async checkOutConfirm(id_checkin: number){
-
+        const { checkin } = getModels();
         const checkinInstance = await checkin.findByPk(id_checkin);
 
         if(checkinInstance){
@@ -64,13 +62,14 @@ class CheckIn {
     }
 
     public async exists(id_checkin: number){
+        const { checkin } = getModels();
         const exists = await checkin.findByPk(id_checkin);
         return exists;
     }
 
     public async isApproved(id_checkin: number){
-
-        const checkinInstance = await this.exists(id_checkin);
+        const { checkin } = getModels();
+        const checkinInstance = await checkin.findByPk(id_checkin);
 
         if(!checkinInstance) return false;
 
