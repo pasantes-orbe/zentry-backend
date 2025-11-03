@@ -56,7 +56,13 @@ router.get('/owner-properties', [
 ], property.getPropertiesByOwner); // 👈 Llamará al nuevo método
 
 
-router.get('/:id', isAdmin, property.getByID);
+router.get('/:id', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], property.getByID);
 
 router.post('/', [
     isAdmin,
@@ -91,11 +97,26 @@ router.post('/', [
 ], property.create);
 
 router.patch("/:id", [
-    isAdmin,
-    check('id').notEmpty(),
-    check('id').custom(propertyExists),
-    noErrors
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').custom(propertyExists),
+    // Optional fields validations
+    check('name').optional().isString().isLength({ max: 50 }),
+    check('address').optional().isString().isLength({ max: 50 }),
+    check('number').optional().matches(/^\d+$/),
+    check('isActive').optional().isBoolean(),
+    noErrors
 ], property.update)
+
+// Upload/Update property avatar
+router.post('/:id/avatar', [
+    validateJWT,
+    isAdmin,
+    check('id').notEmpty(),
+    check('id').isNumeric(),
+    noErrors
+], property.updateAvatar)
 
 router.delete("/:id", [
     isAdmin,

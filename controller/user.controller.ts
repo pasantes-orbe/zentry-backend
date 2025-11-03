@@ -358,16 +358,18 @@ class UserController {
         const { avatar } = req.body as { avatar?: string };
 
         const files: any = (req as any).files;
+        // Aceptar tanto 'file' (frontend nuevo) como 'avatar' (compatible con anterior)
+        const inputFile: any = files?.file || files?.avatar;
 
-        if ((!files?.avatar || !files.avatar.tempFilePath) && (!avatar || typeof avatar !== 'string')) {
-            return res.status(400).json({ msg: 'Campo avatar requerido' });
+        if ((!inputFile || !inputFile.tempFilePath) && (!avatar || typeof avatar !== 'string')) {
+            return res.status(400).json({ msg: 'Campo avatar/file requerido' });
         }
 
         try {
             console.log('updateAvatar received:', {
                 hasFiles: !!files,
-                hasAvatarFile: !!files?.avatar,
-                hasTempFilePath: !!files?.avatar?.tempFilePath,
+                fieldUsed: inputFile ? (files?.file ? 'file' : 'avatar') : 'none',
+                hasTempFilePath: !!inputFile?.tempFilePath,
                 bodyHasAvatar: typeof avatar === 'string' && avatar.length > 0
             });
             const foundUser = await user.findByPk(id);
@@ -377,13 +379,23 @@ class UserController {
 
             let valueToStore: string | undefined = undefined;
 
-            if (files?.avatar && files.avatar.tempFilePath) {
+            if (inputFile && inputFile.tempFilePath) {
+                // Validaciones de tipo/tamaño: <= 5MB y image/*
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                const size = Number(inputFile.size) || 0;
+                const mime = String(inputFile.mimetype || '');
+                if (size > maxSize) {
+                    return res.status(413).json({ msg: 'El archivo supera el tamaño máximo de 5MB' });
+                }
+                if (!/^image\//i.test(mime)) {
+                    return res.status(400).json({ msg: 'El archivo debe ser una imagen (image/*)' });
+                }
                 const cloudOk = (!!process.env.CLOUDINARY_URL) || (!!process.env.CLOUDINARY_CLOUD_NAME && !!process.env.CLOUDINARY_API_KEY && !!process.env.CLOUDINARY_API_SECRET);
                 if (!cloudOk) {
                     return res.status(500).json({ msg: 'Cloudinary no configurado' });
                 }
                 try {
-                    const tempFilePath = files.avatar.tempFilePath;
+                    const tempFilePath = inputFile.tempFilePath;
                     const uploader = new Uploader();
                     const uploaded: any = await uploader.uploadImage(tempFilePath);
 
