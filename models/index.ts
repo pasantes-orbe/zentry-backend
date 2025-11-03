@@ -6,43 +6,31 @@ import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
 
 const basename = path.basename(__filename);
 
-// Conexión (forzar SSL siempre para Railway en Render)
-export const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
+const rawUrl = process.env.DATABASE_URL || '';
+const dbUrl = rawUrl.trim();
+if (!dbUrl) throw new Error('DATABASE_URL no definida');
+
+// Detecta si la URL apunta a localhost
+const isLocalHost = /(?:localhost|127\.0\.0\.1|::1)/i.test(dbUrl);
+
+// Solo uso SSL cuando NO es localhost
+const dialectOptions = isLocalHost ? {} : { ssl: { require: true, rejectUnauthorized: false } };
+
+export const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false, // <-- clave para evitar "self-signed ..."
-    },
-  },
+  dialectOptions,
   logging: false,
 } as any);
 
-// Registry fuertemente tipado
+// --- resto igual ---
 type AnyModel = ModelStatic<Model<any, any>>;
-type Registry = Record<string, AnyModel> & {
-  sequelize: Sequelize;
-  Sequelize: typeof Sequelize;
-};
-
+type Registry = Record<string, AnyModel> & { sequelize: Sequelize; Sequelize: typeof Sequelize; };
 const registry = {} as Registry;
 
-// Carga dinámica de modelos compilados (.js) y, si existieran, .ts en dev
 fs.readdirSync(__dirname)
-  .filter(
-    (file) =>
-      file !== basename &&
-      !file.endsWith('.d.ts') &&
-      (file.endsWith('.js') || file.endsWith('.ts'))
-  )
+  .filter(f => f !== basename && !f.endsWith('.d.ts') && (f.endsWith('.js') || f.endsWith('.ts')))
   .forEach((file) => {
-    const modPath = path.join(__dirname, file);
-    const mod = require(modPath);
-
-    // Acepta varios estilos de export:
-    // default function (sequelize, DataTypes) { return Model }
-    // module.exports = function(sequelize, DataTypes) { return Model }
-    // export const init = (sequelize, DataTypes) => Model
+    const mod = require(path.join(__dirname, file));
     const definer =
       (typeof mod === 'function' && mod) ||
       (typeof mod?.default === 'function' && mod.default) ||
@@ -66,16 +54,12 @@ fs.readdirSync(__dirname)
     registry[model.name] = model;
   });
 
-// Associations
 Object.keys(registry).forEach((name) => {
   const m = registry[name] as any;
   if (typeof m?.associate === 'function') m.associate(registry);
 });
 
-// Helpers
 registry.sequelize = sequelize;
 registry.Sequelize = Sequelize;
-
-// Export principal
 const db = registry;
 export default db;
