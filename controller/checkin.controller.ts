@@ -65,20 +65,19 @@ class CheckInController {
             "guest_name"
           )} ${getVal(newCheckIn, "guest_lastname")} enviada por vigilador.`;
 
-          await notification.create({
+          // Crear notificación en DB para que el frontend tenga createdAt/id consistentes
+          const created = await notification.create({
             id_user: getVal(newCheckIn, "id_owner"),
             title,
             content,
             read: false,
           });
 
-          // Emitir socket
+          // Emitir socket normalizado: incluir los campos de la fila creada
           const server = Server.instance;
+          const base = (created as any)?.toJSON?.() ?? created;
           server.io.emit("new-notification", {
-            id_user: getVal(newCheckIn, "id_owner"),
-            title,
-            content,
-            read: false,
+            ...base,
             type: "checkin-request",
             checkin: newCheckIn,
           });

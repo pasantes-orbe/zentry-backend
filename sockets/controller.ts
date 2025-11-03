@@ -53,34 +53,15 @@ class SocketController {
         const guest_name = payload["guest_name"];
         const guest_lastname = payload["guest_lastname"];
 
-        // Si no hay propietario, no notificar a owner
         if (!id_owner) {
           console.log("[Socket] Check-in sin propietario; no se notifica a owner.");
           return;
         }
 
-        const { user, notification } = getModels();
-        const owner = await (user as any).findByPk(id_owner);
-        console.log("Owner para notificar:", getVal(owner, "id"));
-
-        // Crear notificación en DB (campanita)
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        const hora = `${hh}:${mm}`;
-
-        await (notification as any).create({
-          id_user: Number(id_owner),
-          title: "Vigilador",
-          content: `Ingreso de visitante (${guest_name} ${guest_lastname}, ${hora}) autorizado por vigilador`,
-          read: false,
-        });
-
-        // Emitir en tiempo real al owner si está conectado
-        const ownerConnected = this.ownerControl.getownersByUserId(id_owner);
-        if (ownerConnected && ownerConnected.id_socket && this.io) {
-          this.io.to(ownerConnected.id_socket).emit("notificacion-check-in", payload);
-        }
+        // Evitar duplicidades: la creación de Check-In por HTTP ya genera
+        // la notificación (DB) y emite 'new-notification'. No volver a emitir aquí.
+        // Mantener este handler solo para logging o futura lógica no duplicada.
+        console.log("[Socket] notificar-check-in recibido: la notificación se gestiona por HTTP");
       } catch (e) {
         console.error("[Socket] Error en notificarCheckIn:", e);
       }
