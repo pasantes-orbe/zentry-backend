@@ -47,7 +47,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         }
     },
     {
-        tableName: 'owner_countries', // Se recomienda usar el nombre de la tabla en plural
+        tableName: 'owner_countries', // Coincide con el nombre real de la tabla en la DB
         timestamps: false
     });
 
