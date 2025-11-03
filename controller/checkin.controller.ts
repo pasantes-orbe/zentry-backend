@@ -1,42 +1,49 @@
 // controller/checkin.controller.ts
 import { Request, Response } from "express";
-import { Op, Model } from "sequelize";
+import { Op } from "sequelize";
 import { getModels } from "../models/getModels";
 import CheckIn from "../classes/CheckIn";
 import Server from "../server";
 import Guard from "../classes/Guard";
 
-// ---------- Helpers de acceso seguros ----------
-const getVal = (m: any, key: string) => (m?.get ? m.get(key) : m?.[key]);
-
-// ---------- Modelos (obtener dentro de cada método) ----------
+// Helper chico para extraer DataValues sin romper si viene plano
+const getVal = (row: any, key: string) =>
+  row?.get ? row.get(key) : row?.[key];
 
 class CheckInController {
   public async create(req: Request, res: Response) {
     try {
-      // 1) Normalización de confirmed_by_owner
-      const confirmedByOwner =
-        req.body.confirmed_by_owner === "true" ||
-        req.body.confirmed_by_owner === true;
+      const { checkin, notification } = getModels();
+
+      // 1) Normalizar id_owner: 0/undefined -> null
+      if (!req.body.id_owner || req.body.id_owner === 0) {
+        req.body.id_owner = null;
+      }
+
+      // 2) Manejo de confirmed_by_owner
+      const confirmedByOwner = req.body.id_owner
+        ? (req.body.confirmed_by_owner === "true" ||
+            req.body.confirmed_by_owner === true)
+        : true; // Auto-confirmar si no hay propietario
       req.body.confirmed_by_owner = confirmedByOwner;
 
-      // 2) Estados iniciales
+      // 3) Flags de estado iniciales
       req.body.check_in = false;
       req.body.check_out = false;
 
-      // 3) Normalización de opcionales
+      // 4) Normalización de opcionales
       req.body.transport = req.body.transport?.trim() || null;
       req.body.details = req.body.details?.trim() || null;
       req.body.id_guard = req.body.id_guard || null;
 
-      // 4) Patente
+      // 5) Patente a mayúsculas
       if (req.body.patent) {
         req.body.patent = req.body.patent.toUpperCase().trim() || null;
       } else {
         req.body.patent = null;
       }
 
-      // 5) Validación de guard (si vino)
+      // 6) Verificación de guardia si viene
       if (req.body.id_guard) {
         const guardExists = await new Guard().exists(req.body.id_guard);
         if (!guardExists) {
@@ -45,14 +52,55 @@ class CheckInController {
         }
       }
 
-      const { checkin } = getModels();
+      // Crear el check-in
       const newCheckIn = await checkin.create(req.body);
 
-      // Emitir por socket
+      // Notificación al propietario (si hay)
+      try {
+        const hasOwner = !!getVal(newCheckIn, "id_owner");
+        if (hasOwner && notification) {
+          const title = "Vigilador";
+          const content = `Solicitud de ingreso de ${getVal(
+            newCheckIn,
+            "guest_name"
+          )} ${getVal(newCheckIn, "guest_lastname")} enviada por vigilador.`;
+
+          await notification.create({
+            id_user: getVal(newCheckIn, "id_owner"),
+            title,
+            content,
+            read: false,
+          });
+
+          // Emitir socket
+          const server = Server.instance;
+          server.io.emit("new-notification", {
+            id_user: getVal(newCheckIn, "id_owner"),
+            title,
+            content,
+            read: false,
+            type: "checkin-request",
+            checkin: newCheckIn,
+          });
+        }
+      } catch (e) {
+        console.log(
+          "[create] No se pudo crear/emitir notificación al owner:",
+          e
+        );
+      }
+
+      // Notificar garita
       const server = Server.instance;
       if (confirmedByOwner) {
+        const msgType = req.body.id_owner
+          ? `Visita rápida de ${req.body.guest_lastname} ${req.body.guest_name} autorizada por propietario.`
+          : `Check-in sin propietario: ${req.body.guest_lastname} ${req.body.guest_name} (${
+              req.body.details || "Sin detalles"
+            })`;
+
         server.io.emit("notificarNuevoConfirmedByOwner", {
-          msg: `Visita rápida de ${req.body.guest_lastname} ${req.body.guest_name} autorizada por propietario.`,
+          msg: msgType,
           checkIn: newCheckIn,
         });
       } else {
@@ -62,8 +110,12 @@ class CheckInController {
         });
       }
 
+      const responseMsg = req.body.id_owner
+        ? "Autorización de Visita Rápida registrada exitosamente"
+        : "Check-in sin propietario registrado. Pendiente de autorización de ingreso";
+
       return res.status(201).json({
-        msg: "Autorización de Visita Rápida registrada exitosamente",
+        msg: responseMsg,
         checkIn: newCheckIn,
       });
     } catch (error) {
@@ -74,17 +126,23 @@ class CheckInController {
 
   public async approve(req: Request, res: Response) {
     try {
-      const id = Number(req.params.id_checkin);
       const { checkin } = getModels();
-      const checkIn = await checkin.findByPk(id);
+      const id = Number(req.params.id_checkin);
+      const row = await checkin.findByPk(id);
 
-      if (!checkIn) {
-        return res.status(404).json({ msg: "Check-In no existe" });
-      }
+      if (!row) return res.status(404).json({ msg: "Check-In no existe" });
 
-      await new CheckIn().approve(id);
+      // Marcar como ingresado
+      await row.update({ check_in: true });
 
-      return res.json({ msg: "Check-In aprobado", checkIn });
+      // Emitir actualización
+      const server = Server.instance;
+      server.io.emit("refresh-checkins", { id });
+
+      return res.json({
+        msg: "Ingreso aprobado por guardia",
+        checkIn: row,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ msg: "Error al aprobar Check-In" });
@@ -93,25 +151,63 @@ class CheckInController {
 
   public async ownerConfirm(req: Request, res: Response) {
     try {
+      const { checkin, user, notification } = getModels();
       const id = Number(req.params.id_checkin);
-      const { checkin } = getModels();
-      const checkIn = await checkin.findByPk(id);
 
-      if (!checkIn) {
-        return res.status(404).json({ msg: "Check-In no existe" });
-      }
-
-      await new CheckIn().ownerConfirm(id);
-
-      const server = Server.instance;
-      server.io.emit("checkin-confirmado-por-propietario", {
-        msg: `Check-in de ${checkIn.getDataValue(
-          "guest_name"
-        )} ${checkIn.getDataValue("guest_lastname")} confirmado`,
-        checkIn,
+      const row = await checkin.findByPk(id, {
+        include: [
+          { model: user, as: "guardUser" },
+          { model: user, as: "ownerUser" },
+        ],
       });
 
-      return res.json({ msg: "Check-In confirmado por propietario", checkIn });
+      if (!row) return res.status(404).json({ msg: "Check-In no existe" });
+
+      // Confirmar y marcar ingreso
+      await checkin.update(
+        { confirmed_by_owner: true, check_in: true },
+        { where: { id } }
+      );
+
+      const updated = await checkin.findByPk(id, {
+        include: [
+          { model: user, as: "guardUser" },
+          { model: user, as: "ownerUser" },
+        ],
+      });
+
+      const server = Server.instance;
+      const title = "Propietario";
+      const content = `Autorizó a ${getVal(updated, "guest_name")} ${getVal(
+        updated,
+        "guest_lastname"
+      )}`;
+
+      const id_guard = getVal(updated, "id_guard");
+      if (notification && id_guard) {
+        await notification.create({
+          title,
+          content,
+          id_user: id_guard,
+          read: false,
+        });
+      }
+
+      server.io.emit("new-notification", {
+        id_user: id_guard,
+        title,
+        content,
+        read: false,
+        type: "checkin-owner-approved",
+        checkin: updated,
+      });
+
+      server.io.emit("notificar-nuevo-confirmedByOwner", { checkIn: updated });
+
+      return res.json({
+        msg: "Check-In confirmado por propietario",
+        checkIn: updated,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ msg: "Error al confirmar Check-In" });
@@ -123,7 +219,7 @@ class CheckInController {
       const { id_checkin } = req.params;
       const { new_status } = req.body;
 
-      const { checkin } = getModels();
+      // El método de dominio ya opera con los modelos por dentro
       const update = await new CheckIn().changeStatus(+id_checkin, new_status);
       if (!update) {
         return res.status(404).json({ msg: "Check-in no existe" });
@@ -138,8 +234,9 @@ class CheckInController {
 
   public async getApproved(req: Request, res: Response) {
     try {
-      const { id_country } = req.params;
       const { checkin, user } = getModels();
+      const { id_country } = req.params;
+
       const checkins = await checkin.findAll({
         where: { id_country, check_in: true },
         include: [
@@ -147,6 +244,7 @@ class CheckInController {
           { model: user, as: "ownerUser" },
         ],
       });
+
       return res.json(checkins);
     } catch (error) {
       console.error(error);
@@ -156,8 +254,9 @@ class CheckInController {
 
   public async getConfirmedByOwner(req: Request, res: Response) {
     try {
-      const { id_country } = req.params;
       const { checkin, user } = getModels();
+      const { id_country } = req.params;
+
       const checkins = await checkin.findAll({
         where: { confirmed_by_owner: true, check_in: false, id_country },
         include: [
@@ -165,6 +264,7 @@ class CheckInController {
           { model: user, as: "ownerUser" },
         ],
       });
+
       return res.json(checkins);
     } catch (error) {
       console.error(error);
@@ -176,9 +276,10 @@ class CheckInController {
 
   public async getRegisters(req: Request, res: Response) {
     try {
+      const { checkin, checkout } = getModels();
       const { id_country } = req.params;
       const responseArray: any[] = [];
-      const { checkin, checkout } = getModels();
+
       const checkins = await checkin.findAll({
         where: { id_country, check_in: true },
       });
@@ -199,9 +300,10 @@ class CheckInController {
     }
   }
 
-  public async getCheckOutFalse(req: Request, res: Response) {
+  public async getCheckOutFalse(_req: Request, res: Response) {
     try {
       const { checkin, user } = getModels();
+
       const checkins = await checkin.findAll({
         where: { check_out: false, check_in: true, confirmed_by_owner: true },
         include: [
@@ -209,6 +311,7 @@ class CheckInController {
           { model: user, as: "ownerUser" },
         ],
       });
+
       return res.json(checkins);
     } catch (error) {
       console.error(error);
@@ -220,12 +323,14 @@ class CheckInController {
 
   public async getByOwner(req: Request, res: Response) {
     try {
-      const { id_owner } = req.params;
       const { checkin } = getModels();
+      const { id_owner } = req.params;
+
       const checkins = await checkin.findAll({
         where: { id_owner },
         include: [{ all: true }],
       });
+
       return res.json(checkins);
     } catch (error) {
       console.error(error);
@@ -239,9 +344,11 @@ class CheckInController {
     try {
       const { id_checkin } = req.params;
       const update = await new CheckIn().checkOutConfirm(+id_checkin);
+
       if (!update) {
         return res.status(404).json({ msg: "Check-in no existe" });
       }
+
       return res.json({ msg: "Check-out confirmado", update });
     } catch (error) {
       console.error(error);
@@ -251,13 +358,15 @@ class CheckInController {
 
   public async getcheckInsToday(req: Request, res: Response) {
     try {
+      const { checkin, user } = getModels();
       const { id_owner } = req.params;
+
       const TODAY_START = new Date();
       TODAY_START.setHours(0, 0, 0, 0);
+
       const NOW = new Date();
       NOW.setHours(23, 59, 59, 999);
 
-      const { checkin, user } = getModels();
       const checkins = await checkin.findAll({
         where: {
           id_owner,
@@ -271,6 +380,7 @@ class CheckInController {
           { model: user, as: "guardUser" },
         ],
       });
+
       return res.json(checkins);
     } catch (error) {
       console.error(error);
@@ -282,4 +392,7 @@ class CheckInController {
 }
 
 export default new CheckInController();
+
+
+
 

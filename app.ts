@@ -1,35 +1,21 @@
-import dotenv from "dotenv";
-import Server from "./server";
+// src/app.ts (o app.ts si estás en raíz)
+import 'dotenv/config';
 import 'reflect-metadata';
+import Server from './server';
+import db from './models';
 
-// Configurar dotenv para cargar las variables de entorno desde el archivo .env
-dotenv.config({
-    path: "./.env"
-});
+console.log('Zona horaria configurada:', process.env.TZ || '(no definida)');
 
-// Puedes dejar el console.log si te es útil para depurar la zona horaria
-console.log('Zona horaria configurada:', process.env.TZ);// 24-8 Log de la zona horaria para debugging (opcional)
-
-// Importar el objeto 'db' que ahora contiene:
-// 1. La instancia de Sequelize (db.sequelize)
-// 2. Todos tus modelos inicializados (db.User, db.Role, etc.)
-// 3. Las asociaciones YA configuradas entre ellos (porque models/index.js las ejecutó)
-const db = require('./models'); // Usamos 'require' porque models/index.js usa 'module.exports'
-
-const server = Server.instance; // Esto inicializa tu servidor Express
-
-// Esto es lo que va a crear o actualizar tus tablas en PostgreSQL.
-// db.sequelize.sync({ force: true }) hará que cada vez que inicies la app,
-// borre las tablas existentes y las cree de nuevo con la definición de tus modelos.
-// ¡Usa { force: true } solo en desarrollo! En producción, podrías perder datos.
-db.sequelize.sync({alter: true}) // Solo crea las tablas si no existen
-  .then(() => {
+(async () => {
+  try {
+    // En dev podés usar { alter: true }. En prod: sin alter/force.
+    await db.sequelize.sync({ alter: true });
     console.log('¡Base de datos sincronizada correctamente! Todas las tablas deberían estar ahí.');
-    // Si la sincronización es exitosa, entonces iniciamos el servidor Express.
+
+    const server = Server.instance;
     server.startServer();
-  })
-  .catch((err: Error) => {
+  } catch (err) {
     console.error('Error al sincronizar la base de datos:', err);
-    // Si hay un error crítico al sincronizar la DB, lo mejor es salir de la aplicación.
     process.exit(1);
-  });
+  }
+})();
