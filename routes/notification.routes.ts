@@ -56,9 +56,9 @@ router.patch('/read', (req: Request, res: Response) => notificationController.ma
 
 // CREATE NOTIFICATION (para frontend)
 router.post('/', [
-    body('ownerId').notEmpty(),
-    body('title').notEmpty(),
-    body('message').notEmpty(),
+    body('ownerId').optional({ nullable: true, checkFalsy: true }),
+    body('title').optional({ nullable: true }).isString(),
+    body('message').optional({ nullable: true }).isString(),
     noErrors
 ], (req: Request, res: Response) => notificationController.create(req, res));
 
