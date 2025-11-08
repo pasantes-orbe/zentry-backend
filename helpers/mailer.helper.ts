@@ -10,14 +10,24 @@ class Mailer {
         console.log("SENDING");
 
         
+        const host = process.env.SMTP_HOST || "c2301030.ferozo.com";
+        const port = parseInt(process.env.SMTP_PORT || "587", 10);
+        const secure = (process.env.SMTP_SECURE || "false") === "true";
+        const smtpUser = process.env.SMTP_USER || "contacto@orbesoftware.com.ar";
+        const smtpPass = process.env.SMTP_PASS || "Erio0s/142";
+
         let transporter = nodemailer.createTransport({
-            host: "c2301030.ferozo.com",
-            port: 465,
-            secure: true, // upgrade later with STARTTLS
+            host,
+            port,
+            secure, // true: TLS implícito (465). false: STARTTLS (587)
             auth: {
-                user: "contacto@orbesoftware.com.ar",
-                pass: "Erio0s/142",
-            }
+                user: smtpUser,
+                pass: smtpPass,
+            },
+            requireTLS: !secure,
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 20000,
         });
         
 
@@ -25,7 +35,7 @@ class Mailer {
         console.log(verify);
 
         let msg = {
-            from: 'contacto@orbesoftware.com.ar',
+            from: smtpUser,
             to: email,
             subject: 'Nueva Contraseña',
             text: `Tu nueva contraseña para ingresar a la aplicación es: ${message}`,
@@ -54,24 +64,33 @@ class Mailer {
 
     }
 
-    //AJUSTAR ESTO POR ULTIMO 
     public async sendResetLink(email: string, resetLink: string) {
-        console.log("Enviar reset link a:", email, resetLink);
+        console.log("Enviar reset link a:", email);
+
+        const host = process.env.SMTP_HOST || "c2301030.ferozo.com";
+        const port = parseInt(process.env.SMTP_PORT || "587", 10);
+        const secure = (process.env.SMTP_SECURE || "false") === "true";
+        const smtpUser = process.env.SMTP_USER || "contacto@orbesoftware.com.ar";
+        const smtpPass = process.env.SMTP_PASS || "Erio0s/142";
 
         const transporter = nodemailer.createTransport({
-            host: "c2301030.ferozo.com",
-            port: 465,
-            secure: true,
+            host,
+            port,
+            secure,
             auth: {
-                user: "contacto@orbesoftware.com.ar",
-                pass: "Erio0s/142",
-            }
+                user: smtpUser,
+                pass: smtpPass,
+            },
+            requireTLS: !secure,
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 20000,
         });
 
         await transporter.verify();
 
         const msg = {
-            from: 'contacto@orbesoftware.com.ar',
+            from: smtpUser,
             to: email,
             subject: 'Restablecer contraseña',
             text: `Para restablecer tu contraseña, abrí este enlace: ${resetLink}`,

@@ -56,7 +56,15 @@ class NotificationsController {
 
     public async create(req: Request, res: Response) {
         try {
-            const { ownerId, title, message, read, reservationId, status } = req.body || {};
+            const { ownerId, title, message, read } = req.body || {};
+
+            const hasOwnerId = ownerId !== undefined && ownerId !== null && ownerId !== '';
+            if (!hasOwnerId) {
+                console.log("[NotificationsController] ownerId ausente; se omite creación de notificación.");
+                return res.status(200).json({
+                    msg: "Notificación omitida: no se proporcionó 'ownerId' válido",
+                });
+            }
 
             const id_user = Number(ownerId);
             if (!Number.isFinite(id_user)) {
