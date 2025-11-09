@@ -8,6 +8,7 @@ import userExists from "../middlewares/customs/userExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import { getModels } from "../models/getModels";
 import { Model } from "sequelize";
+import { Op } from 'sequelize';
 import { ReservationAttributes } from '../interfaces/reservation.interface';
 
 // IMPORTACIÓN NECESARIA PARA ACCEDER AL SOCKET.IO
@@ -18,6 +19,8 @@ import Notifications from "../classes/Notifications";
 // Los modelos se obtienen dentro de cada handler con getModels()
 
 const router = Router();
+const BLOCK_MS = 4 * 60 * 60 * 1000; // 4 horas
+
 
 // Ruta POST principal para crear una reserva
 router.post('/', [
@@ -33,6 +36,41 @@ router.post('/', [
     const { reservation, invitation, amenity, user, notification, checkin } = getModels();
     let { date, details, id_user, id_amenity, guests } = req.body;
 
+        // === BLOQUEO DE SOLAPES (4h) POR AMENITY ===
+    // 1) Tomo la hora de inicio de la reserva (del body)
+    const start = new Date(String(date));           // inicio elegido por el propietario
+    const end   = new Date(start.getTime() + BLOCK_MS); // fin = inicio + 4h
+
+    // 2) Busco reservas del MISMO amenity cercanas (pendientes o aprobadas) ese día
+    //    Ventana de búsqueda: ±4h alrededor de la hora solicitada
+    const windowStart = new Date(start.getTime() - BLOCK_MS);
+    const windowEnd   = new Date(start.getTime() + BLOCK_MS);
+
+    const existing = await reservation.findAll({
+    where: {
+        id_amenity,
+        status: { [Op.in]: ['pendiente', 'aprobado'] },
+        date:   { [Op.between]: [windowStart, windowEnd] }
+    }
+    }) as any[];
+
+    // 3) Chequeo de solape simple: [start, end) vs cada reserva existente (4h c/u)
+    function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
+    return aStart < bEnd && bStart < aEnd;
+    }
+
+    const conflict = existing.some((res: any) => {
+    const bStart = new Date(res.date);
+    const bEnd   = new Date(bStart.getTime() + BLOCK_MS);
+    return overlaps(start, end, bStart, bEnd);
+    });
+
+    if (conflict) {
+    return res.status(400).json({ msg: 'Este amenity ya está ocupado en ese horario.' });
+    }
+    // === FIN BLOQUEO DE SOLAPES ===
+
+    
     // Normalizar guests si viene como string (multipart/form-data)
     if (typeof guests === 'string') {
         try {
@@ -401,5 +439,44 @@ router.get('/country/get_by_id/:id_country', [
 
     return res.json(filtered);
 });
+
+
+router.get('/occupied/:id_amenity/:date', async (req: Request, res: Response) => {
+  const { reservation } = getModels();
+  const { id_amenity, date } = req.params;
+
+  const startDay = new Date(date + "T00:00:00");
+  const endDay = new Date(date + "T23:59:59");
+
+  try {
+    const existing = await reservation.findAll({
+      where: {
+        id_amenity,
+        status: { [Op.in]: ['pendiente', 'aprobado'] },
+        date: { [Op.between]: [startDay, endDay] }
+      }
+    });
+
+    const hours: string[] = [];
+
+    existing.forEach(e => {
+      const r = e.get() as any;
+      const start = new Date(r.date);
+
+      // 🔥 Bloquea la hora elegida + 4 horas más
+      for (let i = 0; i < 5; i++) {
+        const blocked = new Date(start.getTime() + (i * 60 * 60 * 1000));
+        hours.push(blocked.toTimeString().slice(0,5)); // "HH:MM"
+      }
+    });
+
+    return res.json(hours);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ msg: "Error al obtener horarios ocupados" });
+  }
+});
+
+
 
 export default router;
