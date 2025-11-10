@@ -86,29 +86,24 @@ class Server {
   }
 
   private middlewares() {
-    // CORS por ambiente
-    const localOrigins = ['http://localhost:4200', 'http://localhost:8100'];
-    const envOrigins = [
-      process.env.FRONTEND_BASE_URL,
-      process.env.FRONTEND_URL,
-      process.env.RENDER_EXTERNAL_URL, // Render expone esta para el dominio público del servicio
-    ].filter(Boolean) as string[];
-
-    const allowedOrigins = [...localOrigins, ...envOrigins];
-
+    // CORS amplio y seguro: refleja el origen y responde preflights
     this.app.use(
       cors({
-        origin: (origin, callback) => {
-          // Permite herramientas como Postman (sin origin)
-          if (!origin) return callback(null, true);
-          if (allowedOrigins.includes(origin)) return callback(null, true);
-          return callback(null, true); // relajar en esta etapa; si querés, cambialo a error
-        },
+        origin: true, // refleja el Origin de la request
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
+        optionsSuccessStatus: 204,
       })
     );
+    // Manejar preflight para todas las rutas
+    this.app.options('*', cors({
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      optionsSuccessStatus: 204,
+    }));
 
     // fileUpload PRIMERO (para multipart/form-data)
     this.app.use(

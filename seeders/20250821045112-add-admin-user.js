@@ -9,7 +9,7 @@ module.exports = {
     // Se usa una consulta SQL nativa para asegurar que se encuentra el ID
     // del rol que necesitamos.
     const [role] = await queryInterface.sequelize.query(
-      `SELECT id FROM "roles" WHERE name = 'Administrador' LIMIT 1;`
+      `SELECT id FROM "roles" WHERE name = 'administrador' LIMIT 1;`
     );
 
     // Si no se encuentra el rol, muestra un error y detiene la ejecución.
@@ -20,35 +20,34 @@ module.exports = {
 
     const adminRoleId = role[0].id;
 
-    // 2. Crea la contraseña encriptada para el usuario administrador
-    // En este ejemplo, la contraseña es '1234'.
+    // 2. Crea la contraseña encriptada para el usuario administrador (cámbiala si deseas)
     const hashedPassword = await bcrypt.hash('1234', 10);
 
-    // 3. Opcional: Elimina cualquier usuario existente antes de insertar el nuevo
-    // Esto es útil para limpiar la tabla antes de sembrar nuevos datos.
-    await queryInterface.bulkDelete('users', null, {});
+    // 3. UPSERT por email para no borrar usuarios existentes
+    const email = 'administrador@administrador.com';
+    const name = 'Admin';
+    const lastname = 'User';
+    const isActive = true;
 
-    // 4. Inserta el usuario administrador en la tabla 'users'
-    return queryInterface.bulkInsert('users', [
+    // Usamos INSERT ... ON CONFLICT (email) DO UPDATE para Postgres
+    await queryInterface.sequelize.query(
+      `INSERT INTO "users" ("email", "name", "lastname", "password", "role_id", "isActive")
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT ("email") DO UPDATE SET
+         "password" = EXCLUDED."password",
+         "role_id" = EXCLUDED."role_id",
+         "isActive" = EXCLUDED."isActive";`,
       {
-        firstName: 'Admin',
-        lastName: 'User',
-        email: 'administrador@administrador.com',
-        password: hashedPassword,
-        roleId: adminRoleId,
-        status: true,
-        google: false,
-        img: '',
-        //createdAt: new Date(), // Campo para la fecha de creación
-        //updatedAt: new Date()  // Campo para la fecha de actualización
+        bind: [email, name, lastname, hashedPassword, adminRoleId, isActive],
+        type: Sequelize.QueryTypes.INSERT,
       }
-    ], {});
+    );
+    return;
   },
 
   // El método `down` se ejecuta cuando corres `db:seed:undo:all`
   down: async (queryInterface, Sequelize) => {
-    // Elimina el usuario administrador que fue insertado en el método `up`
-    // Se busca por el email para no afectar a otros usuarios si existieran.
+    // Elimina solo el usuario administrador insertado por este seeder
     return queryInterface.bulkDelete('users', { email: 'administrador@administrador.com' }, {});
   }
 };

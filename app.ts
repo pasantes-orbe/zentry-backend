@@ -8,8 +8,11 @@ console.log('Zona horaria configurada:', process.env.TZ || '(no definida)');
 
 (async () => {
   try {
-    // En dev podés usar { alter: true }. En prod: sin alter/force.
-    await db.sequelize.sync({ alter: true });
+    if ((process.env.NODE_ENV || 'development') !== 'production') {
+      await db.sequelize.sync({ alter: true });
+    } else {
+      await db.sequelize.sync();
+    }
     console.log('¡Base de datos sincronizada correctamente! Todas las tablas deberían estar ahí.');
 
     const server = Server.instance;

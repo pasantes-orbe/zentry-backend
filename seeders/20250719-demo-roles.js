@@ -8,9 +8,9 @@ module.exports = {
 
     // Insertar los roles nuevos
     return queryInterface.bulkInsert('roles', [
-      { id: 1, name: 'Administrador' },
-      { id: 2, name: 'Propietario' },
-      { id: 3, name: 'Vigilador' }
+      { id: 1, name: 'administrador' },
+      { id: 2, name: 'propietario' },
+      { id: 3, name: 'vigilador' }
     ], {});
   },
 
