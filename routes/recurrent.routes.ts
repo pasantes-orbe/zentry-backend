@@ -6,6 +6,8 @@ import propertyExists from "../middlewares/customs/propertyExists.middleware";
 import recurrentExists from "../middlewares/customs/recurrentExists.middleware";
 import noErrors from "../middlewares/noErrors.middleware";
 import { getModels } from "../models/getModels";
+import validateJWT from "../middlewares/jwt/validateJWT.middleware";
+import isAdmin from "../middlewares/jwt/isAdmin.middleware";
 
 const router = Router();
 // Usar un nombre claro para la instancia del controlador
@@ -74,6 +76,8 @@ router.post(
 router.patch(
   "/:id_recurrent",
   [
+    validateJWT,
+    isAdmin,
     check("id_recurrent", "El id de recurrente debe ser numerico").isNumeric(),
     check("id_recurrent").custom(recurrentExists),
     noErrors,
@@ -130,6 +134,8 @@ router.patch(
 router.delete(
   "/:id_recurrent",
   [
+    validateJWT,
+    isAdmin,
     check("id_recurrent", "El id de recurrente debe ser numerico").isNumeric(),
     check("id_recurrent").custom(recurrentExists),
     noErrors,

@@ -348,6 +348,25 @@ class CheckInController {
         return res.status(404).json({ msg: "Check-in no existe" });
       }
 
+      // Emitir evento de checkout para refresco en tiempo real del Front
+      try {
+        const { checkin } = getModels();
+        const current = await checkin.findByPk(+id_checkin);
+        const server = Server.instance;
+        if (current) {
+          server.io.emit("checkout-completed", {
+            id_checkin: Number(id_checkin),
+            DNI: getVal(current, "DNI"),
+            id_country: getVal(current, "id_country"),
+            id_property: getVal(current, "id_property"),
+            income_date: getVal(current, "income_date"),
+            checkout_at: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.log("[checkout] No se pudo emitir evento checkout-completed:", e);
+      }
+
       return res.json({ msg: "Check-out confirmado", update });
     } catch (error) {
       console.error(error);

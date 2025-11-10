@@ -161,14 +161,4 @@ router.get('/owners/get_by_country/:id_country', [
     return res.json(response);
 });
 
-/**
- * Delete User
- */
-router.delete('/:id', [
-    isAdmin,
-    check('id').notEmpty(),
-    check('id').isNumeric(),
-    noErrors
-], controller.deleteUser);
-
 export default router;

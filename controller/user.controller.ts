@@ -561,7 +561,7 @@ class UserController {
 
             return res.status(200).json({
                 ok: true,
-                message: 'Guardia eliminado exitosamente',
+                message: 'Usuario eliminado exitosamente',
                 id: parseInt(id)
             });
 

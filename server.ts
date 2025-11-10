@@ -25,6 +25,7 @@ import antipanic from './routes/antipanic.routes';
 import pushNotifications from './routes/push_notifications.routes';
 import notificationRoutes from './routes/notification.routes';
 import invitationRoutes from './routes/invitations.routes';
+import authorizationsRoutes from './routes/authorizations.routes';
 import userPropertiesRoutes from './routes/user_properties.routes';
 
 import SocketController from './sockets/controller';
@@ -52,6 +53,7 @@ class Server {
     checkout: '/api/checkout',
     antipanic: '/api/antipanic',
     user_properties: '/api/user-properties',
+    authorizations: '/api/authorizations',
     // OJO: ambos apuntan a /api/notifications (si querés separarlos, cambiá uno)
     push_notifications: '/api/notifications',
     notifications: '/api/notifications',
@@ -152,6 +154,7 @@ class Server {
     this.app.use(this.apiPaths.checkout, checkOut);
     this.app.use(this.apiPaths.antipanic, antipanic);
     this.app.use(this.apiPaths.user_properties, userPropertiesRoutes);
+    this.app.use(this.apiPaths.authorizations, authorizationsRoutes);
 
     // Ambos en /api/notifications: primero push (si tiene endpoints más específicos),
     // luego notifications genéricas para no “pisar” rutas.
