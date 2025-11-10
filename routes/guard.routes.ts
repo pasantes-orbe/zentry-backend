@@ -148,6 +148,26 @@ router.put(`/schedule/:id`, [
     }
 });
 
+// Delete Schedule By ID
+router.delete(`/schedule/:id`, [
+    check('id').isNumeric(),
+    check('id').notEmpty(),
+    noErrors
+], async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { guard_schedule } = getModels();
+
+    const schedule = await guard_schedule.findByPk(id);
+
+    if (!schedule) {
+        return res.status(404).json({ message: 'Horario no encontrado' });
+    }
+
+    await schedule.destroy();
+    return res.json({ message: 'Horario eliminado correctamente', id });
+
+});
+
 /**
  * Assign Schedule
  */
